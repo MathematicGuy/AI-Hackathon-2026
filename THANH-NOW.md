@@ -24,13 +24,13 @@ Milestone 1: M1.0 contract freeze is complete; build M1.1–M1.4 foundations int
 | 0 | Contract reconciliation / US-121 | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-100 | ✅ Done — 8 tests, review approved, trace 11 |
 | 1 | M1.1 / US-106 catalog pagination | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 | ✅ Done — 53 tests, review approved, trace 12 |
 | 2 | M1.1 / US-107 normalization and evidence | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-106 | 🟨 Ready to activate |
-| 3 | M1.3 / US-102 layered input guardrail | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 | ⬜ Queued |
-| 4 | M1.3 / US-103 Vietnamese intent/need extraction | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-102 | ⬜ Queued |
-| 5 | M1.4 / US-104 state merge and correction precedence | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 | ⬜ Queued |
+| 3 | M1.3 / US-102 layered input guardrail | USER1 — details in `USER1-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; ready in isolated worktree |
+| 4 | M1.3 / US-103 Vietnamese intent/need extraction | USER1 — details in `USER1-NOW.md` | `gpt-5.6-terra-high` | US-102 | ⬜ USER1 queued after US-102 merge |
+| 5 | M1.4 / US-104 state merge and correction precedence | USER2 — details in `USER2-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; ready in isolated worktree |
 | 6 | M1.2 / US-108 hard constraints | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-107 | ⬜ Queued |
 | 7 | M1.2 / US-109 injected deterministic ranking | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-108 | ⬜ Queued; production policy remains injected |
 | 8 | M1.2 / US-110 truthful deduplication | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-109 | ⬜ Queued |
-| 9 | M1.4 / US-105 clarification/routing/persistence | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-103, US-104 | ⬜ Queued |
+| 9 | M1.4 / US-105 clarification/routing/persistence | USER2 — details in `USER2-NOW.md` | `gpt-5.6-terra-high` | US-103, US-104 | ⬜ USER2 blocked until both merges |
 | 10 | M1.5 / US-101 + US-116 gateway, graph, trace | Fresh integration subagent, then separate reviewer | `gpt-5.6-terra-high` | US-105, US-106–US-110 | ⬜ Dependency-gated |
 | 11 | M1.6 / US-111 + US-112 grounded output/fallback | Fresh integration subagent, then separate reviewer | `gpt-5.6-terra-high` | M1.5 | ⬜ Dependency-gated |
 | 12 | M1.7 / US-113 + US-114 continuations | Fresh integration subagent, then separate reviewer | `gpt-5.6-terra-high` | M1.5 | ⬜ Dependency-gated |
@@ -38,6 +38,13 @@ Milestone 1: M1.0 contract freeze is complete; build M1.1–M1.4 foundations int
 | 14 | M1.8 / US-115 real API E2E | Fresh frontend integration subagent, then separate reviewer | `gpt-5.6-terra-high` | M1.5–M1.7 | ⬜ Dependency-gated |
 
 Detailed task scope, interfaces, RED/GREEN commands, and dependency order: `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md`.
+
+## Parallel workstreams
+
+- Thành: `agent/m1-implementation` — US-107 → US-110 and serialized M1 integration.
+- USER1: `agent/user1-m1-3-guardrails-intent` — US-102 → US-103; execution details live only in `USER1-NOW.md`.
+- USER2: `agent/user2-m1-4-state-routing` — US-104 → US-105; execution details live only in `USER2-NOW.md`.
+- Every workstream uses an isolated worktree or clone. Thành merges reviewed story commits one at a time and updates this controller ledger after each integration.
 
 ## Frozen evaluation contract
 
@@ -56,7 +63,8 @@ Detailed task scope, interfaces, RED/GREEN commands, and dependency order: `docs
 
 - Completed US-100/US-121 scope committed on `agent/m1-implementation` as `8ce3b51` plus fixture proof `f551a2a`.
 - Local `main` merged those commits as `bfc097c` and `07fbbc9`.
-- Clean-main contract verification: 8 passed; third-party pytest plugin autoload was disabled because the global `deepeval` plugin attempted an out-of-scope filesystem write.
+- Completed US-106 scope committed on `agent/m1-implementation` as `a4dedfd` and merged to local `main` as `9dc9363`.
+- Clean-main US-106 verification: 53 passed; third-party pytest plugin autoload was disabled because the global `deepeval` plugin attempted an out-of-scope filesystem write.
 
 ## Working files
 
