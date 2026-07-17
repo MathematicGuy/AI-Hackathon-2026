@@ -1,5 +1,21 @@
 # Agent Instructions
 
+<!-- AI-LOGGING:BEGIN -->
+## Mandatory AI Session Logging
+
+Before planning, editing, running commands, or invoking tools other than
+reading repository instructions:
+
+1. Read `ai-logs/README.md`.
+2. Resolve the current team member exactly as required by that policy.
+3. Read that member's `BOT_INSTRUCTIONS.md`.
+4. Create the session log before substantive work.
+
+If identity is not explicit and certain, ask the canonical identity question
+from `ai-logs/README.md`. Do not infer identity or silently continue without a
+log.
+<!-- AI-LOGGING:END -->
+
 <!-- HARNESS:BEGIN -->
 ## Harness
 

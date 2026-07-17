@@ -143,14 +143,16 @@ The bot obtains the following variables:
 | `member_slug` | Member mapping in the canonical policy | No fallback; ambiguous identities block work. |
 | `ai_client` | Current client/runtime | Ask only if the runtime does not expose it. |
 | `interface` | CLI, IDE, chat, agent, or other known surface | Use `unknown` when the surface cannot be determined. |
-| `session_id` | Client session identifier | Generate a short unique identifier. |
+| `session_id` | Fresh local, non-sensitive logging identifier | Generate it before creating the log; never persist a client or external identifier. |
 | `started_at_utc` | Current UTC time | Generate at log creation. |
 | `task_summary` | Current user request | Ask for clarification only when the goal is unclear. |
 | `repository` | Current repository root | Use the repository directory name. |
-| `branch` | Current Git branch | Use `unknown` when Git is unavailable. |
+| `branch` | Branch already exposed without a command | Use `unknown`, then optionally detect and update it after log creation. |
 
 The bot asks only for variables it cannot derive safely. It must never ask the
-user to provide secrets for the log.
+user to provide secrets for the log. Client or external conversation, thread,
+session, request, run, trace, and message identifiers are prohibited from log
+metadata, filenames, and content.
 
 ### 4. Create the Log
 
@@ -160,9 +162,10 @@ The bot copies the structure of `ai-logs/SESSION_TEMPLATE.md` into:
 ai-logs/<member-slug>/sessions/<UTC_TIMESTAMP>_<CLIENT>_<SESSION_ID>.md
 ```
 
-Filename components use lowercase ASCII characters, digits, and hyphens.
-The timestamp format is `YYYY-MM-DDTHH-mm-ssZ`. The log is created before
-substantive coding work starts.
+The timestamp format is `YYYY-MM-DDTHH-mm-ssZ`, with deliberately uppercase
+`T` and `Z`. The client and local logging-identifier components use lowercase
+ASCII characters, digits, and hyphens. The log is created before substantive
+coding work starts.
 
 ### 5. Append Structured Entries
 
@@ -224,6 +227,8 @@ The bot must never record:
   authentication headers.
 - Private keys or complete certificates.
 - Unnecessary personal data.
+- Client or external conversation, thread, session, request, run, trace, or
+  message identifiers.
 - Full command output that may contain sensitive values.
 - Raw request or response payloads when a structured summary is sufficient.
 
