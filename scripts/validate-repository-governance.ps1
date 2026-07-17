@@ -290,7 +290,7 @@ if (Test-RepositoryPath "docs/team/now/README.md") {
                 Tracker = "THANH-NOW.md"
             }
             USER1 = @{
-                Identity = "Unassigned"
+                Identity = "luu-thien-viet-cuong"
                 Tracker = "USER1-NOW.md"
             }
             USER2 = @{
@@ -356,9 +356,10 @@ if (Test-RepositoryPath "docs/team/now/README.md") {
             $seenTrackerTargets[$expectedRow.Tracker] = $true
 
             if ($identity -cne "Unassigned") {
-                if ($seenAssignedIdentities.ContainsKey($identity)) {
-                    Add-Failure "Duplicate assigned tracker identity: $identity"
-                }
+                # A member may own more than one tracker alias when solo-driving
+                # parallel lanes; conflict avoidance is enforced per file
+                # boundary, not by forbidding shared identities. Duplicate alias
+                # rows and duplicate tracker targets are still rejected above.
                 $seenAssignedIdentities[$identity] = $true
             }
         }
