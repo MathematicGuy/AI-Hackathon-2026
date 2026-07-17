@@ -1,3 +1,9 @@
+import { ChatPanel } from "@/components/chat/ChatPanel";
+
 export default function Page() {
-  return <main className="p-6">Đang khởi tạo…</main>;
+  return (
+    <main>
+      <ChatPanel />
+    </main>
+  );
 }
