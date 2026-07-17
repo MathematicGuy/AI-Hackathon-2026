@@ -45,10 +45,16 @@
    `ranking_cursor` or `shown_product_ids` during merge (cursor advances only
    after successful presentation; shown IDs feed show-more exclusions).
 6. Reset `clarification_count` to 0 when the turn starts a materially new
-   search (`new_search` intent whose patch explicitly changes a core need
+   search (`new_search` intent whose patch explicitly changes any need
    field); otherwise preserve it.
 7. Set `current_intent`, increment `turn_number`, and update
    `requested_product_count` from the intent output.
+
+Known limitation (accepted): the frozen `IntentOutput` materializes
+`requested_product_count` with default 3, so the merge cannot distinguish an
+omitted count from an explicit 3; a prior turn's explicit count therefore
+reverts to the contract default when the next turn does not restate it. This
+matches the contract's `default_count: 3` pagination policy.
 
 ## Interface Contract
 

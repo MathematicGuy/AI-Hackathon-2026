@@ -30,7 +30,7 @@ progress ledger.
 
 | Order | Story | Depends on | Status | Detail source |
 | ---: | --- | --- | --- | --- |
-| 1 | US-104 state merge and correction precedence | US-121 complete | In progress — mapped 2026-07-18; registered packet at `docs/stories/epics/E01-air-conditioner-advisor-m1/US-104-state-merge-correction-precedence/` | Registered story packet; legacy provenance: Task 8 in `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md` |
+| 1 | US-104 state merge and correction precedence | US-121 complete | Implemented 2026-07-18 — RED/GREEN unit proof (25 passed; full suite 70), independent review closed, Harness trace #4 detailed 3/3, self-merged to main per Cường's approved merge policy | Registered story packet at `docs/stories/epics/E01-air-conditioner-advisor-m1/US-104-state-merge-correction-precedence/` |
 | 2 | US-105 clarification/routing/persistence | US-103 and US-104 merged to main | Blocked until US-103 (USER1 lane) and US-104 are both on main | Legacy provenance only: Task 9 in the same file |
 
 Do not activate work directly from the legacy plan. After a human maps USER2,
