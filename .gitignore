@@ -9,8 +9,10 @@
 !**/.env.*.example
 .envrc
 .direnv/
+.tokensave
 
-# Agent Memory
+# Agen
+t Memory
 .agents/memory/
 
 # Python
