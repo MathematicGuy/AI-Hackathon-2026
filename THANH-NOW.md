@@ -22,8 +22,8 @@ Milestone 1: M1.0 contract freeze is complete; build M1.1–M1.4 foundations int
 | Order | Milestone / stories | Delegated role | Requested model | Depends on | Status |
 | ---: | --- | --- | --- | --- | --- |
 | 0 | Contract reconciliation / US-121 | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-100 | ✅ Done — 8 tests, review approved, trace 11 |
-| 1 | M1.1 / US-106 catalog pagination | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 | 🟨 Implementation active |
-| 2 | M1.1 / US-107 normalization and evidence | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-106 | ⬜ Queued |
+| 1 | M1.1 / US-106 catalog pagination | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 | ✅ Done — 53 tests, review approved, trace 12 |
+| 2 | M1.1 / US-107 normalization and evidence | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-106 | 🟨 Ready to activate |
 | 3 | M1.3 / US-102 layered input guardrail | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 | ⬜ Queued |
 | 4 | M1.3 / US-103 Vietnamese intent/need extraction | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-102 | ⬜ Queued |
 | 5 | M1.4 / US-104 state merge and correction precedence | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 | ⬜ Queued |
@@ -49,8 +49,14 @@ Detailed task scope, interfaces, RED/GREEN commands, and dependency order: `docs
 ## Active work
 
 - M1.0 — request, response, state, product, graph, and model-routing contracts frozen with `US-100` proof.
-- M1.1–M1.8 — implementation plan complete; US-121 is complete and US-106 is the only next story to activate. Later story packets remain uncreated until their dependency gate opens.
+- M1.1–M1.8 — implementation plan complete; US-121 and US-106 are complete, and US-107 is the only next story to activate. Later story packets remain uncreated until their dependency gate opens.
 - M1.9 / US-117 — implement dataset loader, deterministic assertions, Langfuse import, and release report when selected.
+
+## Integration status
+
+- Completed US-100/US-121 scope committed on `agent/m1-implementation` as `8ce3b51` plus fixture proof `f551a2a`.
+- Local `main` merged those commits as `bfc097c` and `07fbbc9`.
+- Clean-main contract verification: 8 passed; third-party pytest plugin autoload was disabled because the global `deepeval` plugin attempted an out-of-scope filesystem write.
 
 ## Working files
 
@@ -66,5 +72,5 @@ Detailed task scope, interfaces, RED/GREEN commands, and dependency order: `docs
 
 ## Next integration checkpoint
 
-- Activate US-106 only, complete RED → GREEN and separate review, then activate US-107.
+- Activate US-107 only, complete RED → GREEN and separate review, then activate the next dependency-ready foundation story.
 - Keep all later story packets uncreated until their turn in the dependency order.
