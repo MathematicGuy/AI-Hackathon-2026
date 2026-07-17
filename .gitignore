@@ -49,3 +49,57 @@ next-env.d.ts
 
 # Local temp files
 temp/
+
+# Agent and browser state
+.agents/memory/
+chrome_profile/
+browser_recordings/
+.design-sync/
+.tokensave
+.playwright-mcp
+.railway-config-pull-31116
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Application and generated data
+/data/
+*.db
+*.jsonl
+/test_out.txt
+/test_output.txt
+/chrome_launch.log
+
+# Local worktrees and scratch output
+_git/
+.superpowers/
+.worktrees/
+logs/
+tmp_pytest_manual/
+tmp_pytest_probe/
+pytest-base/
+pytest-temp-root/
+tmp-screenshots/
+
+# Harness local state and build output
+harness.db
+harness.db-wal
+harness.db-shm
+target/
+scripts/bin/harness-cli
+scripts/bin/harness-cli.exe
+.harness/*
+!.harness/changesets/
+!.harness/changesets/*.changeset.jsonl
+
+# Codebase memory graph
+.codebase-memory/*
+!.codebase-memory/graph.db.zst

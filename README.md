@@ -1,171 +1,297 @@
-# AI Website Cloner Template
+# repository-harness
 
-<a href="https://github.com/JCodesMore/ai-website-cloner-template/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a> <a href="https://github.com/JCodesMore/ai-website-cloner-template/stargazers"><img src="https://img.shields.io/github/stars/JCodesMore/ai-website-cloner-template?style=flat" alt="Stars" /></a> <a href="https://discord.gg/hrTSX5yTpB"><img src="https://img.shields.io/discord/1400896964597383279?label=discord" alt="Discord" /></a>
+Turn any software repo into an agent-ready workspace.
 
-A reusable template for reverse-engineering any website into a clean, modern Next.js codebase using AI coding agents.
+`repository-harness` is a repository-level operating harness for Claude Code,
+Codex, Cursor, and other coding agents. It gives agents the missing project
+context they need before they change code: where to start, what the product
+contract says, how risky the work is, what proof is required, and which
+decisions future agents should inherit.
 
-**Recommended: [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with Opus 4.8 for best results** — but works with a variety of AI coding agents.
+The app is what users touch. The harness is what agents touch.
 
-Point it at a URL, run `/clone-website`, and your AI agent will inspect the site, extract design tokens and assets, write component specs, and dispatch parallel builders to reconstruct every section.
+## Why Star This Repo
 
-## Demo
+Star this repo if you want practical, reusable patterns for making AI-assisted
+software development more reliable, inspectable, and easier for humans to steer.
 
-[![Watch the demo](docs/design-references/comparison.png)](https://youtu.be/O669pVZ_qr0)
+This project is exploring a simple idea:
 
-> Click the image above to watch the full demo on YouTube.
+> Coding agents do not only need better prompts. They need better repositories.
 
-## Quick Start
+## The Problem
 
-> **Important:** Start by making your own copy with GitHub's **Use this template** button. Do not clone this template repository directly for your website project, and do not open pull requests here with your generated website.
+Most repos are built for humans reading code in a familiar codebase. Coding
+agents usually enter with only a chat prompt and a shallow snapshot of files.
+That leads to common failure modes:
 
-1. **Create your own repository from this template**
+- The agent edits code before understanding product intent.
+- Important constraints live only in chat history or in someone's head.
+- Validation expectations are vague or discovered too late.
+- Architecture tradeoffs are repeated instead of inherited.
+- Large requests do not get broken into reviewable story-sized work.
 
-   On the GitHub page for this project, click **Use this template**, then click **Create a new repository**.
+## The Harness Approach
 
-   Give your new repository a name, choose whether it should be public or private, then click **Create repository**. If GitHub shows an **Include all branches** option, you can leave it off.
+A repository starts to have a harness when it helps an agent answer practical
+engineering questions without relying only on chat history:
 
-   This gives you your own separate project to work in, so your website changes stay in your account instead of coming back to the main template.
+- What should I read first?
+- What type of work is this?
+- Which product contract does it affect?
+- How risky is the change?
+- What proof will show the work is done?
+- What decision or lesson should future agents inherit?
 
-2. **Open your new repository on your computer**
+In this repo, those answers live in:
 
-   After GitHub creates your copy, open that new repository. Click **Code** and open or clone your new repository with your preferred coding tool.
+- `AGENTS.md` — the stable agent shim with local project notes and Harness
+  doc links.
+- `docs/HARNESS.md` — the human-agent collaboration model.
+- `docs/FEATURE_INTAKE.md` — tiny, normal, and high-risk work classification.
+- `docs/ARCHITECTURE.md` — architecture discovery and boundary rules.
+- `docs/TEST_MATRIX.md` — behavior-to-proof validation expectations.
+- `docs/stories/` — story packets and backlog items.
+- `docs/decisions/` — durable decisions and tradeoffs.
+- `docs/templates/` — reusable spec, story, decision, and validation templates.
 
-   If you use the terminal, the command will look like this:
+OpenAI describes this shift as an agent-first world where humans steer and
+agents execute:
 
-   ```bash
-   git clone https://github.com/YOUR-USERNAME/YOUR-NEW-REPOSITORY.git
-   cd YOUR-NEW-REPOSITORY
-   ```
+https://openai.com/index/harness-engineering/
 
-3. **Install dependencies**
-   ```bash
-   npm install
-   ```
-4. **Start your AI agent** — Claude Code recommended:
-   ```bash
-   claude --chrome
-   ```
-5. **Run the skill**:
-   ```
-   /clone-website <target-url1> [<target-url2> ...]
-   ```
-6. **Customize** (optional) — after the base clone is built, modify as needed
+## Install Harness Into A Project
 
-> Using a different agent? Open `AGENTS.md` for project instructions — most agents pick it up automatically.
-
-## Supported Platforms
-
-| Agent                                                         | Status                     |
-| ------------------------------------------------------------- | -------------------------- |
-| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | **Recommended** — Opus 4.8 |
-| [Codex CLI](https://github.com/openai/codex)                  | Supported                  |
-| [OpenCode](https://opencode.ai/)                              | Supported                  |
-| [GitHub Copilot](https://github.com/features/copilot)         | Supported                  |
-| [Cursor](https://cursor.com/)                                 | Supported                  |
-| [Windsurf](https://codeium.com/windsurf)                      | Supported                  |
-| [Gemini CLI](https://github.com/google-gemini/gemini-cli)     | Supported                  |
-| [Cline](https://github.com/cline/cline)                       | Supported                  |
-| [Roo Code](https://github.com/RooCodeInc/Roo-Code)            | Supported                  |
-| [Continue](https://continue.dev/)                             | Supported                  |
-| [Amazon Q](https://aws.amazon.com/q/developer/)               | Supported                  |
-| [Augment Code](https://www.augmentcode.com/)                  | Supported                  |
-| [Aider](https://aider.chat/)                                  | Supported                  |
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) 24+
-- An AI coding agent (see [Supported Platforms](#supported-platforms))
-
-## Tech Stack
-
-- **Next.js 16** — App Router, React 19, TypeScript strict
-- **shadcn/ui** — Radix primitives + Tailwind CSS v4
-- **Tailwind CSS v4** — oklch design tokens
-- **Lucide React** — default icons (replaced by extracted SVGs during cloning)
-
-## How It Works
-
-The `/clone-website` skill runs a multi-phase pipeline:
-
-1. **Reconnaissance** — screenshots, design token extraction, interaction sweep (scroll, click, hover, responsive)
-2. **Foundation** — updates fonts, colors, globals, downloads all assets
-3. **Component Specs** — writes detailed spec files (`docs/research/components/`) with exact computed CSS values, states, behaviors, and content
-4. **Parallel Build** — dispatches builder agents in git worktrees, one per section/component
-5. **Assembly & QA** — merges worktrees, wires up the page, runs visual diff against the original
-
-Each builder agent receives the full component specification inline — exact `getComputedStyle()` values, interaction models, multi-state content, responsive breakpoints, and asset paths. No guessing.
-
-## Use Cases
-
-- **Platform migration** — rebuild a site you own from WordPress/Webflow/Squarespace into a modern Next.js codebase
-- **Lost source code** — your site is live but the repo is gone, the developer left, or the stack is legacy. Get the code back in a modern format
-- **Learning** — deconstruct how production sites achieve specific layouts, animations, and responsive behavior by working with real code
-
-## Not Intended For
-
-- **Phishing or impersonation** — this project must not be used for deceptive purposes, impersonation, or any activity that breaks the law.
-- **Passing off someone's design as your own** — logos, brand assets, and original copy belong to their owners.
-- **Violating terms of service** — some sites explicitly prohibit scraping or reproduction. Check first.
-
-## Project Structure
-
-```
-src/
-  app/              # Next.js routes
-  components/       # React components
-    ui/             # shadcn/ui primitives
-    icons.tsx       # Extracted SVG icons
-  lib/utils.ts      # cn() utility
-  types/            # TypeScript interfaces
-  hooks/            # Custom React hooks
-public/
-  images/           # Downloaded images from target
-  videos/           # Downloaded videos from target
-  seo/              # Favicons, OG images
-docs/
-  research/         # Extraction output & component specs
-  design-references/ # Screenshots
-scripts/
-  sync-agent-rules.sh  # Regenerate agent instruction files
-  sync-skills.mjs      # Regenerate /clone-website for all platforms
-AGENTS.md           # Agent instructions (single source of truth)
-CLAUDE.md           # Claude Code config (imports AGENTS.md)
-GEMINI.md           # Gemini CLI config (imports AGENTS.md)
-```
-
-## Commands
+From a target project directory, run:
 
 ```bash
-npm run dev    # Start dev server
-npm run build  # Production build
-npm run lint   # ESLint check
-npm run typecheck # TypeScript check
-npm run check  # Run lint + typecheck + build
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" | bash -s -- --yes
 ```
 
-### If using docker
+On Windows PowerShell, run:
+
+```powershell
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.ps1"))) -Yes
+```
+
+If the target already has `AGENTS.md`, `docs/`, or `scripts/`, choose one:
 
 ```bash
-docker compose up app --build # build and run the app
-docker compose up dev --build # run the app in dev mode on port 3001
+# Update an existing Harness repo without moving existing files
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --yes
+
+# Back up and replace AGENTS.md, docs/, and scripts/
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" | bash -s -- --override --yes
 ```
 
-## Updating for Other Platforms
+```powershell
+# Update an existing Harness repo without moving existing files
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.ps1"))) -Merge -Yes
 
-Two source-of-truth files power all platform support. Edit the source, then run the sync script:
+# Back up and replace AGENTS.md, docs/, and scripts/
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.ps1"))) -Override -Yes
+```
 
-| What                   | Source of truth                         | Sync command                       |
-| ---------------------- | --------------------------------------- | ---------------------------------- |
-| Project instructions   | `AGENTS.md`                             | `bash scripts/sync-agent-rules.sh` |
-| `/clone-website` skill | `.claude/skills/clone-website/SKILL.md` | `node scripts/sync-skills.mjs`     |
+Use `--merge` when a project already has Harness and you want to append newly
+added Harness files without moving the existing `AGENTS.md`, `docs/`, or
+`scripts/` paths into backup. Existing files stay untouched; only missing
+Harness files are created.
 
-Each script regenerates the platform-specific copies automatically. Agents that read the source files natively need no regeneration.
+For older Harness installs whose `AGENTS.md` still contains the full generated
+operating guide, refresh it into the small stable shim:
 
+```bash
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" | bash -s -- --merge --refresh-agent-shim --yes
+```
 
-## Star History
+The refresh backs up the existing file. If it detects the old
+Harness-generated guide, it replaces it with the shim. If the file appears
+custom, it appends or updates a marked Harness block instead of overwriting the
+project's local instructions.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=JCodesMore/ai-website-cloner-template&type=Date)](https://star-history.com/#JCodesMore/ai-website-cloner-template&Date)
+If the project is driven with Claude Code, add `--claude`. Claude Code never
+auto-loads `AGENTS.md`, so without this the installed harness is invisible to
+fresh sessions. The flag installs (or refreshes) a `CLAUDE.md` whose marked
+Harness block imports only `AGENTS.md`, the canonical request-authority and
+retrieval entrypoint. An existing `CLAUDE.md` gets the block appended after a
+backup; plain installs without the flag never touch `CLAUDE.md`:
 
-## License
+```bash
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" | bash -s -- --claude --yes
+```
 
-MIT
+Or install into a specific path:
+
+```bash
+curl -fsSL "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.sh?$(date +%s)" | bash -s -- --directory /path/to/project --yes
+```
+
+```powershell
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/hoangnb24/repository-harness/main/scripts/install-harness.ps1"))) -Directory C:\path\to\project -Yes
+```
+
+Use `--dry-run` on Bash or `-DryRun` on PowerShell to preview changes before
+writing files.
+
+The installer also downloads the prebuilt Harness CLI for the current platform,
+verifies its `.sha256` checksum, and installs it at
+`scripts/bin/harness-cli` on macOS/Linux or `scripts/bin/harness-cli.exe` on
+Windows. The Rust CLI is the main Harness tool and stable command path.
+
+Then bootstrap the local ignored database. A Harness source checkout builds the
+CLI from that checkout and validates the restored core-state epoch; it refuses
+to fabricate an empty replacement for missing repository state. An installed
+project reuses the verified release binary and initializes its own empty local
+state:
+
+```bash
+scripts/bootstrap-harness.sh
+```
+
+```powershell
+.\scripts\bootstrap-harness.ps1
+```
+
+Harness CLI release assets are built and proven before tag promotion by the
+`Harness CLI Release` GitHub Actions workflow. The installer expects each
+published release to include `harness-cli-<platform>` and
+`harness-cli-<platform>.sha256` assets for macOS arm64, macOS x64, Linux x64,
+Linux arm64, and Windows x64. The Windows asset is
+`harness-cli-windows-x64.exe` plus `harness-cli-windows-x64.exe.sha256`.
+
+Merged pull requests are recorded in `CHANGELOG.md` by the
+`Post-Merge Maintenance` workflow. When a merged PR changes the Rust CLI source,
+schema, Cargo metadata, or CLI release packaging, that workflow bumps the CLI
+patch version, updates `scripts/harness-cli-release-tag`, and submits the exact
+maintenance commit as a release candidate. The reusable workflow builds and
+tests all five platforms, verifies the pinned `v0.1.14` upgrade transition,
+then creates the annotated `harness-cli-v*` tag and publishes the ten binary and
+checksum assets. Failed tags are never moved or reused.
+
+## Try The Flow
+
+The fastest way to understand the harness is to inspect the tiny demo:
+
+- `docs/demo/README.md`: shows how a simple product idea becomes product docs,
+  stories, validation expectations, and decisions before implementation starts.
+
+A typical flow looks like this:
+
+```text
+human intent or product spec
+  -> product contract
+  -> feature intake
+  -> story packet
+  -> validation expectations
+  -> implementation work
+  -> decision or lesson captured for future agents
+```
+
+Implementation prompts do not go straight to code. They first pass through
+feature intake, become story-sized work when needed, and then carry both product
+validation and harness maintenance expectations.
+
+Harness exposes a versioned orchestration contract for external runners. One
+independent consumer is [Symphony](https://github.com/hoangnb24/symphony); it
+is not part of this repository or the Harness installer.
+
+## Tool Registry
+
+The harness can use optional external tools (linters, code-graph servers,
+deploy checks) without depending on any of them. You register a tool as a
+provider of a *capability*, the harness scans whether it is actually present,
+and a workflow step uses whatever is equipped — an absent tool is a clean skip,
+never a failure.
+
+```bash
+# register a tool as a provider of a capability
+scripts/bin/harness-cli tool register --name deploy-check --kind cli \
+  --capability deploy-verification --command ./scripts/deploy-check.sh \
+  --responsibility Verification --description "Verify deploy health before release"
+
+# scan presence (writes present/missing/unknown)
+scripts/bin/harness-cli tool check
+
+# a step looks up what is equipped for a purpose
+scripts/bin/harness-cli query tools --capability deploy-verification --status present
+```
+
+Kinds (`cli`, `binary`, `mcp`, `skill`, `http`) make it agent-generic: each
+agent runtime uses what it can orchestrate. See `docs/TOOL_REGISTRY.md` for the
+full model, the degrade ladder, and how to wire a tool into a flow step.
+
+## Current State
+
+This repository implements the Harness v0 product: a Rust CLI, SQLite durable
+layer, installers, operating documents, contract tests, and release automation.
+Those upstream components are executable product behavior, not placeholders.
+
+Installing Harness into another repository does not create or choose that
+consumer's application, stack, or product specification. It adds the reusable
+engineering layer that helps humans and agents turn the consumer's intent into
+validated work.
+
+## Product Sources
+
+The upstream Harness contract lives in this README, the operating documents,
+the versioned orchestration contract, story packets, and executable tests. The
+generic `docs/product/` directory is reserved for a consumer project's product
+contract; Harness intentionally does not populate it with a fake domain model.
+
+When a user provides a project specification, add or reference it as the input
+spec for the first buildout, then derive smaller living artifacts from it:
+
+- `docs/product/`: current product contract files, created from the spec.
+- `docs/stories/`: story packets and backlog created from selected work.
+- `docs/TEST_MATRIX.md`: behavior-to-proof control panel.
+- `docs/decisions/`: durable decisions and tradeoffs.
+
+Do not keep a project-specific spec or product breakdown in this harness until
+a real project supplies one.
+
+## Repository Structure
+
+```text
+project/
+  AGENTS.md
+  README.md
+  docs/
+    HARNESS.md
+    FEATURE_INTAKE.md
+    ARCHITECTURE.md
+    TEST_MATRIX.md
+    HARNESS_BACKLOG.md
+    product/
+    stories/
+    decisions/
+    demo/
+    templates/
+  scripts/
+    README.md
+```
+
+## Contributing
+
+This project is early and benefits most from real-world agent failure cases,
+example harness installs, docs improvements, and reusable workflow patterns.
+See `CONTRIBUTING.md` for contribution ideas.
+
+Useful contributions include:
+
+- Show how the harness works in a real project.
+- Add missing templates or improve existing ones.
+- Propose validation patterns for different stacks.
+- Share failures where an agent made the wrong change because the repo lacked
+  context.
+- Compare harness behavior across Claude Code, Codex, Cursor, and other tools.
+
+## Share
+
+If this idea resonates, please star the repo and share it with someone building
+with coding agents.
+
+Short description:
+
+> An agent-ready repo harness for Claude Code, Codex, Cursor, and other coding
+> agents: AGENTS.md, product contracts, story packets, validation matrix, and
+> decision records.

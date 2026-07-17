@@ -1,0 +1,9 @@
+---
+description: Mandatory repository-wide AI coding session logging
+globs:
+alwaysApply: true
+---
+
+Read @AGENTS.md and @ai-logs/README.md before planning, editing, running
+commands, or invoking coding tools. Follow the canonical identity and logging
+workflow before substantive work.
