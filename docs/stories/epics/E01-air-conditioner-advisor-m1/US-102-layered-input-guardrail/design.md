@@ -1,5 +1,24 @@
 # Design
 
+## Precision Principle (guardrail must not overfire)
+
+The guardrail is tuned for **high precision on blocks**: it must never overfire
+on a legitimate máy lạnh shopping request, while still keeping unrelated
+categories and unsafe actions out of the recommendation flow. Concretely:
+
+- Safety markers (injection, encoded payload, unsafe execution, credential /
+  hidden-prompt) are tight, literal phrases a normal Vietnamese shopper never
+  types; the repeated-character rule needs a 20-character run.
+- The scope stage blocks another category only when there is **no** máy lạnh /
+  điều hòa signal. A legitimate request that merely references another appliance
+  ("phòng khách có tủ lạnh rồi, tôi cần mua máy lạnh") passes.
+- Unsafe or automated actions (auto-purchase, catalog modification) always block
+  regardless of category signal.
+- Genuinely unrelated chit-chat is left to the intent classifier (US-103) to
+  mark `unsupported` and answer with a scope-safe response, except in
+  NeMo-degraded mode, where the scope stage fails closed for anything not
+  clearly in-scope.
+
 ## Domain Model
 
 - `InputGuardResult` (internal frozen dataclass, not in the public contract):

@@ -30,7 +30,7 @@ progress ledger.
 
 | Order | Story | Depends on | Status | Detail source |
 | ---: | --- | --- | --- | --- |
-| 1 | US-102 layered input guardrail | US-121 complete | In progress — mapped 2026-07-18; registered packet at `docs/stories/epics/E01-air-conditioner-advisor-m1/US-102-layered-input-guardrail/` | Registered story packet; legacy provenance: Task 6 in `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md` |
+| 1 | US-102 layered input guardrail | US-121 complete | Implemented 2026-07-18 — RED/GREEN unit proof (25 tests; full suite 95), precision-tuned no-overfire, independent review closed, Harness trace #7 detailed 3/3, self-merged to main | Registered story packet at `docs/stories/epics/E01-air-conditioner-advisor-m1/US-102-layered-input-guardrail/` |
 | 2 | US-103 Vietnamese intent/need extraction | Reviewed US-102 merged to main | Queued after US-102 merges; registered packet at `docs/stories/epics/E01-air-conditioner-advisor-m1/US-103-intent-need-extraction.md` | Registered story packet; legacy provenance: Task 7 in the same file |
 
 Do not activate work directly from the legacy plan. After a human maps USER1,
