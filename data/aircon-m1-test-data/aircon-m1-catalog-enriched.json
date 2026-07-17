@@ -1,0 +1,1934 @@
+[
+  {
+    "product_id": "AC-M1-001",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "daikin-ecoquiet12-m1",
+    "name": "Daikin EcoQuiet 12 M1",
+    "brand": "Daikin",
+    "model": "ECOQUIET12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-001",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 18700000,
+    "list_price": 20900000,
+    "discount_percent": 11,
+    "stock_status": "available",
+    "rating": 4.8,
+    "sold_count": 1320,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "6.10",
+      "Độ ồn thấp nhất": "18 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "6.10",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "920 W",
+            "Điện năng tiêu thụ ước tính": "650 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "18 dB",
+            "Độ ồn dàn lạnh cao nhất": "39 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "12 tháng",
+            "Chi phí lắp đặt tham khảo": "1.200.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 18.700.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 6.10.",
+        "Độ ồn thấp nhất 18 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Cân bằng tiết kiệm điện và vận hành êm",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Phù hợp người muốn hiệu suất điện cao nhưng vẫn cần không gian ngủ yên tĩnh."
+        }
+      ],
+      "tradeoffs": [
+        "Giá cao hơn nhóm phổ thông.",
+        "Bảo hành tiêu chuẩn 12 tháng."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 6.1; độ ồn thấp nhất: 18 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-001",
+      "external_key": "daikin-ecoquiet12-m1",
+      "name": "Daikin EcoQuiet 12 M1",
+      "brand": "Daikin",
+      "model": "ECOQUIET12-M1",
+      "sale_price_vnd": 18700000,
+      "list_price_vnd": 20900000,
+      "discount_percent": 11,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 6.1,
+      "energy_label_stars": 5,
+      "rated_power_w": 920,
+      "annual_energy_kwh": 650,
+      "indoor_noise_min_db": 18,
+      "indoor_noise_max_db": 39,
+      "warranty_months": 12,
+      "installation_cost_vnd": 1200000,
+      "promotion_text": "Giảm 11% trong dữ liệu tổng hợp",
+      "rating": 4.8,
+      "sold_count": 1320,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-001",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-002",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "panasonic-ecomax12-m1",
+    "name": "Panasonic EcoMax 12 M1",
+    "brand": "Panasonic",
+    "model": "ECOMAX12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-002",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 19800000,
+    "list_price": 22500000,
+    "discount_percent": 12,
+    "stock_status": "available",
+    "rating": 4.9,
+    "sold_count": 980,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "6.40",
+      "Độ ồn thấp nhất": "19 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "6.40",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "880 W",
+            "Điện năng tiêu thụ ước tính": "620 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "19 dB",
+            "Độ ồn dàn lạnh cao nhất": "40 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "12 tháng",
+            "Chi phí lắp đặt tham khảo": "1.250.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 19.800.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 6.40.",
+        "Độ ồn thấp nhất 19 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Hiệu suất năng lượng nổi bật",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "CSPF cao nhất trong bộ thử nghiệm, phù hợp người đặt tiết kiệm điện lên hàng đầu."
+        }
+      ],
+      "tradeoffs": [
+        "Gần chạm ngân sách 20 triệu.",
+        "Không phải mẫu có độ ồn thấp nhất."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 6.4; độ ồn thấp nhất: 19 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-002",
+      "external_key": "panasonic-ecomax12-m1",
+      "name": "Panasonic EcoMax 12 M1",
+      "brand": "Panasonic",
+      "model": "ECOMAX12-M1",
+      "sale_price_vnd": 19800000,
+      "list_price_vnd": 22500000,
+      "discount_percent": 12,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 6.4,
+      "energy_label_stars": 5,
+      "rated_power_w": 880,
+      "annual_energy_kwh": 620,
+      "indoor_noise_min_db": 19,
+      "indoor_noise_max_db": 40,
+      "warranty_months": 12,
+      "installation_cost_vnd": 1250000,
+      "promotion_text": "Giảm 12% trong dữ liệu tổng hợp",
+      "rating": 4.9,
+      "sold_count": 980,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-002",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-003",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "lg-dualbal12-m1",
+    "name": "LG DualCool Balance 12 M1",
+    "brand": "LG",
+    "model": "DUALBAL12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-003",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 14500000,
+    "list_price": 16900000,
+    "discount_percent": 14,
+    "stock_status": "available",
+    "rating": 4.7,
+    "sold_count": 2410,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "5.60",
+      "Độ ồn thấp nhất": "20 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "5.60",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "990 W",
+            "Điện năng tiêu thụ ước tính": "710 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "20 dB",
+            "Độ ồn dàn lạnh cao nhất": "41 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "24 tháng",
+            "Chi phí lắp đặt tham khảo": "1.100.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 14.500.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 5.60.",
+        "Độ ồn thấp nhất 20 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Giá trị sử dụng cân bằng",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Mức giá vừa phải nhưng vẫn có inverter, CSPF tốt và bảo hành 24 tháng."
+        }
+      ],
+      "tradeoffs": [
+        "Không tiết kiệm điện bằng nhóm cao cấp.",
+        "Độ ồn cao hơn các mẫu chuyên êm."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 5.6; độ ồn thấp nhất: 20 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-003",
+      "external_key": "lg-dualbal12-m1",
+      "name": "LG DualCool Balance 12 M1",
+      "brand": "LG",
+      "model": "DUALBAL12-M1",
+      "sale_price_vnd": 14500000,
+      "list_price_vnd": 16900000,
+      "discount_percent": 14,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 5.6,
+      "energy_label_stars": 5,
+      "rated_power_w": 990,
+      "annual_energy_kwh": 710,
+      "indoor_noise_min_db": 20,
+      "indoor_noise_max_db": 41,
+      "warranty_months": 24,
+      "installation_cost_vnd": 1100000,
+      "promotion_text": "Giảm 14% trong dữ liệu tổng hợp",
+      "rating": 4.7,
+      "sold_count": 2410,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-003",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-004",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "mitsubishi-electric-silentpro12-m1",
+    "name": "Mitsubishi Electric SilentPro 12 M1",
+    "brand": "Mitsubishi Electric",
+    "model": "SILENTPRO12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-004",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 18400000,
+    "list_price": 20400000,
+    "discount_percent": 10,
+    "stock_status": "available",
+    "rating": 4.9,
+    "sold_count": 760,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "5.90",
+      "Độ ồn thấp nhất": "17 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "5.90",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "940 W",
+            "Điện năng tiêu thụ ước tính": "665 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "17 dB",
+            "Độ ồn dàn lạnh cao nhất": "38 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "24 tháng",
+            "Chi phí lắp đặt tham khảo": "1.250.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 18.400.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 5.90.",
+        "Độ ồn thấp nhất 17 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Vận hành rất êm cho phòng ngủ",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Độ ồn thấp nhất trong bộ thử nghiệm, phù hợp người nhạy tiếng ồn."
+        }
+      ],
+      "tradeoffs": [
+        "Giá thuộc nhóm cao.",
+        "CSPF thấp hơn mẫu dẫn đầu về điện năng."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 5.9; độ ồn thấp nhất: 17 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-004",
+      "external_key": "mitsubishi-electric-silentpro12-m1",
+      "name": "Mitsubishi Electric SilentPro 12 M1",
+      "brand": "Mitsubishi Electric",
+      "model": "SILENTPRO12-M1",
+      "sale_price_vnd": 18400000,
+      "list_price_vnd": 20400000,
+      "discount_percent": 10,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 5.9,
+      "energy_label_stars": 5,
+      "rated_power_w": 940,
+      "annual_energy_kwh": 665,
+      "indoor_noise_min_db": 17,
+      "indoor_noise_max_db": 38,
+      "warranty_months": 24,
+      "installation_cost_vnd": 1250000,
+      "promotion_text": "Giảm 10% trong dữ liệu tổng hợp",
+      "rating": 4.9,
+      "sold_count": 760,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-004",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-005",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "toshiba-ecosmart12-m1",
+    "name": "Toshiba EcoSmart 12 M1",
+    "brand": "Toshiba",
+    "model": "ECOSMART12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-005",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 13900000,
+    "list_price": 15900000,
+    "discount_percent": 13,
+    "stock_status": "available",
+    "rating": 4.6,
+    "sold_count": 1860,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "5.30",
+      "Độ ồn thấp nhất": "19 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "5.30",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "1020 W",
+            "Điện năng tiêu thụ ước tính": "735 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "19 dB",
+            "Độ ồn dàn lạnh cao nhất": "41 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "24 tháng",
+            "Chi phí lắp đặt tham khảo": "1.050.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 13.900.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 5.30.",
+        "Độ ồn thấp nhất 19 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Êm và hợp ngân sách trung bình",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Giữ được độ ồn thấp với mức giá dưới 14 triệu."
+        }
+      ],
+      "tradeoffs": [
+        "CSPF ở mức khá, không dẫn đầu.",
+        "Ít tính năng cao cấp trong fixture."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 5.3; độ ồn thấp nhất: 19 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-005",
+      "external_key": "toshiba-ecosmart12-m1",
+      "name": "Toshiba EcoSmart 12 M1",
+      "brand": "Toshiba",
+      "model": "ECOSMART12-M1",
+      "sale_price_vnd": 13900000,
+      "list_price_vnd": 15900000,
+      "discount_percent": 13,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 5.3,
+      "energy_label_stars": 5,
+      "rated_power_w": 1020,
+      "annual_energy_kwh": 735,
+      "indoor_noise_min_db": 19,
+      "indoor_noise_max_db": 41,
+      "warranty_months": 24,
+      "installation_cost_vnd": 1050000,
+      "promotion_text": "Giảm 13% trong dữ liệu tổng hợp",
+      "rating": 4.6,
+      "sold_count": 1860,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-005",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-006",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "casper-valuecool12-m1",
+    "name": "Casper ValueCool 12 M1",
+    "brand": "Casper",
+    "model": "VALUECOOL12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-006",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 10900000,
+    "list_price": 12900000,
+    "discount_percent": 16,
+    "stock_status": "available",
+    "rating": 4.5,
+    "sold_count": 3180,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "4.70",
+      "Độ ồn thấp nhất": "22 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "4.70",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "1120 W",
+            "Điện năng tiêu thụ ước tính": "810 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "22 dB",
+            "Độ ồn dàn lạnh cao nhất": "44 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "36 tháng",
+            "Chi phí lắp đặt tham khảo": "950.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 10.900.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 4.70.",
+        "Độ ồn thấp nhất 22 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Giá thấp nhất vẫn đủ điều kiện cơ bản",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Phù hợp khi chi phí mua ban đầu quan trọng hơn hiệu suất và độ êm tối đa."
+        }
+      ],
+      "tradeoffs": [
+        "CSPF thấp nhất trong nhóm 1.5 HP.",
+        "Độ ồn cao hơn các lựa chọn khác."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 4.7; độ ồn thấp nhất: 22 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-006",
+      "external_key": "casper-valuecool12-m1",
+      "name": "Casper ValueCool 12 M1",
+      "brand": "Casper",
+      "model": "VALUECOOL12-M1",
+      "sale_price_vnd": 10900000,
+      "list_price_vnd": 12900000,
+      "discount_percent": 16,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 4.7,
+      "energy_label_stars": 5,
+      "rated_power_w": 1120,
+      "annual_energy_kwh": 810,
+      "indoor_noise_min_db": 22,
+      "indoor_noise_max_db": 44,
+      "warranty_months": 36,
+      "installation_cost_vnd": 950000,
+      "promotion_text": "Giảm 16% trong dữ liệu tổng hợp",
+      "rating": 4.5,
+      "sold_count": 3180,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-006",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-007",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "aqua-balance12-m1",
+    "name": "Aqua BalanceCool 12 M1",
+    "brand": "Aqua",
+    "model": "BALANCE12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-007",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 12200000,
+    "list_price": 14200000,
+    "discount_percent": 14,
+    "stock_status": "available",
+    "rating": 4.6,
+    "sold_count": 2040,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "5.10",
+      "Độ ồn thấp nhất": "20 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "5.10",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "1050 W",
+            "Điện năng tiêu thụ ước tính": "760 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "20 dB",
+            "Độ ồn dàn lạnh cao nhất": "42 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "24 tháng",
+            "Chi phí lắp đặt tham khảo": "1.000.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 12.200.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 5.10.",
+        "Độ ồn thấp nhất 20 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Giá tốt với thông số cân bằng",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Phù hợp người cần mẫu dễ tiếp cận, có inverter và không hy sinh quá nhiều độ êm."
+        }
+      ],
+      "tradeoffs": [
+        "Hiệu suất điện không bằng nhóm cao cấp.",
+        "Không phải mẫu êm nhất."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 5.1; độ ồn thấp nhất: 20 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-007",
+      "external_key": "aqua-balance12-m1",
+      "name": "Aqua BalanceCool 12 M1",
+      "brand": "Aqua",
+      "model": "BALANCE12-M1",
+      "sale_price_vnd": 12200000,
+      "list_price_vnd": 14200000,
+      "discount_percent": 14,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 5.1,
+      "energy_label_stars": 5,
+      "rated_power_w": 1050,
+      "annual_energy_kwh": 760,
+      "indoor_noise_min_db": 20,
+      "indoor_noise_max_db": 42,
+      "warranty_months": 24,
+      "installation_cost_vnd": 1000000,
+      "promotion_text": "Giảm 14% trong dữ liệu tổng hợp",
+      "rating": 4.6,
+      "sold_count": 2040,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-007",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-008",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "samsung-windfreelite12-m1",
+    "name": "Samsung WindFree Lite 12 M1",
+    "brand": "Samsung",
+    "model": "WINDFREELITE12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-008",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 16200000,
+    "list_price": 18900000,
+    "discount_percent": 14,
+    "stock_status": "available",
+    "rating": 4.7,
+    "sold_count": 1480,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "5.40",
+      "Độ ồn thấp nhất": null
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "5.40",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "1000 W",
+            "Điện năng tiêu thụ ước tính": "720 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": null,
+            "Độ ồn dàn lạnh cao nhất": null,
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "24 tháng",
+            "Chi phí lắp đặt tham khảo": "1.150.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 16.200.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 5.40.",
+        "Chưa có dữ liệu độ ồn."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Luồng gió dịu và hiệu suất khá",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Có thể phù hợp người không thích luồng gió thổi trực tiếp."
+        }
+      ],
+      "tradeoffs": [
+        "Fixture cố ý thiếu dữ liệu độ ồn.",
+        "Không được xếp hạng cho ưu tiên chạy êm nếu thiếu bằng chứng."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 5.4; độ ồn thấp nhất: chưa có dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-008",
+      "external_key": "samsung-windfreelite12-m1",
+      "name": "Samsung WindFree Lite 12 M1",
+      "brand": "Samsung",
+      "model": "WINDFREELITE12-M1",
+      "sale_price_vnd": 16200000,
+      "list_price_vnd": 18900000,
+      "discount_percent": 14,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 5.4,
+      "energy_label_stars": 5,
+      "rated_power_w": 1000,
+      "annual_energy_kwh": 720,
+      "indoor_noise_min_db": null,
+      "indoor_noise_max_db": null,
+      "warranty_months": 24,
+      "installation_cost_vnd": 1150000,
+      "promotion_text": "Giảm 14% trong dữ liệu tổng hợp",
+      "rating": 4.7,
+      "sold_count": 1480,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-008",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-009",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "sharp-quietair12-m1",
+    "name": "Sharp QuietAir 12 M1",
+    "brand": "Sharp",
+    "model": "QUIETAIR12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-009",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 15200000,
+    "list_price": 17500000,
+    "discount_percent": 13,
+    "stock_status": "available",
+    "rating": 4.7,
+    "sold_count": 690,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": null,
+      "Độ ồn thấp nhất": "18 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": null,
+            "Nhãn năng lượng": null,
+            "Công suất điện định mức": "970 W",
+            "Điện năng tiêu thụ ước tính": null
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "18 dB",
+            "Độ ồn dàn lạnh cao nhất": "39 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "12 tháng",
+            "Chi phí lắp đặt tham khảo": "1.100.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 15.200.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "Chưa có dữ liệu CSPF.",
+        "Độ ồn thấp nhất 18 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Vận hành êm nhưng thiếu dữ liệu CSPF",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Phù hợp để kiểm thử cách hệ thống xử lý bằng chứng năng lượng bị thiếu."
+        }
+      ],
+      "tradeoffs": [
+        "Không được tuyên bố tiết kiệm điện vượt trội khi thiếu CSPF.",
+        "Bảo hành 12 tháng."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: chưa có; độ ồn thấp nhất: 18 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-009",
+      "external_key": "sharp-quietair12-m1",
+      "name": "Sharp QuietAir 12 M1",
+      "brand": "Sharp",
+      "model": "QUIETAIR12-M1",
+      "sale_price_vnd": 15200000,
+      "list_price_vnd": 17500000,
+      "discount_percent": 13,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": null,
+      "energy_label_stars": null,
+      "rated_power_w": 970,
+      "annual_energy_kwh": null,
+      "indoor_noise_min_db": 18,
+      "indoor_noise_max_db": 39,
+      "warranty_months": 12,
+      "installation_cost_vnd": 1100000,
+      "promotion_text": "Giảm 13% trong dữ liệu tổng hợp",
+      "rating": 4.7,
+      "sold_count": 690,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-009",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-010",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "daikin-compact09-m1",
+    "name": "Daikin Compact 09 M1",
+    "brand": "Daikin",
+    "model": "COMPACT09-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-010",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 12800000,
+    "list_price": 14500000,
+    "discount_percent": 12,
+    "stock_status": "available",
+    "rating": 4.7,
+    "sold_count": 1700,
+    "specs": {
+      "Công suất": "1 HP - 9.000 BTU",
+      "Diện tích phù hợp": "10 - 15 m²",
+      "Inverter": "Có",
+      "CSPF": "5.80",
+      "Độ ồn thấp nhất": "19 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "9.000 BTU",
+            "Công suất HP": 1.0,
+            "Diện tích phù hợp": "10 - 15 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "5.80",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "760 W",
+            "Điện năng tiêu thụ ước tính": "510 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "19 dB",
+            "Độ ồn dàn lạnh cao nhất": "38 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "12 tháng",
+            "Chi phí lắp đặt tham khảo": "950.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1 HP cho phòng khoảng 10–15 m². giá thử nghiệm 12.800.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 10–15 m².",
+        "Có công nghệ inverter.",
+        "CSPF 5.80.",
+        "Độ ồn thấp nhất 19 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Hiệu quả cho phòng nhỏ",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Phù hợp phòng khoảng 10–15 m², không dùng làm lựa chọn chuẩn cho phòng 18 m²."
+        }
+      ],
+      "tradeoffs": [
+        "Không đủ công suất cho phòng 18 m² theo fixture.",
+        "Bảo hành 12 tháng."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 9.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 10–15 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 5.8; độ ồn thấp nhất: 19 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-010",
+      "external_key": "daikin-compact09-m1",
+      "name": "Daikin Compact 09 M1",
+      "brand": "Daikin",
+      "model": "COMPACT09-M1",
+      "sale_price_vnd": 12800000,
+      "list_price_vnd": 14500000,
+      "discount_percent": 12,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 1.0,
+      "cooling_capacity_btu": 9000,
+      "recommended_room_area_min_m2": 10,
+      "recommended_room_area_max_m2": 15,
+      "inverter": true,
+      "cspf": 5.8,
+      "energy_label_stars": 5,
+      "rated_power_w": 760,
+      "annual_energy_kwh": 510,
+      "indoor_noise_min_db": 19,
+      "indoor_noise_max_db": 38,
+      "warranty_months": 12,
+      "installation_cost_vnd": 950000,
+      "promotion_text": "Giảm 12% trong dữ liệu tổng hợp",
+      "rating": 4.7,
+      "sold_count": 1700,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-010",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-011",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "lg-powercool18-m1",
+    "name": "LG PowerCool 18 M1",
+    "brand": "LG",
+    "model": "POWERCOOL18-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-011",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 19400000,
+    "list_price": 22300000,
+    "discount_percent": 13,
+    "stock_status": "available",
+    "rating": 4.8,
+    "sold_count": 910,
+    "specs": {
+      "Công suất": "2 HP - 18.000 BTU",
+      "Diện tích phù hợp": "20 - 30 m²",
+      "Inverter": "Có",
+      "CSPF": "5.40",
+      "Độ ồn thấp nhất": "21 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "18.000 BTU",
+            "Công suất HP": 2.0,
+            "Diện tích phù hợp": "20 - 30 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "5.40",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "1480 W",
+            "Điện năng tiêu thụ ước tính": "1020 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "21 dB",
+            "Độ ồn dàn lạnh cao nhất": "45 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "24 tháng",
+            "Chi phí lắp đặt tham khảo": "1.500.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 2 HP cho phòng khoảng 20–30 m². giá thử nghiệm 19.400.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 20–30 m².",
+        "Có công nghệ inverter.",
+        "CSPF 5.40.",
+        "Độ ồn thấp nhất 21 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Công suất phù hợp phòng lớn",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Phù hợp phòng khoảng 20–30 m² mà vẫn giữ mức giá dưới 20 triệu."
+        }
+      ],
+      "tradeoffs": [
+        "Không phù hợp phòng 18 m² theo fixture.",
+        "Độ ồn cao hơn nhóm 1.5 HP."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 18.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 20–30 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 5.4; độ ồn thấp nhất: 21 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-011",
+      "external_key": "lg-powercool18-m1",
+      "name": "LG PowerCool 18 M1",
+      "brand": "LG",
+      "model": "POWERCOOL18-M1",
+      "sale_price_vnd": 19400000,
+      "list_price_vnd": 22300000,
+      "discount_percent": 13,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 2.0,
+      "cooling_capacity_btu": 18000,
+      "recommended_room_area_min_m2": 20,
+      "recommended_room_area_max_m2": 30,
+      "inverter": true,
+      "cspf": 5.4,
+      "energy_label_stars": 5,
+      "rated_power_w": 1480,
+      "annual_energy_kwh": 1020,
+      "indoor_noise_min_db": 21,
+      "indoor_noise_max_db": 45,
+      "warranty_months": 24,
+      "installation_cost_vnd": 1500000,
+      "promotion_text": "Giảm 13% trong dữ liệu tổng hợp",
+      "rating": 4.8,
+      "sold_count": 910,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-011",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-012",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "panasonic-ecomax12-oos-m1",
+    "name": "Panasonic EcoMax 12 M1 — Hết hàng",
+    "brand": "Panasonic",
+    "model": "ECOMAX12-OOS-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-012",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 17500000,
+    "list_price": 20000000,
+    "discount_percent": 12,
+    "stock_status": "unavailable",
+    "rating": 4.8,
+    "sold_count": 1120,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "6.20",
+      "Độ ồn thấp nhất": "18 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "6.20",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "900 W",
+            "Điện năng tiêu thụ ước tính": "630 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "18 dB",
+            "Độ ồn dàn lạnh cao nhất": "39 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "12 tháng",
+            "Chi phí lắp đặt tham khảo": "1.200.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 17.500.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 6.20.",
+        "Độ ồn thấp nhất 18 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Thông số mạnh nhưng không có hàng",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Dùng để kiểm thử hệ thống không giới thiệu sản phẩm hết hàng như lựa chọn bình thường."
+        }
+      ],
+      "tradeoffs": [
+        "Trạng thái hết hàng.",
+        "Không được lọt vào tập đủ điều kiện theo chính sách stock của fixture."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 6.2; độ ồn thấp nhất: 18 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-012",
+      "external_key": "panasonic-ecomax12-oos-m1",
+      "name": "Panasonic EcoMax 12 M1 — Hết hàng",
+      "brand": "Panasonic",
+      "model": "ECOMAX12-OOS-M1",
+      "sale_price_vnd": 17500000,
+      "list_price_vnd": 20000000,
+      "discount_percent": 12,
+      "region_code": "HCM",
+      "stock_status": "unavailable",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 6.2,
+      "energy_label_stars": 5,
+      "rated_power_w": 900,
+      "annual_energy_kwh": 630,
+      "indoor_noise_min_db": 18,
+      "indoor_noise_max_db": 39,
+      "warranty_months": 12,
+      "installation_cost_vnd": 1200000,
+      "promotion_text": "Giảm 12% trong dữ liệu tổng hợp",
+      "rating": 4.8,
+      "sold_count": 1120,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-012",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-013",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "casper-powervalue18-m1",
+    "name": "Casper PowerValue 18 M1",
+    "brand": "Casper",
+    "model": "POWERVALUE18-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-013",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 16900000,
+    "list_price": 19300000,
+    "discount_percent": 12,
+    "stock_status": "available",
+    "rating": 4.5,
+    "sold_count": 1560,
+    "specs": {
+      "Công suất": "2 HP - 18.000 BTU",
+      "Diện tích phù hợp": "20 - 30 m²",
+      "Inverter": "Có",
+      "CSPF": "4.90",
+      "Độ ồn thấp nhất": "23 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "18.000 BTU",
+            "Công suất HP": 2.0,
+            "Diện tích phù hợp": "20 - 30 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "4.90",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "1620 W",
+            "Điện năng tiêu thụ ước tính": "1130 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "23 dB",
+            "Độ ồn dàn lạnh cao nhất": "47 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "36 tháng",
+            "Chi phí lắp đặt tham khảo": "1.400.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 2 HP cho phòng khoảng 20–30 m². giá thử nghiệm 16.900.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 20–30 m².",
+        "Có công nghệ inverter.",
+        "CSPF 4.90.",
+        "Độ ồn thấp nhất 23 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Chi phí thấp cho phòng lớn",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Là lựa chọn giá thấp hơn khi cần công suất 2 HP."
+        }
+      ],
+      "tradeoffs": [
+        "CSPF và độ êm thấp hơn LG PowerCool 18.",
+        "Tiêu thụ điện cao hơn trong fixture."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 18.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 20–30 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 4.9; độ ồn thấp nhất: 23 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-013",
+      "external_key": "casper-powervalue18-m1",
+      "name": "Casper PowerValue 18 M1",
+      "brand": "Casper",
+      "model": "POWERVALUE18-M1",
+      "sale_price_vnd": 16900000,
+      "list_price_vnd": 19300000,
+      "discount_percent": 12,
+      "region_code": "HCM",
+      "stock_status": "available",
+      "horsepower_hp": 2.0,
+      "cooling_capacity_btu": 18000,
+      "recommended_room_area_min_m2": 20,
+      "recommended_room_area_max_m2": 30,
+      "inverter": true,
+      "cspf": 4.9,
+      "energy_label_stars": 5,
+      "rated_power_w": 1620,
+      "annual_energy_kwh": 1130,
+      "indoor_noise_min_db": 23,
+      "indoor_noise_max_db": 47,
+      "warranty_months": 36,
+      "installation_cost_vnd": 1400000,
+      "promotion_text": "Giảm 12% trong dữ liệu tổng hợp",
+      "rating": 4.5,
+      "sold_count": 1560,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-013",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  },
+  {
+    "product_id": "AC-M1-014",
+    "source": "synthetic_dienmayxanh_fixture",
+    "source_snapshot": "synthetic-aircon-m1-2026-07-17",
+    "is_synthetic": true,
+    "category": "air_conditioner",
+    "category_slug": "may-lanh",
+    "external_key": "midea-premiumair12-m1",
+    "name": "Midea PremiumAir 12 M1",
+    "brand": "Midea",
+    "model": "PREMIUMAIR12-M1",
+    "url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-014",
+    "region_code": "HCM",
+    "region_name": "Thành phố Hồ Chí Minh",
+    "sale_price": 21500000,
+    "list_price": 24000000,
+    "discount_percent": 10,
+    "stock_status": "unknown",
+    "rating": 4.7,
+    "sold_count": 420,
+    "specs": {
+      "Công suất": "1.5 HP - 12.000 BTU",
+      "Diện tích phù hợp": "15 - 20 m²",
+      "Inverter": "Có",
+      "CSPF": "6.00",
+      "Độ ồn thấp nhất": "18 dB"
+    },
+    "technical_specifications": {
+      "sections": [
+        {
+          "name": "Tổng quan và công suất",
+          "attributes": {
+            "Loại máy": "Máy lạnh treo tường 1 chiều",
+            "Công suất làm lạnh": "12.000 BTU",
+            "Công suất HP": 1.5,
+            "Diện tích phù hợp": "15 - 20 m²",
+            "Môi chất lạnh": "R32"
+          }
+        },
+        {
+          "name": "Hiệu suất năng lượng",
+          "attributes": {
+            "Công nghệ Inverter": "Có",
+            "CSPF": "6.00",
+            "Nhãn năng lượng": "5 sao",
+            "Công suất điện định mức": "930 W",
+            "Điện năng tiêu thụ ước tính": "660 kWh/năm"
+          }
+        },
+        {
+          "name": "Độ ồn và vận hành",
+          "attributes": {
+            "Độ ồn dàn lạnh thấp nhất": "18 dB",
+            "Độ ồn dàn lạnh cao nhất": "39 dB",
+            "Chế độ vận hành": [
+              "Eco",
+              "Sleep",
+              "Turbo",
+              "Dry"
+            ]
+          }
+        },
+        {
+          "name": "Bảo hành và lắp đặt",
+          "attributes": {
+            "Bảo hành": "24 tháng",
+            "Chi phí lắp đặt tham khảo": "1.300.000 đ"
+          }
+        }
+      ]
+    },
+    "product_information": {
+      "summary": "Máy lạnh 1.5 HP cho phòng khoảng 15–20 m². giá thử nghiệm 21.500.000 đồng. dùng cho bộ dữ liệu MVP tổng hợp.",
+      "highlights": [
+        "Phù hợp phòng 15–20 m².",
+        "Có công nghệ inverter.",
+        "CSPF 6.00.",
+        "Độ ồn thấp nhất 18 dB."
+      ],
+      "main_selling_points": [
+        {
+          "title": "Thông số cao nhưng vượt ngân sách mẫu",
+          "evidence_paths": [
+            "$.technical_specifications.sections[0]",
+            "$.technical_specifications.sections[1]",
+            "$.technical_specifications.sections[2]",
+            "$.sale_price",
+            "$.stock_status"
+          ],
+          "customer_benefit": "Dùng để kiểm thử loại trừ theo ngân sách và trạng thái tồn kho chưa rõ."
+        }
+      ],
+      "tradeoffs": [
+        "Vượt ngân sách 20 triệu.",
+        "Tồn kho chưa xác định."
+      ],
+      "sections": [
+        {
+          "title": "Khả năng làm lạnh",
+          "content": "Công suất 12.000 BTU được dùng làm dữ liệu kiểm thử cho phòng 15–20 m²."
+        },
+        {
+          "title": "Năng lượng và độ ồn",
+          "content": "CSPF: 6.0; độ ồn thấp nhất: 18 dB."
+        }
+      ]
+    },
+    "normalized_fixture": {
+      "product_id": "AC-M1-014",
+      "external_key": "midea-premiumair12-m1",
+      "name": "Midea PremiumAir 12 M1",
+      "brand": "Midea",
+      "model": "PREMIUMAIR12-M1",
+      "sale_price_vnd": 21500000,
+      "list_price_vnd": 24000000,
+      "discount_percent": 10,
+      "region_code": "HCM",
+      "stock_status": "unknown",
+      "horsepower_hp": 1.5,
+      "cooling_capacity_btu": 12000,
+      "recommended_room_area_min_m2": 15,
+      "recommended_room_area_max_m2": 20,
+      "inverter": true,
+      "cspf": 6.0,
+      "energy_label_stars": 5,
+      "rated_power_w": 930,
+      "annual_energy_kwh": 660,
+      "indoor_noise_min_db": 18,
+      "indoor_noise_max_db": 39,
+      "warranty_months": 24,
+      "installation_cost_vnd": 1300000,
+      "promotion_text": "Giảm 10% trong dữ liệu tổng hợp",
+      "rating": 4.7,
+      "sold_count": 420,
+      "source_url": "https://example.invalid/dien-may-xanh/may-lanh/ac-m1-014",
+      "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+    }
+  }
+]
