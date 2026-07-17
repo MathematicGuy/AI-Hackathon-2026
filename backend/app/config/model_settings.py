@@ -5,7 +5,15 @@ from enum import Enum
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, SecretStr, StringConstraints
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    HttpUrl,
+    SecretStr,
+    StringConstraints,
+    field_validator,
+)
 from pydantic_core import ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -77,6 +85,13 @@ class _RawModelSettings(BaseSettings):
     openrouter_base_url: HttpUrl = Field(validation_alias="OPENROUTER_BASE_URL")
     mistral_api_key: SecretStr = Field(min_length=1, validation_alias="MISTRAL_API_KEY")
     mistral_base_url: HttpUrl = Field(validation_alias="MISTRAL_BASE_URL")
+
+    @field_validator("openrouter_api_key", "mistral_api_key", mode="before")
+    @classmethod
+    def reject_whitespace_only_api_keys(cls, value: object) -> object:
+        if isinstance(value, str) and value.isspace():
+            raise ValueError("API credential must not be blank")
+        return value
 
 
 _FIELD_TO_ENVIRONMENT = {

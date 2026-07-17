@@ -152,6 +152,29 @@ def test_invalid_values_are_sanitized(
     assert invalid_value not in message
 
 
+@pytest.mark.parametrize("credential_name", ("OPENROUTER_API_KEY", "MISTRAL_API_KEY"))
+@pytest.mark.parametrize("source", ("dotenv", "process"))
+def test_whitespace_only_credentials_are_rejected_safely(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    credential_name: str,
+    source: str,
+) -> None:
+    values = _values()
+    raw_value = " \t "
+    if source == "dotenv":
+        values[credential_name] = f'"{raw_value}"'
+    else:
+        monkeypatch.setenv(credential_name, raw_value)
+
+    with pytest.raises(ModelConfigurationError) as caught:
+        load_model_settings(_write_dotenv(tmp_path / "whitespace.env", values))
+
+    message = str(caught.value)
+    assert credential_name in message
+    assert raw_value not in message
+
+
 def test_secrets_are_redacted_from_public_and_raw_representations(tmp_path: Path) -> None:
     values = _values()
     env_file = _write_dotenv(tmp_path / "models.env", values)
