@@ -1,3 +1,68 @@
+# Environment
+.env
+
+# Agent Memory
+.agents/memory/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.jsonl
+# OS
+.DS_Store
+chrome_profile
+browser_recordings
+.design-sync/
+.tokensave
+.playwright-mcp
+.ruff_cache
+.railway-config-pull-31116
+.harness
+
+# AI logs — tracked structure, ignored content
+# .ai-log/*.jsonl
+# *.jsonl
+# **/.ai-log/
+
+# App Data
+/data/
+*.db
+
+# Node / Frontend
+node_modules/
+dist/
+
+
+# Stray test/run output
+/test_out.txt
+/test_output.txt
+/chrome_launch.log
+
+# Large local folders and screenshots
+.claude/
+chrome_profile/
+_git/
+.superpowers/
+.worktrees/
+browser_recordings/
+logs/
+tmp_pytest_manual/
+tmp_pytest_probe/
+pytest-base/
+pytest-temp-root/
+
+# Keep product evidence tracked (screenshots, diagrams, deck assets, eval proof).
+# Ignore only throwaway screenshot scratch dirs, never the evidence folders below:
+#   docs/images/**  demo-pitch-deck/presentation/assets/**  eval/evidence/**  are TRACKED on purpose.
+tmp-screenshots/
+
 # Harness durable layer — each project instance generates its own data.
 harness.db
 harness.db-wal
@@ -17,3 +82,10 @@ scripts/bin/harness-cli.exe
 .harness/*
 !.harness/changesets/
 !.harness/changesets/*.changeset.jsonl
+
+
+# codebase-memory-mcp graph database tracking
+.codebase-memory/*
+!.codebase-memory/graph.db.zst
+
+# Harness durable layer
