@@ -1,5 +1,9 @@
 # AI Coding Session Logging Implementation Plan
 
+> **Legacy provenance artifact:** Retained for historical context. It is not
+> current authority. Follow `docs/README.md` and do not add new files under
+> `docs/superpowers/`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add repository-native, per-member structured AI coding session logs with mandatory discovery instructions for Codex, Claude Code, Cursor, GitHub Copilot, and Gemini CLI.

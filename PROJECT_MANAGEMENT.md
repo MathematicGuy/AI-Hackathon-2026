@@ -3,9 +3,10 @@
 > **Last updated:** 2026-07-17
 > **Current sprint deadline:** 2026-07-17 13:47 UTC (3 hours from task start)
 > **Epic:** Release Milestone 1 — Máy lạnh decision-support advisor
-> **Architecture source of truth:** `WORKFLOW-MVP(4).md`
-> **Execution source:** `resources/AI_ADVISOR_M1_PHASE_MILESTONE_SPECS.md`
-> **Progress source:** `resources/AI_ADVISOR_M1_PROGRESS.md`
+> **Product requirements:** `docs/product/requirements/air-conditioner-advisor-m1-prd.md`
+> **Product architecture:** `docs/product/architecture/air-conditioner-advisor-m1.md`
+> **Execution source:** registered story packets under `docs/stories/`
+> **Progress source:** the active Harness matrix and `docs/team/now/`
 
 ## Status legend
 

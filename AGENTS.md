@@ -1,5 +1,80 @@
 # AGENTS.md
 
+<!-- AI-LOGGING:BEGIN -->
+## Mandatory AI Session Logging
+
+Before planning, editing, running commands, or invoking tools other than
+reading repository instructions:
+
+1. Read `ai-logs/README.md`.
+2. Resolve the current team member exactly as required by that policy. A valid
+   `TEAM_MEMBER` value may identify the member; otherwise ask the canonical
+   identity question.
+3. Read that member's `BOT_INSTRUCTIONS.md`.
+4. Create the session log before substantive work and finalize it before
+   ending the session.
+
+Never infer identity from a tracker alias, Git configuration, operating-system
+username, earlier session, branch name, or task content.
+<!-- AI-LOGGING:END -->
+
+<!-- REPOSITORY-GOVERNANCE:BEGIN -->
+## Mandatory Repository Read Gate
+
+After logging preflight and before selecting implementation context:
+
+1. Classify the request as read-only or change work.
+2. Read `docs/README.md`, the canonical documentation authority registry.
+3. Read `docs/team/now/README.md`.
+4. For product work, confirm that the current identity is explicitly mapped to
+   exactly one tracker, then read that tracker.
+5. Stop before implementation if identity, tracker ownership, story ID,
+   dependencies, branch/worktree, Harness matrix state, or file ownership is
+   missing, duplicated, blocked, or inconsistent.
+
+`USER1` and `USER2` are aliases, not identities. They remain unassigned until
+a human updates the tracker index explicitly. Do not infer or claim either
+alias.
+
+Repository-governance work may update the read gate and tracker index through
+its own registered story without claiming a product tracker. It may not
+implement an unassigned product workstream.
+<!-- REPOSITORY-GOVERNANCE:END -->
+
+<!-- HARNESS:BEGIN -->
+## Harness
+
+Apply this gate only after the logging and repository read gates above.
+
+- For a read-only answer, explanation, review, diagnosis, plan, or status
+  request, inspect only the material needed to respond. Do not bootstrap,
+  initialize or migrate a database, record intake, or record a trace. Creating
+  and finalizing the mandatory AI session log is the only permitted repository
+  write.
+- For an explicit change, build, fix, or repository-artifact request, first run
+  `scripts/bootstrap-harness.sh` on macOS/Linux or
+  `.\scripts\bootstrap-harness.ps1` on Windows. Then use
+  `docs/FEATURE_INTAKE.md` to classify and record the request, query
+  `scripts/bin/harness-cli query matrix --active --summary` on macOS/Linux or
+  `.\scripts\bin\harness-cli.exe query matrix --active --summary` on Windows,
+  and retrieve only the lane- and task-specific context described in
+  `docs/CONTEXT_RULES.md`.
+<!-- HARNESS:END -->
+
+<!-- BOUNDED-CONTEXT:BEGIN -->
+## Mandatory Bounded Implementation Context
+
+After the Harness gate for a change, read context in this order:
+
+1. Applicable bounded-context rules.
+2. The accepted product contract and any Accepted ADR that explicitly
+   supersedes part of it.
+3. The applicable PRD.
+4. Product architecture.
+5. The registered story packet and implementation plan.
+6. Only then, the relevant code.
+<!-- BOUNDED-CONTEXT:END -->
+
 Drop-in operating instructions for coding agents. Read this file before every task.
 
 **Working code only. Finish the job. Plausibility is not correctness.**
@@ -195,7 +270,7 @@ When the user corrects your approach, append a one-line rule here before ending 
 - Only If /handoff is activated, save handoff files to `.agents/handoffs/<handoff_name>.md` for scope, DoD, and tech constraints (optionally: findings and patterns from the session). `.agents/handoffs/` holds only the current project's live transitions — do not leave stale or example handoffs there.
 - Always use `deepseek/deepseek-v4-flash` through OpenRouter for M1 grounded explanations; never use GPT-5.4 Mini for that role.
 - When using subagent-driven development, request `gpt-5.6-luna-high` for context investigation and `gpt-5.6-terra-high` for code implementation; if the runtime cannot select a model, state that limitation and never claim enforcement.
-- Track identified-user progress only in `<USER_NAME>-NOW.md` (for this user, `THANH-NOW.md`); do not create `PROGRESS.md` or a separate SDD progress ledger.
+- Track product-work progress only in the explicitly mapped file under `docs/team/now/`; do not create root `*-NOW.md`, `PROGRESS.md`, or a separate SDD progress ledger.
 
 ---
 
@@ -210,37 +285,3 @@ This boilerplate synthesizes:
 - The AGENTS.md open standard (cross-tool portability via symlinks).
 
 Read once. Edit sections 10 and 11 for your project. Prune the rest over time. This file gets better the more you use it.
-
-<!-- AI-LOGGING:BEGIN -->
-## Mandatory AI Session Logging
-
-Before planning, editing, running commands, or invoking tools other than reading repository instructions:
-
-1. Read `ai-logs/README.md`.
-2. Resolve the current team member exactly as required by that policy (As for TEAM_MEMBER identification in .env if it not setup already).
-3. Read that member's `BOT_INSTRUCTIONS.md`.
-4. Create the session log before substantive work.
-
-If identity is not explicit and certain, ask the canonical identity question
-from `ai-logs/README.md`. Do not infer identity or silently continue without a
-log.
-<!-- AI-LOGGING:END -->
-
-<!-- HARNESS:BEGIN -->
-## Harness
-
-Choose the request class before any Harness operation.
-
-- When the requested outcome is only an answer, explanation, review, diagnosis,
-  plan, or status report: inspect only the material needed to respond. Keep the
-  task read-only. Do not bootstrap, initialize or migrate a database, record
-  intake, or record a trace.
-- When the user explicitly asks to change, build, fix, or write repository
-  artifacts: first run `scripts/bootstrap-harness.sh`
-  on macOS/Linux or `.\scripts\bootstrap-harness.ps1` on Windows. Then use
-  `docs/FEATURE_INTAKE.md` to classify and record the request, query
-  `scripts/bin/harness-cli query matrix --active --summary` on macOS/Linux or
-  `.\scripts\bin\harness-cli.exe query matrix --active --summary` on Windows,
-  and retrieve only the lane- and task-specific context described in
-  `docs/CONTEXT_RULES.md`.
-<!-- HARNESS:END -->

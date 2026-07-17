@@ -11,23 +11,34 @@ USER2 owns only:
 1. US-104 — internal workflow state and correction precedence.
 2. US-105 — clarification, routing, and session persistence, only after both US-103 and US-104 are reviewed and merged.
 
-No later story is implied. Thành remains the integration controller. Update only `USER2-NOW.md`; do not edit `THANH-NOW.md`, `USER1-NOW.md`, or create another progress ledger.
+No later story is implied. Thành remains the integration controller. After a
+human maps USER2 to an identity, that owner updates only
+`docs/team/now/USER2-NOW.md`; do not edit
+`docs/team/now/THANH-NOW.md`, `docs/team/now/USER1-NOW.md`, or create another
+progress ledger.
 
 ## Start point and isolation
 
 - Required base: local `main` containing at least merge `9dc9363`.
 - Branch: `agent/user2-m1-4-state-routing`.
 - Work in an isolated worktree or clone. Never implement concurrently in Thành's or USER1's working tree.
+- USER2 is currently unassigned in `docs/team/now/README.md`; implementation is
+  blocked until a human maps the alias.
 - Before work, resolve your real team identity through `ai-logs/README.md`, create the correct session log, bootstrap Harness, and confirm the active matrix in your worktree.
 
 ## Execution board
 
 | Order | Story | Depends on | Status | Detail source |
 | ---: | --- | --- | --- | --- |
-| 1 | US-104 state merge and correction precedence | US-121 complete | Ready to activate | Task 8 in `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md` |
-| 2 | US-105 clarification/routing/persistence | US-103 and US-104 merged to main | Blocked until both merges | Task 9 in the same plan |
+| 1 | US-104 state merge and correction precedence | US-121 complete | Blocked until human mapping and a registered story packet | Legacy provenance only: Task 8 in `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md` |
+| 2 | US-105 clarification/routing/persistence | US-103 and US-104 merged to main | Blocked until mapping, packet, and both merges | Legacy provenance only: Task 9 in the same file |
 
-Activate only the current story in this worktree. For each story: record the base commit, run RED before production edits, implement the minimum GREEN change, run independent verification, obtain a separate review, close Critical/Important findings, complete Harness proof/trace, update this ledger, and submit the reviewed commit hash to Thành.
+Do not activate work directly from the legacy plan. After a human maps USER2,
+create and read the registered story packet from accepted product authority,
+then record the base commit, run RED before production edits, implement the
+minimum GREEN change, run independent verification, obtain a separate review,
+close Critical/Important findings, complete Harness proof/trace, update this
+ledger, and submit the reviewed commit hash to Thành.
 
 ## File boundary
 

@@ -23,6 +23,19 @@ scripts/bootstrap-harness.sh
 .\scripts\bootstrap-harness.ps1
 ```
 
+## Repository Governance Validation
+
+Run the documentation, tracker, AI logging, Markdown-link, and environment
+safety gate with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate-repository-governance.ps1
+```
+
+The validator does not load `.env` or print local environment values. It checks
+only ignore and tracking behavior plus the secret-free `.env.example`
+contract.
+
 In this source repository, bootstrap builds the CLI from the checked-out Rust
 source so code and command behavior cannot drift. It refuses to invent an empty
 replacement when the default core database is missing, and it rejects a

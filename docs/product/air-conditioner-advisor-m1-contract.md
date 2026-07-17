@@ -3,7 +3,7 @@
 ## Status and authority
 
 This contract freezes M1.0 interfaces derived from the approved
-`WORKFLOW-MVP(4).md`. Decision
+`docs/product/requirements/air-conditioner-advisor-m1-prd.md`. Decision
 `docs/decisions/0009-m1-explanation-model-routing.md` overrides the former
 GPT-5.4 Mini explainer references.
 

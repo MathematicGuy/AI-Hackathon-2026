@@ -31,20 +31,30 @@ In New-repository mode, create the full reusable scaffold:
 - `docs/` templates, planning guides, harness documentation, and contracts
 - `scripts/`, including the Harness bootstrap and codebase-memory verification scripts
 - `.gitattributes`, `.gitignore`, `Makefile`, `ruff.toml`, and other stack-neutral project configuration
-- the root Markdown boilerplates listed below
+- the root entrypoints and purpose-specific Markdown boilerplates below
 
-Create these root Markdown files from their matching template boilerplates:
+Keep only these Markdown entrypoints at the repository root:
 
 - `AGENTS.md`
-- `ARCHITECTURE.md`
-- `HACKATHON_RUNBOOK.md`
-- `JTBD.md`
-- `JUDGING.md`
-- `NOW.md`
-- `OWNERS.md`
+- `CLAUDE.md` and `GEMINI.md` when those client discovery shims are used
 - `PROJECT_MANAGEMENT.md`
 - `README.md`
-- `WORKFLOW-MVP.md`
+
+Place all other Markdown by purpose:
+
+- PRDs and workflow requirement baselines:
+  `docs/product/requirements/<product>-<milestone>-prd.md`
+- Product system architecture:
+  `docs/product/architecture/<product>-<milestone>.md`
+- JTBD and discovery analysis: `docs/product/discovery/<topic>.md`
+- Active team trackers: `docs/team/now/<ALIAS>-NOW.md`, with an explicit
+  human identity map in `docs/team/now/README.md`
+- Story-specific designs, implementation plans, and validation:
+  `docs/stories/epics/<epic>/<story>/`
+- Durable cross-story decisions: `docs/decisions/`
+- Runbooks, judging guidance, and ownership metadata: a clearly indexed
+  purpose folder under `docs/operations/`, `docs/product/evaluation/`, or
+  `docs/team/`
 
 Keep the document structure and general instructions, but replace template-project-specific facts with explicit `TODO` placeholders before declaring the new repository ready. Do not copy `update-report.md`; it is a generated status artifact, not boilerplate.
 

@@ -60,8 +60,35 @@ function Require-Prefix([string]$RelativePath, [string]$ExpectedPrefix) {
     )) {
         $failures.Add(
             "AI logging block must immediately follow the AGENTS.md heading " +
-            "and precede the Harness block."
+            "and precede every other agent workflow."
         )
+    }
+}
+
+function Require-OrderedText(
+    [string]$RelativePath,
+    [string[]]$OrderedTokens
+) {
+    $fullPath = Join-Path $root $RelativePath
+    if (!(Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+        $failures.Add("Cannot inspect order in missing file: $RelativePath")
+        return
+    }
+
+    $content = Get-Content -LiteralPath $fullPath -Raw -Encoding UTF8
+    $previousIndex = -1
+    foreach ($token in $OrderedTokens) {
+        $index = $content.IndexOf(
+            $token,
+            [System.StringComparison]::Ordinal
+        )
+        if ($index -lt 0 -or $index -le $previousIndex) {
+            $failures.Add(
+                "Invalid agent workflow order in ${RelativePath}: $token"
+            )
+            return
+        }
+        $previousIndex = $index
     }
 }
 
@@ -138,6 +165,7 @@ foreach ($member in $members) {
     Require-Text $guide $member.Name
     Require-Text $guide $member.Slug
     Require-Text $guide "sessions/"
+    Require-Text $guide "under the canonical policy as"
 
     $fullGuidePath = Join-Path $root $guide
     if (Test-Path -LiteralPath $fullGuidePath -PathType Leaf) {
@@ -195,6 +223,7 @@ foreach ($heading in @(
 
 Require-Text "AGENTS.md" "<!-- AI-LOGGING:BEGIN -->"
 Require-Text "AGENTS.md" "ai-logs/README.md"
+Require-Text "AGENTS.md" "TEAM_MEMBER"
 Require-Text "CLAUDE.md" "@AGENTS.md"
 Require-Text "GEMINI.md" "@./AGENTS.md"
 Require-Text ".github/copilot-instructions.md" "ai-logs/README.md"
@@ -202,28 +231,21 @@ Require-Text ".cursor/rules/ai-logging.mdc" "alwaysApply: true"
 Require-Text ".cursor/rules/ai-logging.mdc" "ai-logs/README.md"
 
 $expectedAgentsPrefix = @'
-# Agent Instructions
+# AGENTS.md
 
 <!-- AI-LOGGING:BEGIN -->
 ## Mandatory AI Session Logging
-
-Before planning, editing, running commands, or invoking tools other than
-reading repository instructions:
-
-1. Read `ai-logs/README.md`.
-2. Resolve the current team member exactly as required by that policy.
-3. Read that member's `BOT_INSTRUCTIONS.md`.
-4. Create the session log before substantive work.
-
-If identity is not explicit and certain, ask the canonical identity question
-from `ai-logs/README.md`. Do not infer identity or silently continue without a
-log.
-<!-- AI-LOGGING:END -->
-
-<!-- HARNESS:BEGIN -->
 '@
 
 Require-Prefix "AGENTS.md" $expectedAgentsPrefix
+Require-OrderedText "AGENTS.md" @(
+    "<!-- AI-LOGGING:BEGIN -->"
+    "<!-- AI-LOGGING:END -->"
+    "<!-- REPOSITORY-GOVERNANCE:BEGIN -->"
+    "<!-- REPOSITORY-GOVERNANCE:END -->"
+    "<!-- HARNESS:BEGIN -->"
+    "<!-- HARNESS:END -->"
+)
 Require-Pattern "CLAUDE.md" "(?m)^[ \t]*@AGENTS\.md[ \t]*$" `
     "standalone AGENTS.md import"
 Require-Pattern "GEMINI.md" "(?m)^[ \t]*@\./AGENTS\.md[ \t]*$" `

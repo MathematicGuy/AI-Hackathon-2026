@@ -20,7 +20,7 @@ M1.1–M1.4 begin.
 ## Affected Product Docs
 
 - `docs/product/air-conditioner-advisor-m1-contract.md`
-- `WORKFLOW-MVP(4).md`
+- `docs/product/requirements/air-conditioner-advisor-m1-prd.md`
 - `docs/decisions/0009-m1-explanation-model-routing.md`
 
 ## Non-Goals

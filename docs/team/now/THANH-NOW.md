@@ -17,33 +17,64 @@ Milestone 1: M1.0 contract freeze is complete; build M1.1–M1.4 foundations int
 - Đinh Nhật Thành — M1.1–M1.8 execution controller and contract owner.
 - Context investigation assignments request `gpt-5.6-luna-high`; code implementation assignments request `gpt-5.6-terra-high`. The current subagent API cannot enforce model selection, so these are requested labels, not verified runtime models.
 
+## Ownership boundary
+
+Thành owns active coordination for:
+
+1. US-107 — normalization and evidence.
+2. US-108 — hard constraints.
+3. US-109 — injected deterministic ranking.
+4. US-110 — truthful deduplication.
+5. US-101 — gateway and graph integration.
+6. US-116 — trace integration.
+7. US-111 — grounded output.
+8. US-112 — deterministic fallback.
+9. US-113 — conversation continuations.
+10. US-114 — additional continuation behavior.
+11. US-115 — frontend delivery and integration.
+
+Completed stories are historical proof, not active ownership. Each story above
+remains blocked until its registered story packet defines current scope,
+dependencies, file ownership, and verification.
+
+## File boundary
+
+Until a registered story packet is activated, the controller owns only:
+
+- `docs/team/now/THANH-NOW.md`
+
+Product implementation files must be added from the accepted story packet
+before a story becomes ready. A legacy plan cannot assign files.
+
 ## M1.1–M1.8 delegated execution board
 
 | Order | Milestone / stories | Delegated role | Requested model | Depends on | Status |
 | ---: | --- | --- | --- | --- | --- |
 | 0 | Contract reconciliation / US-121 | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-100 | ✅ Done — 8 tests, review approved, trace 11 |
 | 1 | M1.1 / US-106 catalog pagination | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 | ✅ Done — 53 tests, review approved, trace 12 |
-| 2 | M1.1 / US-107 normalization and evidence | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-106 | 🟨 Ready to activate |
-| 3 | M1.3 / US-102 layered input guardrail | USER1 — details in `USER1-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; ready in isolated worktree |
-| 4 | M1.3 / US-103 Vietnamese intent/need extraction | USER1 — details in `USER1-NOW.md` | `gpt-5.6-terra-high` | US-102 | ⬜ USER1 queued after US-102 merge |
-| 5 | M1.4 / US-104 state merge and correction precedence | USER2 — details in `USER2-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; ready in isolated worktree |
+| 2 | M1.1 / US-107 normalization and evidence | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-106 | 🟦 Blocked — create and read the registered US-107 story packet |
+| 3 | M1.3 / US-102 layered input guardrail | USER1 — details in `docs/team/now/USER1-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; blocked until USER1 is mapped to a human |
+| 4 | M1.3 / US-103 Vietnamese intent/need extraction | USER1 — details in `docs/team/now/USER1-NOW.md` | `gpt-5.6-terra-high` | US-102 | ⬜ USER1 queued after mapping and US-102 merge |
+| 5 | M1.4 / US-104 state merge and correction precedence | USER2 — details in `docs/team/now/USER2-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; blocked until USER2 is mapped to a human |
 | 6 | M1.2 / US-108 hard constraints | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-107 | ⬜ Queued |
 | 7 | M1.2 / US-109 injected deterministic ranking | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-108 | ⬜ Queued; production policy remains injected |
 | 8 | M1.2 / US-110 truthful deduplication | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-109 | ⬜ Queued |
-| 9 | M1.4 / US-105 clarification/routing/persistence | USER2 — details in `USER2-NOW.md` | `gpt-5.6-terra-high` | US-103, US-104 | ⬜ USER2 blocked until both merges |
+| 9 | M1.4 / US-105 clarification/routing/persistence | USER2 — details in `docs/team/now/USER2-NOW.md` | `gpt-5.6-terra-high` | US-103, US-104 | ⬜ USER2 blocked until mapping and both merges |
 | 10 | M1.5 / US-101 + US-116 gateway, graph, trace | Fresh integration subagent, then separate reviewer | `gpt-5.6-terra-high` | US-105, US-106–US-110 | ⬜ Dependency-gated |
 | 11 | M1.6 / US-111 + US-112 grounded output/fallback | Fresh integration subagent, then separate reviewer | `gpt-5.6-terra-high` | M1.5 | ⬜ Dependency-gated |
 | 12 | M1.7 / US-113 + US-114 continuations | Fresh integration subagent, then separate reviewer | `gpt-5.6-terra-high` | M1.5 | ⬜ Dependency-gated |
 | 13 | M1.8 / US-115 mock-first frontend | Fresh frontend implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 mock contract | ⬜ Queued |
 | 14 | M1.8 / US-115 real API E2E | Fresh frontend integration subagent, then separate reviewer | `gpt-5.6-terra-high` | M1.5–M1.7 | ⬜ Dependency-gated |
 
-Detailed task scope, interfaces, RED/GREEN commands, and dependency order: `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md`.
+Legacy provenance only: `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md`.
+It may inform a new story packet but cannot authorize scope, file ownership, or
+RED/GREEN commands.
 
 ## Parallel workstreams
 
 - Thành: `agent/m1-implementation` — US-107 → US-110 and serialized M1 integration.
-- USER1: `agent/user1-m1-3-guardrails-intent` — US-102 → US-103; execution details live only in `USER1-NOW.md`.
-- USER2: `agent/user2-m1-4-state-routing` — US-104 → US-105; execution details live only in `USER2-NOW.md`.
+- USER1: unassigned alias; after human mapping, use `agent/user1-m1-3-guardrails-intent` for US-102 → US-103 and update only `docs/team/now/USER1-NOW.md`.
+- USER2: unassigned alias; after human mapping, use `agent/user2-m1-4-state-routing` for US-104 → US-105 and update only `docs/team/now/USER2-NOW.md`.
 - Every workstream uses an isolated worktree or clone. Thành merges reviewed story commits one at a time and updates this controller ledger after each integration.
 
 ## Frozen evaluation contract
@@ -56,7 +87,9 @@ Detailed task scope, interfaces, RED/GREEN commands, and dependency order: `docs
 ## Active work
 
 - M1.0 — request, response, state, product, graph, and model-routing contracts frozen with `US-100` proof.
-- M1.1–M1.8 — implementation plan complete; US-121 and US-106 are complete, and US-107 is the only next story to activate. Later story packets remain uncreated until their dependency gate opens.
+- M1.1–M1.8 — historical implementation provenance exists; US-121 and US-106
+  are complete. US-107 is next in dependency order but remains blocked until
+  its registered story packet is created and reviewed.
 - M1.9 / US-117 — implement dataset loader, deterministic assertions, Langfuse import, and release report when selected.
 
 ## Integration status
@@ -80,5 +113,7 @@ Detailed task scope, interfaces, RED/GREEN commands, and dependency order: `docs
 
 ## Next integration checkpoint
 
-- Activate US-107 only, complete RED → GREEN and separate review, then activate the next dependency-ready foundation story.
+- Create and review the registered US-107 story packet from accepted product
+  authority; only then activate it, complete RED → GREEN and separate review,
+  and proceed to the next dependency-ready story.
 - Keep all later story packets uncreated until their turn in the dependency order.

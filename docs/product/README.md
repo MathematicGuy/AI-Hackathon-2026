@@ -1,29 +1,36 @@
-# Product Docs
+# Product Documentation
 
-This directory is intentionally generic and mostly empty in Harness v0.
+This directory contains the accepted product contract and the purpose-specific
+documents derived from product discovery and requirements.
 
-When a user provides a project spec, derive smaller product contract files here
-instead of keeping one large spec as the living plan. Name files by the product
-domains that actually exist in that spec, for example `overview.md`,
-`billing.md`, `workflows.md`, `permissions.md`, or `api-conventions.md`.
+## Current Product Authority
 
-Do not create domain files before the spec just to fill the folder. Empty
-structure is healthier than fake product truth.
+Read product artifacts in this order:
 
-## Current Product Contracts
+1. [`air-conditioner-advisor-m1-contract.md`](air-conditioner-advisor-m1-contract.md)
+   — accepted Milestone 1 behavior.
+2. Relevant Accepted ADRs in [`../decisions/`](../decisions/README.md) — only
+   the named superseding rules take precedence over the contract.
+3. [`requirements/air-conditioner-advisor-m1-prd.md`](requirements/air-conditioner-advisor-m1-prd.md)
+   — approved Milestone 1 scope and requirements.
+4. [`architecture/air-conditioner-advisor-m1.md`](architecture/air-conditioner-advisor-m1.md)
+   — product-specific system design.
 
-No consumer-project-specific product contract is shipped in this generic
-directory. The upstream `repository-harness` product contract lives in the
-root README, Harness operating documents, versioned orchestration contract,
-story packets, and executable tests.
+Discovery and reference material inform this authority chain but do not
+override it:
+
+- [`discovery/`](discovery/README.md)
+- [`../references/`](../references/README.md)
 
 ## Update Rule
 
-When behavior changes:
+When product behavior changes:
 
-1. Update the affected product doc.
-2. Update or create the story packet.
-3. Update durable proof status with `scripts/bin/harness-cli story add` or
-   `scripts/bin/harness-cli story update`.
-4. Record a decision if the change affects architecture, scope, risk, or a
-   previously settled product rule.
+1. Update the affected authoritative product artifact.
+2. Update or create the bounded story packet.
+3. Update durable proof status with the Harness CLI.
+4. Record an ADR when the change affects architecture, scope, risk, or a
+   previously accepted rule.
+
+The full placement and conflict policy is in
+[`../README.md`](../README.md).
