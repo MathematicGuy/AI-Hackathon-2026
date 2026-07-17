@@ -56,6 +56,7 @@ Detailed task scope, interfaces, RED/GREEN commands, and dependency order: `docs
 ## Active work
 
 - M1.0 — request, response, state, product, graph, and model-routing contracts frozen with `US-100` proof.
+- US-122 environment-owned model routing — Tasks 1–4 complete (`ab6bc1f..fcda6ae`; 34 settings, 9 routing, 8 contract, 51 focused and 96 full-backend tests; all independent reviews approved). Waiting for the explicit command to merge remote `main` into the current branch; no later task has started.
 - M1.1–M1.8 — implementation plan complete; US-121 and US-106 are complete, and US-107 is the only next story to activate. Later story packets remain uncreated until their dependency gate opens.
 - M1.9 / US-117 — implement dataset loader, deterministic assertions, Langfuse import, and release report when selected.
 
