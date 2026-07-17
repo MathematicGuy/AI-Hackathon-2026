@@ -2,7 +2,7 @@
 
 ## Status
 
-planned
+implemented
 
 ## Lane
 
@@ -63,4 +63,12 @@ contract suite. Intake #9 recorded 2026-07-18.
 
 ## Evidence
 
-Pending implementation.
+- 2026-07-18 RED: 12 failed (modules absent).
+- 2026-07-18 GREEN: 12 intent tests + 8 contract pass; full backend suite 108
+  passed (95 pre-existing + 13 new).
+- Independent review: kept the shared-scope-keyword duplication (fixing it would
+  cross the US-102 file boundary; deferred to a consolidation story) and tuned
+  the degraded fallback so any in-scope máy lạnh message with no other signal
+  classifies as `new_search` rather than `unsupported` (precision: no overfire
+  of a legitimate question), with a regression test.
+
