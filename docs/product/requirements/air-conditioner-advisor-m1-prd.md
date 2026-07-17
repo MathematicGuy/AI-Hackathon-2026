@@ -1099,7 +1099,8 @@ Milestone 1 is evaluated through:
 
 ### Initial dataset
 
-Minimum: 24 cases.
+Exactly 26 cases, per the frozen fixture contract in
+`docs/product/air-conditioner-advisor-m1-contract.md`.
 
 Coverage:
 

@@ -1027,7 +1027,7 @@ Required metadata:
   "request_id": "request_456",
   "turn_number": 4,
   "intent_model": "gpt-5.4-nano",
-  "response_model": "gpt-5.4-mini",
+  "response_model": "deepseek/deepseek-v4-flash",
   "prompt_version": "recommendation-v1",
   "aircon_rules_version": "v1",
   "catalog_snapshot": "catalog-m1",
@@ -1059,7 +1059,8 @@ Required scores:
 
 ### 11.2 Evaluation dataset
 
-Minimum: 24 cases.
+Exactly 26 cases, per the frozen fixture contract in
+`docs/product/air-conditioner-advisor-m1-contract.md`.
 
 Required coverage:
 
@@ -1271,7 +1272,7 @@ The frontend mapping is an implementation addition. The backend mapping is synch
 - [ ] Cursor advances only after successful product presentation.
 - [ ] API envelopes include `session_id`, `request_id`, `trace_id`, and `data`.
 - [ ] Every turn produces the canonical Langfuse tree, metadata, and scores.
-- [ ] The 24-case minimum dataset passes every blocking release gate.
+- [ ] The 26-case dataset passes every blocking release gate.
 - [ ] Public deployment completes clarification, recommendation, comparison, show-more, no-match, product-detail, availability, stop, and guardrail paths.
 
 ---
