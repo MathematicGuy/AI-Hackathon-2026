@@ -3,6 +3,13 @@
 This directory contains the accepted product contract and the purpose-specific
 documents derived from product discovery and requirements.
 
+The product is the general **AI Product Comparison Advisor** for Điện Máy XANH.
+The `air-conditioner-advisor-m1-*` documents below are the **Milestone 1
+artifacts**, scoped to air conditioners (máy lạnh) as the first vertical slice
+(ADR-001). Their air-conditioner names describe M1's category-specific content;
+later milestones add the retailer's other categories through their own
+artifacts.
+
 ## Current Product Authority
 
 Read product artifacts in this order:

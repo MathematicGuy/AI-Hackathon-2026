@@ -1,8 +1,18 @@
 # AI Product Comparison Advisor
 
-This repository contains the Milestone 1 air-conditioner decision-support
-advisor, its deterministic test fixtures, and the repository Harness used to
-coordinate AI-assisted development.
+This repository builds an **AI Product Comparison Advisor** for Điện Máy XANH: a
+Vietnamese decision-support advisor that understands a customer's real needs,
+asks the missing questions, and compares products by practical benefit instead
+of raw specs. The product is designed for the retailer's full catalog —
+điện thoại, tai nghe, máy lạnh, tủ lạnh, laptop, robot, and more.
+
+**Air conditioners (máy lạnh) are the example use case for Milestone 1**, the
+first vertical slice. M1 is deliberately scoped to one category (see ADR-001) so
+the general advisor framework — guardrails, need extraction, state, deterministic
+ranking, grounded explanation, evaluation — is proven end-to-end before later
+milestones extend it to the other categories. Files and schemas named
+`air-conditioner`/`aircon` are M1's category-specific artifacts, not the whole
+product's scope.
 
 The current backend foundation defines the accepted request, response, product,
 state, catalog, and graph contracts. Product work is story-gated and uses
