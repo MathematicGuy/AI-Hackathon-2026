@@ -294,7 +294,7 @@ if (Test-RepositoryPath "docs/team/now/README.md") {
                 Tracker = "USER1-NOW.md"
             }
             USER2 = @{
-                Identity = "Unassigned"
+                Identity = "luu-thien-viet-cuong"
                 Tracker = "USER2-NOW.md"
             }
         }

@@ -67,19 +67,19 @@ Do not edit decision-engine files under `backend/app/domain/air_conditioner/`, w
 US-102 RED and GREEN:
 
 ```powershell
-rtk pytest backend/tests/unit/guardrails backend/tests/unit/graph/nodes/test_input_guard.py -q
+uv run pytest backend/tests/unit/guardrails backend/tests/unit/graph/nodes/test_input_guard.py -q
 ```
 
 US-103 RED:
 
 ```powershell
-rtk pytest backend/tests/unit/models/test_openai_intent.py backend/tests/unit/graph/nodes/test_intent.py -q
+uv run pytest backend/tests/unit/models/test_openai_intent.py backend/tests/unit/graph/nodes/test_intent.py -q
 ```
 
 US-103 GREEN and contract check:
 
 ```powershell
-rtk pytest backend/tests/unit/models/test_openai_intent.py backend/tests/unit/graph/nodes/test_intent.py backend/tests/contract -q
+uv run pytest backend/tests/unit/models/test_openai_intent.py backend/tests/unit/graph/nodes/test_intent.py backend/tests/contract -q
 ```
 
 ## Merge handoff

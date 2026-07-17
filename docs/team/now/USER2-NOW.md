@@ -22,16 +22,16 @@ progress ledger.
 - Required base: local `main` containing at least merge `9dc9363`.
 - Branch: `agent/user2-m1-4-state-routing`.
 - Work in an isolated worktree or clone. Never implement concurrently in Thành's or USER1's working tree.
-- USER2 is currently unassigned in `docs/team/now/README.md`; implementation is
-  blocked until a human maps the alias.
+- USER2 is mapped to `luu-thien-viet-cuong` (Cường) in
+  `docs/team/now/README.md` as of 2026-07-18.
 - Before work, resolve your real team identity through `ai-logs/README.md`, create the correct session log, bootstrap Harness, and confirm the active matrix in your worktree.
 
 ## Execution board
 
 | Order | Story | Depends on | Status | Detail source |
 | ---: | --- | --- | --- | --- |
-| 1 | US-104 state merge and correction precedence | US-121 complete | Blocked until human mapping and a registered story packet | Legacy provenance only: Task 8 in `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md` |
-| 2 | US-105 clarification/routing/persistence | US-103 and US-104 merged to main | Blocked until mapping, packet, and both merges | Legacy provenance only: Task 9 in the same file |
+| 1 | US-104 state merge and correction precedence | US-121 complete | In progress — mapped 2026-07-18; registered packet at `docs/stories/epics/E01-air-conditioner-advisor-m1/US-104-state-merge-correction-precedence/` | Registered story packet; legacy provenance: Task 8 in `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md` |
+| 2 | US-105 clarification/routing/persistence | US-103 and US-104 merged to main | Blocked until US-103 (USER1 lane) and US-104 are both on main | Legacy provenance only: Task 9 in the same file |
 
 Do not activate work directly from the legacy plan. After a human maps USER2,
 create and read the registered story packet from accepted product authority,
@@ -66,19 +66,19 @@ Do not edit guardrail/intent files, decision-engine files other than the named c
 US-104 RED:
 
 ```powershell
-rtk pytest backend/tests/unit/graph/nodes/test_merge_state.py -q
+uv run pytest backend/tests/unit/graph/nodes/test_merge_state.py -q
 ```
 
 US-104 GREEN and contract check:
 
 ```powershell
-rtk pytest backend/tests/unit/graph/nodes/test_merge_state.py backend/tests/contract -q
+uv run pytest backend/tests/unit/graph/nodes/test_merge_state.py backend/tests/contract -q
 ```
 
 US-105 RED and GREEN:
 
 ```powershell
-rtk pytest backend/tests/unit/domain/air_conditioner/test_clarification.py backend/tests/unit/graph/nodes/test_router.py backend/tests/integration/memory/test_checkpointer.py -q
+uv run pytest backend/tests/unit/domain/air_conditioner/test_clarification.py backend/tests/unit/graph/nodes/test_router.py backend/tests/integration/memory/test_checkpointer.py -q
 ```
 
 ## Merge handoff

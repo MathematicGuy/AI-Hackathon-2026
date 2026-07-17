@@ -10,12 +10,13 @@ contracts and not substitutes for Harness proof.
 | --- | --- | --- | --- |
 | THANH | dinh-nhat-thanh | [`THANH-NOW.md`](THANH-NOW.md) | Assigned by a human |
 | USER1 | Unassigned | [`USER1-NOW.md`](USER1-NOW.md) | Blocked until a human maps the alias |
-| USER2 | Unassigned | [`USER2-NOW.md`](USER2-NOW.md) | Blocked until a human maps the alias |
+| USER2 | luu-thien-viet-cuong | [`USER2-NOW.md`](USER2-NOW.md) | Assigned by Cường (Lưu Thiện Việt Cường) on 2026-07-18; direction recorded in the member session log |
 
-`USER1` and `USER2` are aliases, not identities. An agent must never infer
-their owners from Git configuration, operating-system usernames, earlier chat,
-or task content. A human must update this table explicitly before either
-workstream can be implemented.
+`USER1` is an alias, not an identity. An agent must never infer its owner from
+Git configuration, operating-system usernames, earlier chat, or task content.
+A human must update this table explicitly before that workstream can be
+implemented. `USER2` was mapped to `luu-thien-viet-cuong` by Cường's explicit
+in-session direction on 2026-07-18.
 
 ## Mandatory Use
 
