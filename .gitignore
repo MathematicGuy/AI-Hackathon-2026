@@ -103,3 +103,5 @@ scripts/bin/harness-cli.exe
 # Codebase memory graph
 .codebase-memory/*
 !.codebase-memory/graph.db.zst
+
+# Harness durable layer
