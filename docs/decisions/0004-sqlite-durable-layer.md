@@ -40,7 +40,8 @@ The database stores:
 The schema is version-controlled under `scripts/schema/`. The database file is
 `.gitignore`d because each project instance generates its own operational data.
 
-Policy docs (`HARNESS.md`, `FEATURE_INTAKE.md`, `ARCHITECTURE.md`) remain as
+Policy docs (`docs/HARNESS.md`, `docs/FEATURE_INTAKE.md`,
+`docs/ARCHITECTURE.md`) remain as
 human-readable references. The database stores what agents produce, not what
 they should do.
 

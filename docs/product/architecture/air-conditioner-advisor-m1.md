@@ -1,9 +1,9 @@
-# ARCHITECTURE.md — Điện Máy XANH AI Product Advisor MVP
+# Air Conditioner Advisor M1 Product Architecture
 
 > **Status:** Synced with the approved Milestone 1 PRD  
 > **Scope:** One product category only — máy lạnh  
 > **Primary language:** Vietnamese  
-> **Authoritative source:** `WORKFLOW-MVP(4).md`  
+> **Authoritative sources:** `docs/product/air-conditioner-advisor-m1-contract.md`, Accepted ADRs, and `docs/product/requirements/air-conditioner-advisor-m1-prd.md`
 > **Document role:** Implementation architecture, deployment topology, component ownership, and repository mapping  
 > **Architecture style:** LangGraph orchestration + deterministic commerce logic + grounded LLM explanation  
 > **Observability and evaluation:** Langfuse  
@@ -13,7 +13,8 @@
 
 ## 0. Document hierarchy and conformance rule
 
-`WORKFLOW-MVP(4).md` is the source-of-truth PRD for:
+`docs/product/requirements/air-conditioner-advisor-m1-prd.md` is the approved
+requirements baseline for:
 
 - runtime node order;
 - intent set and routing;
@@ -32,7 +33,10 @@
 
 This document may add implementation detail only when that detail does not change the approved behavior.
 
-If this document conflicts with `WORKFLOW-MVP(4).md`, the PRD wins and this document must be updated before implementation continues.
+If this document conflicts with the accepted product contract or an Accepted
+ADR that explicitly supersedes a named rule, that higher authority wins.
+Otherwise the PRD wins, and this document must be updated before
+implementation continues.
 
 ### Drift-sensitive architecture lock
 
@@ -230,7 +234,7 @@ flowchart LR
 
     subgraph Providers["External providers"]
         OPENAI_NANO["OpenAI GPT-5.4 Nano"]
-        OPENAI_MINI["OpenAI deepseek/deepseek-v4-flash (OpenRouter)"]
+        OPENROUTER_EXPLAINER["deepseek/deepseek-v4-flash via OpenRouter"]
         NEMO["NeMo Guardrails"]
         PRODUCT_DATA["Approved catalog / product API or fixed demo snapshot"]
         LANGFUSE["Langfuse"]
@@ -243,7 +247,7 @@ flowchart LR
     GRAPH <--> CHECKPOINT
     GRAPH -. explicit confirmed memory only .-> STORE
     GRAPH --> OPENAI_NANO
-    GRAPH --> OPENAI_MINI
+    GRAPH --> OPENROUTER_EXPLAINER
     GUARDS --> NEMO
     TOOLS --> PRODUCT_DATA
     FASTAPI -. trace metadata .-> LANGFUSE
@@ -376,7 +380,7 @@ A node may be internally decomposed, but the canonical order and responsibility 
 | Runtime role | Milestone 1 model | Allowed responsibility | Prohibited responsibility |
 |---|---|---|---|
 | Intent classifier and need extractor | OpenAI GPT-5.4 Nano | classify supported intent; extract explicit need patch; produce structured output | filtering, price math, role ranking, product invention |
-| Grounded recommendation explainer | OpenAI deepseek/deepseek-v4-flash (OpenRouter) | explain verified products, winners, trade-offs, premium verdicts, and customer benefit | independent reranking; unsupported claims; changing role winners |
+| Grounded recommendation explainer | `deepseek/deepseek-v4-flash` through OpenRouter | explain verified products, winners, trade-offs, premium verdicts, and customer benefit | independent reranking; unsupported claims; changing role winners |
 | Engineering coding assistant | OpenRouter `deepseek/deepseek-v4-flash` | repository analysis, code/test generation, debugging, documentation updates | every customer-facing runtime action |
 
 Model and prompt versions are configuration values for observability, but changing either runtime model role requires an ADR or PRD amendment.
@@ -1278,7 +1282,7 @@ Run this checklist whenever the PRD, architecture, prompts, schemas, or graph ch
 
 | Check | Required equality |
 |---|---|
-| Model routing | Nano = intent/extraction; Mini = explanation |
+| Model routing | GPT-5.4 Nano = intent/extraction; `deepseek/deepseek-v4-flash` through OpenRouter = explanation |
 | Formal role enum | exactly three roles |
 | Intent enum | exactly eight intents |
 | Input guard order | word count → regex/payload → NeMo → scope → intent |
@@ -1291,6 +1295,6 @@ Run this checklist whenever the PRD, architecture, prompts, schemas, or graph ch
 | Trace tree | includes router and availability decision; no fourth role-ranking span |
 | Release blockers | exactly match the PRD gate |
 | Repository backend | matches the PRD mapping |
-| Document authority | PRD wins every conflict |
+| Document authority | Product contract or explicitly superseding Accepted ADR first; PRD next |
 
 A CI conformance test should parse enums and schemas from code and compare them with versioned fixtures derived from the PRD.

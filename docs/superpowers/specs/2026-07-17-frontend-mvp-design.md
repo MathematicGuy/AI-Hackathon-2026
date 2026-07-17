@@ -1,8 +1,14 @@
 # Frontend MVP (Testing Harness) — Design Spec
 
+> **Legacy provenance artifact:** Retained for historical context. It is not
+> current authority. Follow `docs/README.md` and do not add new files under
+> `docs/superpowers/`.
+
 - Date: 2026-07-17
 - Status: Approved (brainstorming)
-- Sources of truth: `WORKFLOW-MVP(4).md`, `ARCHITECTURE.md`
+- Sources of truth:
+  `docs/product/requirements/air-conditioner-advisor-m1-prd.md`,
+  `docs/product/architecture/air-conditioner-advisor-m1.md`
 - Owner: Đinh Nhật Thành
 
 ## 1. Purpose and scope
@@ -17,7 +23,8 @@ In scope:
 
 - A single chat route that renders every one of the 8 `RecommendationOutput.answer_type`
   states from mock fixtures.
-- All 13 UI components named in `ARCHITECTURE.md` §5.1.
+- All 13 UI components named in
+  `docs/product/architecture/air-conditioner-advisor-m1.md` §5.1.
 - A single typed API module (`lib/advisor-api.ts`) that branches mock vs. live.
 - Keyword-matched mock scenarios so any `answer_type` can be reached by typing.
 
@@ -86,7 +93,8 @@ changes**. Field names and optionality match the source docs exactly.
 - `AdvisorRequest` — `{ session_id?, request_id?, user_id?, message, region_code? }`
 - `AdvisorResponse` — `{ session_id, request_id, trace_id, data: RecommendationOutput }`
 - `AdvisorError` — `{ session_id?, request_id?, trace_id?, error_code, message, retryable }`
-- `RecommendationOutput` — full shape from `ARCHITECTURE.md` §8.3:
+- `RecommendationOutput` — full shape from
+  `docs/product/architecture/air-conditioner-advisor-m1.md` §8.3:
   `answer_type` (the 8 literals), `session_id`, `request_id`, `trace_id`, `intent`,
   `customer_need`, `assumption_summary`, `clarification_question`, `role_winners`,
   `product_cards`, `price_premium_verdicts`, `next_question`, `citations`,
@@ -145,7 +153,7 @@ winner** (one product wins `best_overall` + `best_value`) so UI dedup is exercis
 a third card carrying `best_for_primary_priority` with `selection_reason:
 "useful_distinct_alternative"`.
 
-## 7. Components (`ARCHITECTURE.md` §5.1)
+## 7. Components (`docs/product/architecture/air-conditioner-advisor-m1.md` §5.1)
 
 `AnswerRenderer` switches on `answer_type` and dispatches to the right component each turn:
 

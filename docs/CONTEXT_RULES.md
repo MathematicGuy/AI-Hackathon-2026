@@ -1,8 +1,9 @@
 # Context Engineering Rules
 
 Context rules help agents decide what to read, when to read it, and when to
-stop reading. `AGENTS.md` is the bounded authority entrypoint; it selects the
-request class before this document expands retrieval.
+stop reading. `AGENTS.md` is the bounded authority entrypoint. Its AI logging,
+documentation-registry, and tracker gates run before this document expands
+retrieval.
 
 The goal is not to maximize context. The goal is to put the right information
 in the model for the current task phase and risk lane.
@@ -13,8 +14,8 @@ Request class determines both mutation authority and default context.
 
 | Request class | Examples | Harness mutations | Default context |
 | --- | --- | --- | --- |
-| Read-only | answer, explain, review, diagnose, plan, status | None. Do not bootstrap, initialize/migrate, record intake, update durable state, or trace. | `AGENTS.md`, the exact files or output named by the request, then the smallest adjacent source needed to support the answer. |
-| Change | change, build, fix | Bootstrap first, then intake, story/proof, trace, and backlog mutations as the selected lane requires. | `AGENTS.md`, `docs/FEATURE_INTAKE.md`, focused active matrix summary, then lane- and trigger-specific sources below. |
+| Read-only | answer, explain, review, diagnose, plan, status | Only create and finalize the mandatory AI session log. Do not bootstrap, initialize/migrate, record intake, update durable Harness state, or trace. | `AGENTS.md`, `docs/README.md`, the exact files or output named by the request, then the smallest adjacent source needed to support the answer. |
+| Change | change, build, fix | After logging and tracker checks, bootstrap, then record intake, story/proof, trace, and backlog mutations as the selected lane requires. | `AGENTS.md`, `docs/README.md`, `docs/team/now/README.md`, the mapped product tracker or registered governance-story exception, `docs/FEATURE_INTAKE.md`, a focused active matrix summary, then lane- and trigger-specific sources below. |
 
 Cause and effect: a diagnosis may discover that a schema migration is missing,
 but discovery alone does not authorize creating it. A subsequent request to fix
@@ -32,7 +33,7 @@ the affected surface, and choose a lane.
 
 | Document Or Source | Tiny | Normal | High-Risk |
 | --- | --- | --- | --- |
-| `AGENTS.md` | Must | Must | Must |
+| `AGENTS.md`, `docs/README.md`, and tracker gate | Must | Must | Must |
 | `docs/FEATURE_INTAKE.md` | Must | Must | Must |
 | `scripts/bin/harness-cli query matrix --active --summary` | Must | Must | Must |
 | `README.md` | Should | Must | Must |
@@ -135,14 +136,17 @@ Budget rules:
 ## Bounded Retrieval Behavior
 
 Do not preload every Harness document. For a read-only request, stop after the
-answer is supported. For a change request, `AGENTS.md` points to intake and the
-focused matrix summary; this document then expands context only when a lane,
-phase, or retrieval trigger requires it.
+answer is supported and finalize only its AI session log. For a change request,
+`AGENTS.md` first resolves documentation and tracker authority, then points to
+intake and the focused matrix summary; this document expands context only when
+a lane, phase, or retrieval trigger requires it.
 
 ## Review Checklist
 
 Before implementation of a change request:
 
+- Identity maps to exactly one tracker, and its story, dependencies,
+  branch/worktree, and file boundary agree with the Harness matrix.
 - Lane is chosen from `docs/FEATURE_INTAKE.md`.
 - Relevant product docs or story packets are identified.
 - Any high-risk trigger has been handled.

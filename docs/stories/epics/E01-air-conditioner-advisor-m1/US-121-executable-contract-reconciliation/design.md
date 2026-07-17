@@ -2,7 +2,8 @@
 
 ## Decisions
 
-- Add `AdvisorError` exactly as accepted in `ARCHITECTURE.md`.
+- Add `AdvisorError` exactly as accepted in
+  `docs/product/architecture/air-conditioner-advisor-m1.md`.
 - Add display-only `best_for_primary_priority` through `BadgeKind`; formal `RecommendationRole` remains exactly three values.
 - Add optional `selection_reason` to `ProductCard`; existing mock cards remain valid.
 - Add `CONDITIONAL_TRACE_NODES = ("constraint_recovery",)` while preserving `CANONICAL_TRACE_NODES` as the common trace tree.

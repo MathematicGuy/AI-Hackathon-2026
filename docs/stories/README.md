@@ -1,15 +1,23 @@
 # Stories
 
-Stories are work packets. They turn product intent into bounded implementation
-and validation work.
+Stories turn accepted product or governance intent into bounded implementation
+and validation work. Active and completed packets live under `epics/`; future
+candidates live in [`backlog.md`](backlog.md).
 
-No story packets are active yet.
+## Current Epics
+
+- `E01-air-conditioner-advisor-m1`: product contract and Milestone 1 delivery
+  stories.
+- `E04-ai-session-logging`: repository-native AI logging.
+- `E05-repository-governance`: documentation authority and repository
+  governance.
+
+Query the active Harness matrix for current status rather than inferring status
+from directory presence.
 
 ## Normal Story
 
-Use `docs/templates/story.md` for normal feature work.
-
-Suggested path:
+Use [`../templates/story.md`](../templates/story.md) for normal feature work:
 
 ```text
 docs/stories/epics/E01-domain-name/US-001-short-story-title.md
@@ -17,16 +25,14 @@ docs/stories/epics/E01-domain-name/US-001-short-story-title.md
 
 ## High-Risk Story
 
-Use `docs/templates/high-risk-story/` when the feature intake classifies work as
-high-risk.
-
-Suggested path:
+Use [`../templates/high-risk-story/`](../templates/high-risk-story/) for
+high-risk work:
 
 ```text
 docs/stories/epics/E02-risky-domain/US-012-risky-story-title/
-  execplan.md
   overview.md
   design.md
+  execplan.md
   validation.md
 ```
 
@@ -41,3 +47,6 @@ planned -> in_progress -> implemented
                   v
                retired
 ```
+
+Story files define scope and evidence; the Harness durable layer is the
+authoritative status and proof view.
