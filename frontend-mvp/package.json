@@ -11,7 +11,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "next": "15.1.12",
+    "next": "15.5.20",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "class-variance-authority": "0.7.1",
@@ -31,6 +31,6 @@
     "autoprefixer": "10.4.20",
     "tailwindcss-animate": "1.0.7",
     "vitest": "2.1.8",
-    "@playwright/test": "1.49.1"
+    "@playwright/test": "1.61.1"
   }
 }

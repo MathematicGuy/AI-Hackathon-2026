@@ -2120,8 +2120,9 @@ Plan complete. Per the earlier decision, execution is **Subagent-Driven**: a fre
 
 ## Changelog
 
-- 2026-07-18: User approved exact Next `15.1.12`. It remains on the patched
-  Next 15.1 line, supports Node 24 through its `>=20.0.0` engine range and
-  React 19, addresses the previously reported Next `15.1.0` build crash, and
-  supersedes the vulnerable pin without changing the existing Playwright
-  dependency. The prior crash did not reproduce in today's baseline run.
+- 2026-07-18: User approved exact Next `15.5.20`. It supports Node 24 through
+  its `>=20.0.0` engine range and React 19, and npm audit identifies it as the
+  non-major remediation for the outstanding Next advisories. Playwright moves
+  to exact `1.61.1` to satisfy Next's optional peer normally and remove its own
+  advisory. The prior Next `15.1.0` OOM did not reproduce in this session, so
+  this dependency correction does not claim a proven causal fix for that crash.
