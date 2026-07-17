@@ -4,10 +4,9 @@ from typing import get_args
 
 from pydantic import TypeAdapter
 
+import backend.app.contracts as contracts
+import backend.app.contracts.schemas as schemas
 from backend.app.contracts.schemas import (
-    EXPLANATION_MODEL,
-    EXPLANATION_PROVIDER,
-    INTENT_MODEL,
     AdvisorError,
     AdvisorRequest,
     AdvisorResponse,
@@ -37,7 +36,7 @@ def read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def test_frozen_enums_and_model_routing():
+def test_frozen_enums_and_runtime_model_separation():
     assert set(get_args(Intent)) == {
         "new_search",
         "change_constraints",
@@ -63,9 +62,13 @@ def test_frozen_enums_and_model_routing():
         "guardrail_block",
         "stop",
     }
-    assert INTENT_MODEL == "gpt-5.4-nano"
-    assert EXPLANATION_PROVIDER == "openrouter"
-    assert EXPLANATION_MODEL == "deepseek/deepseek-v4-flash"
+    for legacy_name in (
+        "INTENT_MODEL",
+        "EXPLANATION_PROVIDER",
+        "EXPLANATION_MODEL",
+    ):
+        assert not hasattr(contracts, legacy_name)
+        assert not hasattr(schemas, legacy_name)
 
 
 def test_executable_contract_additions():
