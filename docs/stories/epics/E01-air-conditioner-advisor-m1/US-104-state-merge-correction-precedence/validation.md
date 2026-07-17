@@ -33,4 +33,13 @@ uv run --python 3.12 --extra test pytest backend/tests -q
 
 ## Acceptance Evidence
 
-Pending implementation.
+- 2026-07-18 RED: 17 failed (modules absent) via
+  `uv run --python 3.12 --extra test pytest backend/tests/unit/graph/nodes/test_merge_state.py -q`.
+- 2026-07-18 GREEN: 25 passed (17 merge + 8 contract) via the story verify
+  command; full backend suite 70 passed (53 pre-existing + 17 new).
+- Independent diff review: one doc–code drift (clarification reset wording)
+  fixed in `design.md`; one accepted limitation (`requested_product_count`
+  reverts to the contract default when unstated) documented in `design.md`.
+- `backend/app/graph/nodes/__init__.py` was created as a required package
+  marker; it is outside the three owned story files and is flagged to the
+  integration controller for ownership assignment.
