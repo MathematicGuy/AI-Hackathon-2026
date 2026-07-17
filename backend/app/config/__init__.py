@@ -5,6 +5,7 @@ from backend.app.config.model_settings import (
     ProviderConnectionSettings,
     ProviderName,
     load_model_settings,
+    validate_model_configuration,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "ProviderConnectionSettings",
     "ProviderName",
     "load_model_settings",
+    "validate_model_configuration",
 ]

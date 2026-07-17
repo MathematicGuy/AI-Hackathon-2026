@@ -153,3 +153,9 @@ def load_model_settings(env_file: Path | None = None) -> ModelSettings:
             base_url=raw.mistral_base_url, api_key=raw.mistral_api_key
         ),
     )
+
+
+def validate_model_configuration(env_file: Path | None = None) -> None:
+    from backend.app.models.routing import resolve_model_routes
+
+    resolve_model_routes(load_model_settings(env_file))
