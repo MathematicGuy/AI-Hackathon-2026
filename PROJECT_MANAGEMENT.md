@@ -37,7 +37,7 @@ For each accepted implementation change: record intake, create or update the app
 
 | Phase | Milestones | Outcome / exit evidence | Status |
 |---|---|---|---|
-| Phase A — Contract & Testability | M1.0 | Contract tests and renderable mock payloads | 🟨 In progress |
+| Phase A — Contract & Testability | M1.0 | Contract tests and renderable mock payloads | ✅ Done |
 | Phase B — Parallel Foundations | M1.1–M1.4 | Four independently testable foundations | ⬜ Planned |
 | Phase C — Core Vertical Slice | M1.5 | Request reaches role winners with a trace | ⬜ Planned |
 | Phase D — Trustworthy Customer Experience | M1.6–M1.8 | Validated response, multi-turn flows, and UI | ⬜ Planned |
@@ -47,7 +47,7 @@ For each accepted implementation change: record intake, create or update the app
 
 | ID | Milestone | Primary lane | Dependency | Demo proof | Expected Harness proof | Status |
 |---|---|---|---|---|---|---|
-| M1.0 | Architecture & Interface Contract Freeze | A | Approved workflow | Mock request/response and contract tests | Intake, contract validation, trace | 🟨 In progress |
+| M1.0 | Architecture & Interface Contract Freeze | A | Approved workflow | Mock request/response and contract tests | Intake, contract validation, trace | ✅ Done |
 | M1.1 | Catalog Search & Normalization | B | M1.0 | Normalized product search with cursor | Story packet, unit proof, trace | ⬜ Planned |
 | M1.2 | Deterministic Decision Engine | B | M1.0 + fixtures | Eligible set, role winners, deduplicated cards | Story packet, unit proof, trace | ⬜ Planned |
 | M1.3 | Guardrails & Intent/Need Extraction | C | M1.0 | Vietnamese request becomes validated need | Story packet, unit proof, trace | ⬜ Planned |
@@ -171,7 +171,7 @@ flowchart LR
 
 ### Critical path checklist
 
-- [ ] M1.0 contracts frozen
+- [x] M1.0 contracts frozen
 - [ ] M1.1 searchable normalized catalog
 - [ ] M1.2 deterministic filtering, ranking, and deduplication
 - [ ] M1.3 guarded structured need extraction

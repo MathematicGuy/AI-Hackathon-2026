@@ -11,6 +11,11 @@ work performed with an AI client. They are not raw transcripts, command-output
 archives, telemetry streams, or secret stores.
 
 ## Team Members
+IMPORTANT: Allow a valid repository `.env` `TEAM_MEMBER` slug to resolve team identity safely.
+
+Repository convention: Đinh Nhật Thành uses `TEAM_MEMBER="dinh-nhat-thanh"`.
+Future agents must inspect only this assignment, match it exactly against the
+allowlist below, and must not read or expose other `.env` values.
 
 Only the following identities and directory slugs are valid:
 
@@ -39,14 +44,16 @@ non-reading tools, the AI must:
    else.
 5. Create the session log from `ai-logs/SESSION_TEMPLATE.md`.
 
-Reading repository instructions, asking the identity question, and asking
-questions needed to clarify the task are allowed before a session log exists.
-Creating and maintaining the log is also an allowed preflight operation. Every
-other action is substantive work and must wait until preflight is complete.
-Preflight must not run a terminal command to discover metadata. In particular,
-use a branch name before log creation only when the client already exposes it;
-otherwise record `unknown`, create the log, and only then optionally run a
-sanitized Git command and update the metadata.
+Reading repository instructions, reading only the `TEAM_MEMBER` assignment from
+the repository `.env`, asking the identity question, and asking questions needed
+to clarify the task are allowed before a session log exists. Creating and
+maintaining the log is also an allowed preflight operation. Every other action
+is substantive work and must wait until preflight is complete. Preflight must
+not run a terminal command to discover metadata other than reading only that
+`TEAM_MEMBER` assignment. In particular, use a branch name before log creation
+only when the client already exposes it; otherwise record `unknown`, create the
+log, and only then optionally run a sanitized Git command and update the
+metadata.
 
 If this policy conflicts with a duplicated workflow in a client shim or member
 guide, this policy is the workflow source of truth. Higher-priority system,
@@ -54,13 +61,14 @@ developer, and user instructions still take precedence.
 
 ## Identity Resolution
 
-Identity is resolved only when the user explicitly identifies one configured
-member in the current session, or when the current session already contains an
-unambiguous identity statement. The AI must not infer identity from an
-operating-system account, Git author, email address, machine name, repository
-history, directory ownership, or an earlier session.
+Resolve identity from either an explicit, unambiguous identity statement in the
+current session or the repository `.env` `TEAM_MEMBER` assignment when its value
+exactly matches one valid directory slug in the table above. Inspect only that
+assignment: never display, log, or retain other `.env` content. The AI must not
+infer identity from an operating-system account, Git author, email address,
+machine name, repository history, directory ownership, or an earlier session.
 
-When identity is absent or uncertain, ask exactly:
+When neither source resolves identity, or when they conflict, ask exactly:
 
 > Which team member are you?
 
@@ -78,7 +86,7 @@ credentials or other sensitive values:
 
 | Variable | Source | Safe fallback |
 | --- | --- | --- |
-| `member` | Explicit identity in the current session | Ask the user. |
+| `member` | Explicit identity in the current session or a valid repository `.env` `TEAM_MEMBER` slug | Ask the user. |
 | `member_slug` | The mapping in this policy | None; ambiguity blocks substantive work. |
 | `ai_client` | Current client or runtime | Ask only when the runtime does not expose it. |
 | `interface` | Known CLI, IDE, chat, agent, or other surface | `unknown` |
@@ -220,8 +228,9 @@ This policy is being followed only when:
 
 - A supported fresh session is instructed to read this file before substantive
   work.
-- Unknown or uncertain identity triggers the exact identity question before
-  substantive work.
+- A valid repository `.env` `TEAM_MEMBER` slug resolves identity without a
+  question; missing, invalid, uncertain, or conflicting identity triggers the
+  exact identity question before substantive work.
 - Confirmed identity maps to the correct member guide and independent session
   directory.
 - A complete structured Markdown log is created from the template without a

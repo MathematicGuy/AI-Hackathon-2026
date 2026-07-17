@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-product-comparison-advisor"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.128,<1",
+  "httpx>=0.28,<1",
+  "langfuse>=3,<4",
+  "langgraph>=1.0.8,<2",
+  "langgraph-checkpoint-sqlite>=3,<4",
+  "openai>=2,<3",
+  "pydantic>=2.12,<3",
+  "uvicorn>=0.40,<1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=9,<10", "pytest-asyncio>=1.3,<2"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+asyncio_mode = "auto"
+
+[tool.setuptools.packages.find]
+include = ["backend", "backend.*"]

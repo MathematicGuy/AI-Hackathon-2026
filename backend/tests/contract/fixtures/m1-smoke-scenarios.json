@@ -1,0 +1,52 @@
+[
+  {
+    "id": "complete-recommendation",
+    "intent": "new_search",
+    "expected_answer_type": "recommendation"
+  },
+  {
+    "id": "missing-room-size",
+    "intent": "new_search",
+    "expected_answer_type": "clarification"
+  },
+  {
+    "id": "missing-budget",
+    "intent": "new_search",
+    "expected_answer_type": "clarification"
+  },
+  {
+    "id": "changed-constraints",
+    "intent": "change_constraints",
+    "expected_answer_type": "recommendation"
+  },
+  {
+    "id": "show-more",
+    "intent": "more_recommendations",
+    "expected_answer_type": "more_products"
+  },
+  {
+    "id": "compare",
+    "intent": "compare_products",
+    "expected_answer_type": "comparison"
+  },
+  {
+    "id": "product-detail",
+    "intent": "product_detail",
+    "expected_answer_type": "product_detail"
+  },
+  {
+    "id": "availability",
+    "intent": "check_availability",
+    "expected_answer_type": "product_detail"
+  },
+  {
+    "id": "stop",
+    "intent": "stop",
+    "expected_answer_type": "stop"
+  },
+  {
+    "id": "unsupported-category",
+    "intent": "unsupported",
+    "expected_answer_type": "guardrail_block"
+  }
+]
