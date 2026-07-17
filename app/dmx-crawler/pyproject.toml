@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dmx-crawler"
+version = "0.1.0"
+description = "Respectful, location-aware crawler for Điện Máy XANH products"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "DMX crawler maintainers"}]
+dependencies = []
+
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3.1"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+dmx = "dmx_crawler.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["dmx_crawler*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

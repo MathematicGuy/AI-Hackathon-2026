@@ -1,0 +1,16 @@
+categories:
+  - code: laptop
+    name: Laptop
+    url: https://www.dienmayxanh.com/laptop
+    path_prefix: /laptop/
+    active: true
+  - code: tivi
+    name: Tivi
+    url: https://www.dienmayxanh.com/tivi
+    path_prefix: /tivi/
+    active: true
+  - code: tu-lanh
+    name: Tủ lạnh
+    url: https://www.dienmayxanh.com/tu-lanh
+    path_prefix: /tu-lanh/
+    active: true

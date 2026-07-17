@@ -1,0 +1,6 @@
+{
+  "code": 0,
+  "data": {
+    "html": "<div class=\"deliverytime\"><p>Giao đến: TEST REPRESENTATIVE LOCATION, Hồ Chí Minh <a>Thay đổi</a></p><span class=\"ship\">Giao tận nơi</span><span class=\"time\">Trước 18:00 hôm nay</span></div><script>dataDeli.ProvinceId = 3; dataDeli.ProvinceName = \"Hồ Chí Minh\"; dataDeli.WardId = 26734;</script>"
+  }
+}

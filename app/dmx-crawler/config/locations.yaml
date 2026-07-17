@@ -1,0 +1,31 @@
+# Province/ward IDs and aliases are retained for offline logic/tests.  Concrete
+# addresses are intentionally omitted; operators must provide an approved
+# representative test location outside this repository before any live use.
+locations:
+  - code: hcm
+    name: Thành phố Hồ Chí Minh
+    province_id: 1027
+    province_name: Thành phố Hồ Chí Minh
+    ward_id: 100694
+    ward_name: Phường Bến Thành
+    address: null
+    aliases: [Hồ Chí Minh, Bình Dương, Bà Rịa - Vũng Tàu]
+    active: true
+  - code: hanoi
+    name: Thành phố Hà Nội
+    province_id: 1000
+    province_name: Thành phố Hà Nội
+    ward_id: 103320
+    ward_name: Phường Hoàn Kiếm
+    address: null
+    aliases: [Hà Nội]
+    active: true
+  - code: danang
+    name: Thành phố Đà Nẵng
+    province_id: 1020
+    province_name: Thành phố Đà Nẵng
+    ward_id: 101469
+    ward_name: Phường Hải Châu
+    address: null
+    aliases: [Đà Nẵng, Quảng Nam]
+    active: true

@@ -1,0 +1,45 @@
+services:
+  crawler:
+    build:
+      context: .
+      args:
+        DMX_INSTALL_EXTRAS: postgres
+        APP_UID: ${LOCAL_UID:-1000}
+        APP_GID: ${LOCAL_GID:-1000}
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DMX_DATABASE_URL: ${DMX_DATABASE_URL:-sqlite:///data/dmx.db}
+      DMX_SITE_BASE_URL: ${DMX_SITE_BASE_URL:-https://www.dienmayxanh.com}
+      DMX_USER_AGENT: ${DMX_USER_AGENT:-DMXCrawler/0.1 (+respectful research; configure contact)}
+      DMX_MIN_REQUEST_INTERVAL_SECONDS: ${DMX_MIN_REQUEST_INTERVAL_SECONDS:-5}
+      DMX_REQUEST_TIMEOUT_SECONDS: ${DMX_REQUEST_TIMEOUT_SECONDS:-30}
+      DMX_MAX_ATTEMPTS: ${DMX_MAX_ATTEMPTS:-3}
+      DMX_LOCATIONS_FILE: /app/config/locations.yaml
+      DMX_CATEGORIES_FILE: /app/config/categories.yaml
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config:ro
+    init: true
+    restart: "no"
+    command: ["--help"]
+
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dmx}
+      POSTGRES_USER: ${POSTGRES_USER:-dmx}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dmx-local-only}
+    volumes:
+      - dmx_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  dmx_postgres:

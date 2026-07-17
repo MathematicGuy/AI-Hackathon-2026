@@ -1,0 +1,13 @@
+{
+  "data": {
+    "specifications": [
+      {
+        "groupName": "Kết nối",
+        "attributes": [
+          {"displayName": "Bluetooth", "displayValue": "5.3"},
+          {"displayName": "Cổng HDMI", "values": ["HDMI 2.1", "eARC"]}
+        ]
+      }
+    ]
+  }
+}

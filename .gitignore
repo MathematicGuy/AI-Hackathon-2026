@@ -35,6 +35,23 @@ browser_recordings
 /data/
 *.db
 
+# DMX crawler component data and runtime state
+app/dmx-crawler/.env
+app/dmx-crawler/.env.*
+!app/dmx-crawler/.env.example
+app/dmx-crawler/data/*
+!app/dmx-crawler/data/.gitkeep
+app/dmx-crawler/data/raw/
+app/dmx-crawler/data/screenshots/
+app/dmx-crawler/data/browser_states/
+app/dmx-crawler/**/*.db
+app/dmx-crawler/**/*.sqlite
+app/dmx-crawler/**/*.sqlite3
+app/dmx-crawler/**/__pycache__/
+app/dmx-crawler/**/.pytest_cache/
+app/dmx-crawler/logs/
+app/dmx-crawler/**/*.log
+
 # Node / Frontend
 node_modules/
 dist/
