@@ -82,6 +82,19 @@ Create an in-component status and handoff document for the DMX crawler, validate
 - Validation result: Final cached diff check passed and the 70-file staged scope, including this current log, matches the reviewed allow-list.
 - Redactions or logging limitations: No remote URL, credential, raw crawl payload, or binary database content was recorded.
 
+
+### Entry 6 — 2026-07-17T15:50:00.423Z
+
+- Human request summary: Commit and push the documented crawler integration to the new non-main branch.
+- AI response or decision summary: Created the reviewed integration commit, verified its tree and whitespace, pushed it to origin with upstream tracking, and confirmed local/remote parity without touching main.
+- Sanitized terminal, CLI, and tool actions: Committed with hooks enabled and signing disabled for noninteractive operation; inspected commit stat/tree/status and commit diff check; pushed without force; read Trace Spec; compared HEAD with its upstream.
+- Command and tool exit status: Commit, commit-tree checks, push, Trace Spec read, and upstream-parity checks all exited 0. Two guarded final-log update attempts exited 1 before writing because of one double-encoded argument and one stale guard; this corrected update follows a direct log reread.
+- Outcome or important output summary: Integration commit 9ff5f53 contains 70 text files and 9,383 insertions. It is published on feature/dmx-crawler-integration-20260717 with upstream parity 0/0. Main was not pushed, checked out, or rewritten.
+- Files affected or inspected: Git commit and remote branch metadata; no runtime database or crawler output was added.
+- Validation performed: Commit diff check; committed component tree review; branch/upstream SHA comparison; ahead/behind count; post-push status.
+- Validation result: Commit tree contains only source/config/docs/tests/data/.gitkeep and finalized logs; runtime DB/JSON/cache remain absent. Local and remote branch both pointed to 9ff5f53 after the integration push.
+- Redactions or logging limitations: Remote URL, credential helpers, authentication material, and raw remote protocol details are omitted.
+
 ## Files Touched
 
 - Created: ai-logs/luu-tien-duy/sessions/2026-07-17T15-21-30Z_codex_docs-git-e19blktg.md; app/dmx-crawler/docs/handoff/current-status.md
@@ -91,24 +104,26 @@ Create an in-component status and handoff document for the DMX crawler, validate
 
 ## Validation
 
-- Checks performed: Logging-policy preflight; Harness bootstrap/query attempts; focused worktree/branch/ignore/config/documentation inspection; query-only SQLite aggregate verification; compileall; unittest; pytest; Docker Compose config; publishable-file and sensitive-pattern audit.
-- Results: compileall pass; unittest 60/60 pass; pytest 60 tests and 19 subtests pass; Compose config pass; sensitive-pattern scan clean; Harness CLI unavailable; runtime artifacts ignored and outside staging.
+- Checks performed: Logging-policy preflight; Harness bootstrap/query attempts; focused worktree/branch/ignore/config/documentation inspection; query-only SQLite aggregate verification; compileall; unittest; pytest; Docker Compose config; publishable-file and sensitive-pattern audit; cached and committed diff checks; committed-tree review; push and upstream-parity verification.
+- Results: compileall pass; unittest 60/60 pass; pytest 60 tests and 19 subtests pass; Compose config pass; sensitive-pattern scan clean; cached/commit diff checks pass; integration commit 9ff5f53 pushed with upstream parity 0/0; Harness CLI unavailable; runtime artifacts ignored and absent from commit.
 
 ## Errors and Blockers
 
-- Errors: The first template read used ai-logs/TEMPLATE.md, which does not exist; corrected to ai-logs/SESSION_TEMPLATE.md. One session-log update patch had invalid hunk formatting and a retry hit the sandbox loopback failure; neither changed the file. Harness direct bootstrap lacked execute permission, the bash fallback reported the pinned CLI missing, and the matrix binary is absent. The first cached check after staging this current log found a blank line at EOF; it was normalized and the check then passed.
+- Errors: The first template read used ai-logs/TEMPLATE.md, which does not exist; corrected to ai-logs/SESSION_TEMPLATE.md. One session-log update patch had invalid hunk formatting and a retry hit the sandbox loopback failure; neither changed the file. Harness direct bootstrap lacked execute permission, the bash fallback reported the pinned CLI missing, and the matrix binary is absent. Two guarded final-log updates failed before writing because of an argument-encoding mistake and a stale guard; the log was reread and the corrected update succeeded. The first cached check after staging this current log found a blank line at EOF; it was normalized and the check then passed.
 - Blockers: Durable Harness intake/trace cannot be recorded in its database.
 - Disposition: Used a deterministic guarded file-update fallback only after apply_patch was unavailable; continue within the explicitly authorized component/Git scope and report the infrastructure limitation.
 
 ## Final Outcome
 
-- Status: In progress
-- Outcome summary: Documentation, validation, branch creation, and exact staging are complete; commit, push, and log finalization remain.
-- Unresolved work: Commit the reviewed staged tree; push; finalize and commit this log.
-- Suggested next actions: Stage this current in-progress log, rerun cached checks, and create the integration commit.
+- Status: Complete
+- Outcome summary: The crawler component, authoritative current-status handoff, scoped ignore rules, offline tests, and sanitized session evidence were committed and pushed to feature/dmx-crawler-integration-20260717. Integration commit: 9ff5f53.
+- Unresolved work: Two historical session logs still marked In progress remain untracked and were intentionally excluded. The missing pinned Harness CLI prevented durable intake/trace. Technical follow-ups are listed in app/dmx-crawler/docs/handoff/current-status.md.
+- Suggested next actions: Review the branch and open a pull request when ready; do not merge to main or resume live crawling without separate approval.
+- Duration estimate: Approximately 2400 seconds.
+- Token estimate: Unavailable in this interface.
 
 ## Redaction Summary
 
-- Redactions applied: Remote and credential-bearing values will be omitted from logs and reports.
-- Logging limitations: Summaries only; no raw request/response payloads or long terminal output.
+- Redactions applied: Remote URL, credential-bearing values, raw crawl payloads, and binary database contents were omitted.
+- Logging limitations: Sanitized summaries only; no raw request/response payloads, credentials, remote protocol output, or binary database content.
 - Sensitive values were not intentionally recorded: Yes
