@@ -96,7 +96,7 @@ flowchart TD
 
     INPUT_GUARD["Input Guardrail<br/>word limit + regex + NeMo + scope"]
 
-    INTENT["GPT-5.4 Nano<br/>Intent Classifier + Need Extractor"]
+    INTENT["Configured role routes<br/>main: intent classifier<br/>extraction: need extractor"]
 
     MERGE["Merge Agent State<br/>needs + confirmed assumptions<br/>shown products + conversation state"]
 
@@ -120,7 +120,7 @@ flowchart TD
 
     DEDUPE["Deduplicate UI<br/>merge badges by product_id<br/>add useful alternative"]
 
-    EXPLAIN["deepseek/deepseek-v4-flash via OpenRouter<br/>Grounded selling-point explanation"]
+    EXPLAIN["Configured main route<br/>Grounded selling-point explanation<br/>fallback on provider failure"]
 
     OUTPUT_GUARD["Output Guardrail<br/>Instructor + Pydantic<br/>grounding rules + NeMo"]
 
@@ -258,9 +258,16 @@ Unsupported:
 #### Runtime model
 
 ```yaml
-provider: OpenAI
-model_role: intent_classifier_and_need_extractor
-model: GPT-5.4 Nano
+intent_classification:
+  model_role: main
+  provider: ${MAIN_LLM_PROVIDER}
+  model: ${MAIN_LLM_MODEL}
+  fallback_role: fallback
+need_extraction:
+  model_role: extraction
+  provider: ${EXTRACTION_LLM_PROVIDER}
+  model: ${EXTRACTION_LLM_MODEL}
+  fallback_role: fallback
 structured_output: required
 ```
 
@@ -704,10 +711,10 @@ Never change a true role winner merely to make the UI appear diverse.
 #### Runtime model
 
 ```yaml
-provider: OpenAI
-model_role: grounded_recommendation_explainer
-provider: OpenRouter
-model: deepseek/deepseek-v4-flash
+model_role: main
+provider: ${MAIN_LLM_PROVIDER}
+model: ${MAIN_LLM_MODEL}
+fallback_role: fallback
 structured_output: required
 ```
 
@@ -1001,8 +1008,8 @@ Rules:
 The coding agent belongs to the engineering harness, not to the customer runtime.
 
 ```yaml
-provider: OpenRouter
-model: deepseek/deepseek-v4-flash
+provider: configured by the engineering harness
+model: configured by the engineering harness
 allowed:
   - repository analysis
   - code generation
@@ -1054,8 +1061,18 @@ advisor_turn
   "session_id": "session_123",
   "request_id": "request_456",
   "turn_number": 4,
-  "intent_model": "gpt-5.4-nano",
-"response_model": "deepseek/deepseek-v4-flash",
+  "intent_model_role": "main",
+  "intent_provider": "<resolved-provider>",
+  "intent_model": "<resolved-model>",
+  "extraction_model_role": "extraction",
+  "extraction_provider": "<resolved-provider>",
+  "extraction_model": "<resolved-model>",
+  "explanation_model_role": "main",
+  "explanation_provider": "<resolved-provider>",
+  "explanation_model": "<resolved-model>",
+  "judge_model_role": "judge",
+  "judge_provider": "<resolved-provider>",
+  "judge_model": "<resolved-model>",
   "prompt_version": "recommendation-v1",
   "aircon_rules_version": "v1",
   "catalog_snapshot": "catalog-m1",
@@ -1160,41 +1177,61 @@ milestone_1_release_gate:
 
 ### 10.1 Intent model failure
 
-- use a deterministic keyword-based intent fallback for supported intents;
+- exhaust the configured `main` then `fallback` route order;
+- after both routes fail, use a deterministic keyword-based intent fallback
+  for supported intents;
 - mark `intent_model_degraded`;
 - avoid destructive state changes;
 - ask one safe clarification when intent remains ambiguous.
 
-### 10.2 NeMo unavailable
+### 10.2 Need extraction failure
+
+- exhaust the configured `extraction` then `fallback` route order;
+- after both routes fail, preserve the prior need state;
+- mark extraction degraded;
+- never invent numeric values.
+
+### 10.3 Explanation provider failure
+
+- exhaust the configured `main` then `fallback` route order;
+- after both routes fail, render the deterministic grounded response;
+- record the provider degradation.
+
+### 10.4 Judge provider failure
+
+- use the configured `judge` route only;
+- fail closed without a substituted score.
+
+### 10.5 NeMo unavailable
 
 - keep word-count, regex, scope, and deterministic output checks;
 - mark `guardrail_degraded`;
 - continue only for low-risk shopping requests.
 
-### 10.3 Product tool unavailable
+### 10.6 Product tool unavailable
 
 > “Tôi chưa thể truy xuất dữ liệu sản phẩm lúc này nên chưa thể đưa ra gợi ý đáng tin cậy. Bạn có thể thử lại sau.”
 
 Do not generate products from model memory.
 
-### 10.4 Missing product evidence
+### 10.7 Missing product evidence
 
 - preserve the product only if missing data does not invalidate eligibility;
 - lower data-confidence score where applicable;
 - disclose the missing field;
 - do not make claims based on that field.
 
-### 10.5 No eligible products
+### 10.8 No eligible products
 
 Use constraint recovery. Never present an ineligible product as a normal recommendation.
 
-### 10.6 Output validation failure
+### 10.9 Output validation failure
 
 - render deterministic product names, prices, role badges, and source links;
 - omit unsupported natural-language claims;
 - record the validation error in Langfuse.
 
-### 10.7 Memory failure
+### 10.10 Memory failure
 
 - continue the current turn using in-memory state;
 - return the response;
@@ -1360,7 +1397,7 @@ eligible products
 
 ```text
 verified ranking
-→ deepseek/deepseek-v4-flash explanation via OpenRouter
+→ configured `main` then `fallback` grounded explanation
 → Instructor/Pydantic
 → deterministic grounding checks
 → structured output
@@ -1424,7 +1461,9 @@ Milestone 1 passes only when all conditions below are met:
 
 - a Vietnamese request reaches the FastAPI Gateway;
 - input guardrails run before the intent model;
-- GPT-5.4 Nano returns validated structured intent and need fields;
+- the configured `main` route returns validated structured intent and the
+  configured `extraction` route returns validated need fields, each using
+  `fallback` only after provider failure;
 - state is merged without overwriting explicit user corrections;
 - the system asks no more than one clarification question per response;
 - no cycle exceeds three clarification questions;
@@ -1436,7 +1475,7 @@ Milestone 1 passes only when all conditions below are met:
 - truthful duplicate role winners are preserved;
 - the UI contains no duplicate product card;
 - an additional alternative has an explicit selection reason;
-- deepseek/deepseek-v4-flash explains only validated products and evidence;
+- the configured explanation route explains only validated products and evidence;
 - each product includes a Main Selling Point linked to the user’s priority;
 - trade-offs are visible;
 - price-premium verdict is direct when evidence is sufficient;
@@ -1474,8 +1513,9 @@ LLM understands; deterministic code filters and ranks; LLM explains
 Accepted
 
 ADR-007 — Runtime model routing
-GPT-5.4 Nano for intent and extraction
-deepseek/deepseek-v4-flash through OpenRouter for grounded explanation
+Intent and explanation use `main` then `fallback`
+Need extraction uses `extraction` then `fallback`
+Judge evaluation uses `judge` only and fails closed
 Accepted
 
 ADR-008 — LangGraph state and persistence
@@ -1509,7 +1549,7 @@ Accepted
 
 Any change that affects one of the following requires a new ADR or an explicit amendment to this document:
 
-- runtime model role;
+- runtime model responsibility or failure policy;
 - workflow node order;
 - clarification limit;
 - hard constraints;
@@ -1522,3 +1562,7 @@ Any change that affects one of the following requires a new ADR or an explicit a
 - product-category scope.
 
 Implementation details may evolve, but they must preserve the approved architecture and behavior contracts in this document.
+
+Provider and model identifier changes are operator environment edits and do
+not require a document amendment. Changes to role responsibilities, route
+order, or failure policy do require architecture and ADR review.
