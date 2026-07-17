@@ -1,0 +1,49 @@
+{
+  "version": "m1-simple-ranking-v1",
+  "purpose": "Deterministic fixture for unit tests and golden evals only. It is aligned with the PRD role definitions but is not a claim about production weights.",
+  "eligibility": {
+    "category": "air_conditioner",
+    "stock_policy": [
+      "available"
+    ],
+    "room_size_rule": "room_min <= room_size_m2 <= room_max",
+    "budget_rule": "sale_price_vnd <= budget_max_vnd when budget is a hard constraint",
+    "required_evidence": {
+      "energy_saving_primary": [
+        "cspf"
+      ],
+      "low_noise_primary": [
+        "indoor_noise_min_db"
+      ]
+    }
+  },
+  "best_overall_weights": {
+    "room_fit": 0.25,
+    "primary_priority_fit": 0.4,
+    "secondary_priority_fit": 0.15,
+    "data_confidence": 0.1,
+    "practicality": 0.05,
+    "price_position": 0.05
+  },
+  "best_value_formula": "(0.60*primary + 0.15*secondary + 0.15*room_fit + 0.10*data_confidence) / (price / 15000000)^1.35",
+  "cheapest_qualified": "minimum sale_price_vnd in eligible set",
+  "normalization_ranges": {
+    "cspf": [
+      4.5,
+      6.5
+    ],
+    "noise_db": [
+      16,
+      24
+    ],
+    "price_vnd": [
+      10000000,
+      20000000
+    ]
+  },
+  "tie_breakers": [
+    "higher data confidence",
+    "lower sale price",
+    "lexicographically smaller product_id"
+  ]
+}
