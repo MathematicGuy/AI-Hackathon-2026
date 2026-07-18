@@ -121,22 +121,26 @@ def _has_over_long_url(message: str) -> bool:
     )
 
 
-def _is_in_scope(low: str) -> bool:
-    return any(marker in low for marker in _IN_SCOPE_MARKERS)
-
-
 def _is_disallowed_action(low: str) -> bool:
     return any(marker in low for marker in _DISALLOWED_ACTION_MARKERS)
 
 
-def _mentions_other_category(low: str) -> bool:
-    return any(marker in low for marker in _OTHER_CATEGORY_MARKERS)
-
-
 def evaluate_input(
-    message: str, *, nemo: NemoInputRail | None = None
+    message: str,
+    *,
+    nemo: NemoInputRail | None = None,
+    in_scope_markers: tuple[str, ...] | None = None,
+    other_category_markers: tuple[str, ...] | None = None,
 ) -> InputGuardResult:
     nemo = nemo or default_input_rail()
+    scope_markers = (
+        in_scope_markers if in_scope_markers is not None else _IN_SCOPE_MARKERS
+    )
+    category_markers = (
+        other_category_markers
+        if other_category_markers is not None
+        else _OTHER_CATEGORY_MARKERS
+    )
     flags: list[str] = []
 
     # 1. Word count.
@@ -170,12 +174,12 @@ def evaluate_input(
     #    category blocks only when there is no máy lạnh signal, so a legitimate
     #    request that merely references another appliance is not overfired.
     low = message.lower()
-    in_scope = _is_in_scope(low)
+    in_scope = any(marker in low for marker in scope_markers)
     if _is_disallowed_action(low):
         return InputGuardResult(
             blocked=True, stage=STAGE_SCOPE, reason="out_of_scope", flags=tuple(flags)
         )
-    if _mentions_other_category(low) and not in_scope:
+    if any(marker in low for marker in category_markers) and not in_scope:
         return InputGuardResult(
             blocked=True, stage=STAGE_SCOPE, reason="out_of_scope", flags=tuple(flags)
         )
