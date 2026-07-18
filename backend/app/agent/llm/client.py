@@ -7,11 +7,38 @@ today. API keys are never logged. Tests inject a fake transport; no network in
 the test suite.
 """
 
+import asyncio
 import json
+import logging
 import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+# Transient provider conditions worth one retry before moving to the next
+# candidate: rate limits, upstream overload, and timeouts.
+_TRANSIENT_MARKERS = (
+    "429",
+    "rate limit",
+    "ratelimit",
+    "timeout",
+    "timed out",
+    "overloaded",
+    "502",
+    "503",
+    "504",
+    "temporarily unavailable",
+)
+
+
+def _is_transient(exc: Exception) -> bool:
+    status = getattr(exc, "status_code", None)
+    if isinstance(status, int):
+        return status == 429 or 500 <= status < 600
+    text = str(exc).lower()
+    return any(marker in text for marker in _TRANSIENT_MARKERS)
 
 from backend.app.agent.catalog.registry import CategoryRegistry
 from backend.app.agent.contracts import AgentUnderstanding
@@ -190,12 +217,14 @@ class LLMUnderstandingExtractor:
         registry: CategoryRegistry | None = None,
         transport=None,
         timeout: float = 25.0,
+        retry_backoff: float = 0.5,
     ) -> None:
         if not candidates:
             raise ValueError("no LLM candidates configured")
         self.candidates = candidates
         self.registry = registry or CategoryRegistry()
         self.timeout = timeout
+        self.retry_backoff = retry_backoff
         self._transport = transport
 
     async def _call(self, candidate: LLMCandidate, system: str, user: str) -> str:
@@ -227,11 +256,25 @@ class LLMUnderstandingExtractor:
         )
         last_error: Exception | None = None
         for candidate in self.candidates:
-            try:
-                raw = await self._call(candidate, system, message)
-                return AgentUnderstanding.model_validate(_extract_json(raw))
-            except Exception as exc:  # provider, parse, or validation failure
-                last_error = exc
+            for attempt in (1, 2):
+                try:
+                    raw = await self._call(candidate, system, message)
+                    return AgentUnderstanding.model_validate(_extract_json(raw))
+                except Exception as exc:  # provider, parse, or validation failure
+                    last_error = exc
+                    transient = _is_transient(exc)
+                    # Never log the message or the key, only the route and cause.
+                    logger.warning(
+                        "llm.extract_failed model=%s attempt=%d transient=%s error=%s",
+                        candidate.model,
+                        attempt,
+                        transient,
+                        exc,
+                    )
+                    if transient and attempt == 1:
+                        await asyncio.sleep(self.retry_backoff)
+                        continue
+                    break
         raise ExtractorError(str(last_error))
 
 
@@ -296,7 +339,11 @@ class LLMPolisher:
                 polished = (await self._call(candidate, _POLISH_SYSTEM, text)).strip()
                 if polished:
                     return polished
-            except Exception:
+                logger.warning("llm.polish_empty model=%s", candidate.model)
+            except Exception as exc:
+                logger.warning(
+                    "llm.polish_failed model=%s error=%s", candidate.model, exc
+                )
                 continue
         return text
 

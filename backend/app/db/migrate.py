@@ -7,10 +7,14 @@ Re-running only applies files not yet recorded.
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from backend.app.config.db_settings import load_data_platform_settings
 from backend.app.db.connection import connect
+from backend.app.logging_config import configure_logging
+
+logger = logging.getLogger(__name__)
 
 MIGRATIONS_DIR = Path(__file__).resolve().parents[2] / "migrations"
 
@@ -148,15 +152,20 @@ def migrate() -> list[str]:
                     (path.stem,),
                 )
             applied_now.append(path.stem)
-            print(f"applied {path.name}")
+            logger.info("migrate.applied file=%s", path.name)
     return applied_now
 
 
 def main() -> None:
+    configure_logging()
     settings = load_data_platform_settings()
-    print(f"migrate target: {settings.safe_target()}")
+    # safe_target() is password-free by construction.
+    logger.info("migrate.target target=%s", settings.safe_target())
     applied = migrate()
-    print("database up to date" if not applied else f"applied {len(applied)} migration(s)")
+    if applied:
+        logger.info("migrate.done applied=%d", len(applied))
+    else:
+        logger.info("migrate.done up_to_date=true")
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ from backend.app.agent.graph import AgentDependencies
 from backend.app.api.errors import register_error_handlers
 from backend.app.api.routes import brands, categories, health, products
 from backend.app.config.db_settings import load_data_platform_settings
+from backend.app.logging_config import configure_logging
 
 API_DESCRIPTION = """
 Read-only Product Catalog API over the provided Điện Máy XANH dataset
@@ -31,6 +32,7 @@ Intended tool surface for agents:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_logging()
     settings = load_data_platform_settings()
     pool = ConnectionPool(
         settings.conninfo(),

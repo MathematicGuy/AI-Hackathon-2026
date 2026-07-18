@@ -18,8 +18,15 @@ No product records or database migrations are introduced.
 3. The runner creates a bundle from the checked-out commit, excluding `.env*`,
    credentials, caches, and generated dependency folders.
 4. SSH creates a timestamped release directory, uploads/extracts the bundle,
-   and runs the root `docker-compose.yml` frontend service using the host-side
-   `.env`.
+   and brings up the stack with `docker-compose.production.yml` using the
+   host-side `.env.production`.
+
+   Revised by US-125 (2026-07-19): this step originally named the root
+   `docker-compose.yml`, which was a leftover website-cloner template with no
+   backend and no database. That file has been removed; the production stack
+   is `docker-compose.production.yml` (nginx, frontend, backend, db) and its
+   environment file is `.env.production`, never the developer `.env`. Run
+   `scripts/deploy-preflight.sh` before the first deploy on a host.
 5. The remote script waits for health, switches `current` only after success,
    and retains the prior release.
 6. On failure it leaves `current` unchanged, emits bounded diagnostics, and
@@ -35,9 +42,8 @@ No product records or database migrations are introduced.
 - Non-secret repository/environment variables may set deploy root, SSH port,
   health URL, and Compose path with safe defaults.
 - Ubuntu 22.04+ must have Docker Engine, Compose plugin, a non-interactive
-  deploy user, and a server-side `.env` outside the release bundle. The
-  frontend container must expose its configured host port and answer its root
-  health check.
+  deploy user, and a server-side `.env.production` outside the release bundle.
+  The nginx container is the only published port and answers `/health`.
 
 No application API route or response contract changes.
 

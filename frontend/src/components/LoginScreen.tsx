@@ -4,9 +4,16 @@ import { CheckCircle2, History, KeyRound, Phone, ShoppingBag, Smartphone } from 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DemoNotice } from "@/components/DemoNotice";
 import { useToast } from "@/components/ToastProvider";
 
 type LoginStep = "phone" | "otp" | "success";
+
+// This screen is a demo: there is no auth backend, no SMS is sent, and nothing
+// is authenticated. The fixed code exists so the flow can be walked through.
+// It is deliberately not shown to the user. Replacing this with real
+// authentication is out of scope for US-125.
+const DEMO_OTP = "123456";
 
 export function LoginScreen() {
   const router = useRouter();
@@ -39,15 +46,15 @@ export function LoginScreen() {
       showToast({
         variant: "success",
         title: "Đã gửi mã xác nhận",
-        description: "Dùng mã 123456 để tiếp tục.",
+        description: "Vui lòng nhập mã gồm 6 chữ số.",
       });
     }, 650);
   };
 
   const submitOtp = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (otp !== "123456") {
-      setError("Mã xác nhận chưa đúng. Mã dùng cho lượt này là 123456.");
+    if (otp !== DEMO_OTP) {
+      setError("Mã xác nhận chưa đúng.");
       showToast({
         variant: "error",
         title: "Mã xác nhận không đúng",
@@ -106,6 +113,12 @@ export function LoginScreen() {
       <div className="rounded-xl bg-white px-5 py-10 shadow-md sm:px-10 md:py-14">
         <div className="mx-auto max-w-[390px]">
           <h1 className="text-center text-3xl font-normal text-slate-800">Đăng nhập</h1>
+          <div className="mt-6">
+            <DemoNotice>
+              màn hình này chưa kết nối hệ thống tài khoản thật, không có tin
+              nhắn OTP nào được gửi đi.
+            </DemoNotice>
+          </div>
           {step === "phone" ? (
             <form onSubmit={submitPhone} className="mt-9" noValidate>
               <label htmlFor="login-phone" className="sr-only">Số điện thoại mua hàng</label>

@@ -35,7 +35,11 @@ from backend.app.agent.policies.answer import (
 from backend.app.agent.policies.corpus import PolicyCorpus
 from backend.app.agent.respond import format_trieu, format_vnd, render_suggestions
 from backend.app.agent.tools.aggregate import category_overview
-from backend.app.agent.tools.compare import compare_products
+from backend.app.agent.tools.compare import (
+    ComparisonRow,
+    ComparisonView,
+    compare_products,
+)
 from backend.app.agent.tools.search import search_products
 from backend.app.agent.tools.suggest import suggest_products
 from backend.app.agent.validate import degrade_to_facts, validate_response
@@ -149,6 +153,9 @@ class AgentReply:
     intent: str
     flags: list[str] = field(default_factory=list)
     presented_ids: list[str] = field(default_factory=list)
+    # Set only on comparison turns, so the client renders the same evidence
+    # the text was built from (US-125). None everywhere else.
+    comparison: ComparisonView | None = None
 
 
 def _agent_scope_markers(registry: CategoryRegistry) -> tuple[str, ...]:
@@ -879,22 +886,46 @@ def _compare_flow(
     # itself on the axes that matter for this product type (live-test 3).
     selected = [p for pid in ids for p in deps.products if p.productidweb == pid]
     dim_lines: list[str] = []
+    # The same loop feeds the text lines and the structured table the client
+    # renders, so the two can never disagree. A row needs a real value on both
+    # sides; `dimension_display` already returns None for placeholder specs.
+    rows: list[ComparisonRow] = []
     if len(selected) == 2:
         first, second = selected
         for dim in dimensions_for(state.need.category_code):
             shown_a = dimension_display(first, dim)
             shown_b = dimension_display(second, dim)
-            if shown_a is None or shown_b is None or shown_a == shown_b:
+            if shown_a is None or shown_b is None:
                 continue
-            line = f"• {dim.label}: {shown_a} vs {shown_b}"
+            winner_id: str | None = None
             if rankable(dim):
                 verdict = better_of(
                     dimension_value(first, dim), dimension_value(second, dim), dim
                 )
                 if verdict == -1:
-                    line += f" → {first.name} nhỉnh hơn"
+                    winner_id = first.productidweb
                 elif verdict == 1:
-                    line += f" → {second.name} nhỉnh hơn"
+                    winner_id = second.productidweb
+            rows.append(
+                ComparisonRow(
+                    label=dim.label,
+                    unit=dim.unit,
+                    explain=dim.explain,
+                    values={
+                        first.productidweb: shown_a,
+                        second.productidweb: shown_b,
+                    },
+                    winner_id=winner_id,
+                )
+            )
+            # The text keeps listing only the axes where the two differ.
+            if shown_a == shown_b:
+                continue
+            line = f"• {dim.label}: {shown_a} vs {shown_b}"
+            if winner_id == first.productidweb:
+                line += f" → {first.name} nhỉnh hơn"
+            elif winner_id == second.productidweb:
+                line += f" → {second.name} nhỉnh hơn"
             dim_lines.append(line)
     if dim_lines:
         lines.append("")
@@ -959,4 +990,13 @@ def _compare_flow(
     validation = validate_response(text, allowed_products=allowed)
     if not validation.ok:
         text = degrade_to_facts(allowed)
-    return AgentReply(text=text, intent="compare_products", flags=flags)
+    return AgentReply(
+        text=text,
+        intent="compare_products",
+        flags=flags,
+        comparison=ComparisonView(
+            products=comparison.items,
+            rows=rows,
+            price_delta=comparison.price_delta,
+        ),
+    )

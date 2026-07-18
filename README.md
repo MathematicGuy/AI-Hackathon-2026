@@ -186,9 +186,11 @@ curl -s -X POST localhost:8000/api/v1/products/search \
 
 `docker-compose.production.yml` runs nginx, the frontend, the backend, and the
 database as one project on one network, so the stack has a single lifecycle,
-health gate, and rollback unit.
+health gate, and rollback unit. It reads `.env.production`, never the developer
+`.env`.
 
 ```bash
+bash scripts/deploy-preflight.sh   # checks the env file, creates the volume
 docker compose -f docker-compose.production.yml up -d --build
 ```
 
@@ -220,14 +222,17 @@ and this stack is the outermost edge.
 
 ### First deploy on a new host
 
-Two steps are easy to miss, and both fail loudly rather than silently:
+Two steps are easy to miss. `scripts/deploy-preflight.sh` checks both and
+refuses to pass until they are satisfied:
 
 ```bash
-cp .env.example .env          # set POSTGRES_PASSWORD and the provider keys
+# Production credentials live in their own file. Any key that has been in a
+# working tree is considered exposed — rotate it before it goes in here.
+cp .env.production.example .env.production   # set POSTGRES_PASSWORD + a provider key
 
-# The catalog volume is declared external, so Compose will not invent it.
-# Without this, `up` aborts with: external volume ... not found
-docker volume create advisor-data-platform_pgdata
+# Checks the env file and creates the external catalog volume, which Compose
+# will not invent for itself (`up` would abort: external volume ... not found).
+bash scripts/deploy-preflight.sh
 
 docker compose -f docker-compose.production.yml up -d --build
 
@@ -238,6 +243,12 @@ docker compose -f docker-compose.production.yml run --rm ingestion
 
 The volume is external on purpose: `docker compose down -v` cannot delete it,
 so a redeploy cannot wipe the catalog.
+
+The backend runs with `REQUIRE_POSTGRES=true`, forced in the compose file: if
+the database is unreachable it fails to start instead of quietly serving the
+read-only Excel workbook. The agent endpoints are unauthenticated, so nginx
+rate limits `/api/v1/agent/` and the application caps message length
+(`AGENT_MAX_MESSAGE_CHARS`) and request rate (`AGENT_RATE_LIMIT_REQUESTS`).
 
 The frontend calls the agent at the relative path `/api/v1/agent/respond`. No
 backend hostname is baked into the client bundle, and there is no

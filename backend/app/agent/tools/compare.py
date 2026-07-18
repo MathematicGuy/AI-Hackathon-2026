@@ -28,6 +28,35 @@ class Comparison:
     price_delta: int | None
 
 
+@dataclass(frozen=True, slots=True)
+class ComparisonRow:
+    """One dimension of the comparison table, as the client renders it.
+
+    `values` is keyed by `productidweb` and holds the verbatim display text
+    from the record. `winner_id` is set only where the dimension is rankable
+    and one side actually wins.
+    """
+
+    label: str
+    unit: str
+    explain: str
+    values: dict[str, str]
+    winner_id: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ComparisonView:
+    """Presentation projection of a comparison the agent already computed.
+
+    Carried alongside the reply text so the client renders the same evidence
+    the text is built from, instead of owning its own product data.
+    """
+
+    products: list[ComparisonItem]
+    rows: list[ComparisonRow]
+    price_delta: int | None = None
+
+
 def compare_products(
     products: list[GenericProduct], product_ids: tuple[str, ...]
 ) -> Comparison:

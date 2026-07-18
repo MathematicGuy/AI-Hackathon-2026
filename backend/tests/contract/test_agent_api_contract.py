@@ -47,7 +47,16 @@ def test_response_carries_the_fields_the_frontend_reads(client):
         "text",
         "flags",
         "presented_ids",
+        "comparison",
     }
+
+
+def test_comparison_is_null_off_a_comparison_turn(client):
+    """The structured table is additive: absent unless the turn compares."""
+    body = client.post(
+        "/api/v1/agent/respond", json={"message": "tôi muốn mua tủ lạnh"}
+    ).json()
+    assert body["comparison"] is None
 
 
 def test_session_id_round_trips(client):

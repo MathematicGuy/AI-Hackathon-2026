@@ -13,15 +13,23 @@ import {
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SafeImage } from "@/components/SafeImage";
-import { ChatComparisonResult } from "@/components/chat/ChatComparisonResult";
+import {
+  ChatComparisonResult,
+  type AgentComparison,
+} from "@/components/chat/ChatComparisonResult";
 import { useToast } from "@/components/ToastProvider";
+
+// A stalled backend must not leave the composer spinning forever.
+const REQUEST_TIMEOUT_MS = 60_000;
 
 interface ChatMessage {
   id: number;
   role: "assistant" | "user";
   text: string;
   time: string;
-  kind?: "comparison";
+  // Set from the agent's own `comparison` block, never inferred from the
+  // query text: the table and the answer come from one source.
+  comparison?: AgentComparison;
 }
 
 const QUICK_QUESTIONS = [
@@ -36,13 +44,6 @@ function normalizeChatQuery(query: string) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("vi-VN")
     .replace(/đ/g, "d");
-}
-
-function isComparisonQuery(query: string) {
-  const normalized = normalizeChatQuery(query);
-  return (
-    /so sanh/.test(normalized) && /may lanh|dieu hoa/.test(normalized)
-  );
 }
 
 function formatChatTime(date: Date) {
@@ -68,12 +69,12 @@ function statusForQuery(query: string) {
     return "Để em kiểm tra kho hàng ạ…";
   }
   if (/so sanh/.test(normalized)) {
-    return "Em đang so sánh các mẫu giúp mình ạ…";
+    return "Em đang so sánh các mẫu giúp anh/chị ạ…";
   }
   if (/khuyen mai|uu dai|giam gia/.test(normalized)) {
     return "Em đang tổng hợp ưu đãi đang chạy ạ…";
   }
-  return "Em đang lọc sản phẩm phù hợp cho mình ạ…";
+  return "Em đang lọc sản phẩm phù hợp cho anh/chị ạ…";
 }
 
 function suggestionForPath(pathname: string) {
@@ -146,7 +147,7 @@ export function ChatbotAssistant() {
       scroller.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
-    if (latestMessage?.kind === "comparison" && latestComparison.current) {
+    if (latestMessage?.comparison && latestComparison.current) {
       const comparisonTop =
         latestComparison.current.getBoundingClientRect().top -
         scroller.getBoundingClientRect().top +
@@ -233,6 +234,10 @@ export function ChatbotAssistant() {
     setPendingStatus(statusForQuery(query));
     const assistantId = sequence.current++;
     let started = false;
+    // Bounds the whole turn, including the streaming read loop: without it a
+    // stalled backend leaves the UI in "đang trả lời" with no way out.
+    const abort = new AbortController();
+    const timeout = window.setTimeout(() => abort.abort(), REQUEST_TIMEOUT_MS);
 
     try {
       // After an edit, rebuild the server-side session by replaying the
@@ -249,12 +254,16 @@ export function ChatbotAssistant() {
               session_id: sessionId.current,
               message: past,
             }),
+            signal: abort.signal,
           });
-          if (replayResponse.ok) {
-            const data = (await replayResponse.json()) as { session_id?: string };
-            if (data.session_id) {
-              sessionId.current = data.session_id;
-            }
+          // A failed replay silently desyncs the server-side context, so it
+          // must not pass unnoticed.
+          if (!replayResponse.ok) {
+            throw new Error(`replay HTTP ${replayResponse.status}`);
+          }
+          const data = (await replayResponse.json()) as { session_id?: string };
+          if (data.session_id) {
+            sessionId.current = data.session_id;
           }
         }
         setPendingStatus(statusForQuery(query));
@@ -263,6 +272,7 @@ export function ChatbotAssistant() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: sessionId.current, message: query }),
+        signal: abort.signal,
       });
       if (!response.ok || !response.body) {
         throw new Error(`HTTP ${response.status}`);
@@ -286,6 +296,7 @@ export function ChatbotAssistant() {
             type: string;
             text?: string;
             session_id?: string;
+            comparison?: AgentComparison | null;
           };
           if (event.type === "chunk" && event.text !== undefined) {
             if (!started) {
@@ -298,7 +309,6 @@ export function ChatbotAssistant() {
                   role: "assistant",
                   text: event.text ?? "",
                   time: formatChatTime(new Date()),
-                  kind: isComparisonQuery(query) ? "comparison" : undefined,
                 },
               ]);
             } else {
@@ -310,24 +320,51 @@ export function ChatbotAssistant() {
                 ),
               );
             }
-          } else if (event.type === "done" && event.session_id) {
-            sessionId.current = event.session_id;
+          } else if (event.type === "done") {
+            if (event.session_id) {
+              sessionId.current = event.session_id;
+            }
+            // The table arrives with the final event, built by the agent from
+            // the same records the reply text quotes.
+            if (event.comparison) {
+              const table = event.comparison;
+              setMessages((current) =>
+                current.map((message) =>
+                  message.id === assistantId
+                    ? { ...message, comparison: table }
+                    : message,
+                ),
+              );
+            }
           }
         }
       }
       if (!started) {
         throw new Error("empty stream");
       }
-    } catch {
+    } catch (error) {
+      const timedOut =
+        error instanceof DOMException && error.name === "AbortError";
       if (!started) {
         setFailedQuery(query);
         showToast({
           variant: "error",
-          title: "Chưa nhận được phản hồi",
-          description: "Không kết nối được trợ lý AI. Anh/chị có thể thử lại ngay.",
+          title: timedOut ? "Phản hồi quá lâu" : "Chưa nhận được phản hồi",
+          description: timedOut
+            ? "Trợ lý chưa trả lời kịp. Anh/chị thử lại giúp em ạ."
+            : "Không kết nối được trợ lý AI. Anh/chị có thể thử lại ngay.",
+        });
+      } else if (timedOut) {
+        // Partial answer already on screen: say so instead of leaving a
+        // truncated reply looking complete.
+        showToast({
+          variant: "error",
+          title: "Phản hồi bị gián đoạn",
+          description: "Câu trả lời chưa hoàn tất. Anh/chị hỏi lại giúp em ạ.",
         });
       }
     } finally {
+      window.clearTimeout(timeout);
       setIsSending(false);
       setPendingStatus("");
     }
@@ -378,7 +415,20 @@ export function ChatbotAssistant() {
         message_index: id,
         rating,
       }),
-    }).catch(() => {});
+    }).catch(() => {
+      // Roll the optimistic rating back so the UI does not claim a vote that
+      // never reached the server.
+      setFeedback((current) => {
+        const next = { ...current };
+        delete next[id];
+        return next;
+      });
+      showToast({
+        variant: "error",
+        title: "Chưa gửi được đánh giá",
+        description: "Anh/chị thử lại giúp em ạ.",
+      });
+    });
   };
 
   const sendQuery = (rawQuery: string) => {
@@ -536,7 +586,7 @@ export function ChatbotAssistant() {
         >
           {messages.map((message) => {
             const isComparison =
-              message.role === "assistant" && message.kind === "comparison";
+              message.role === "assistant" && message.comparison !== undefined;
 
             return (
               <div
@@ -569,11 +619,11 @@ export function ChatbotAssistant() {
                   >
                     {message.text}
                   </div>
-                  {isComparison ? (
+                  {message.comparison ? (
                     <div className="-ml-[42px] w-[calc(100%+42px)]">
                       <ChatComparisonResult
+                        comparison={message.comparison}
                         disabled={isSending}
-                        onNavigate={closeChat}
                         onSuggestion={sendQuery}
                       />
                     </div>
@@ -670,7 +720,7 @@ export function ChatbotAssistant() {
                 event.currentTarget.form?.requestSubmit();
               }
             }}
-            placeholder="Mô tả nhu cầu của bạn..."
+            placeholder="Mô tả nhu cầu của anh/chị..."
             rows={1}
             maxLength={1000}
             className="min-h-11 max-h-28 min-w-0 flex-1 resize-none bg-transparent px-3 py-3 text-[15px] leading-5 text-slate-900 outline-none [field-sizing:content] placeholder:text-slate-500"

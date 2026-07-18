@@ -18,11 +18,17 @@ deployed revision passed CI.
 ## Decision
 
 For US-124, use GitHub Actions to validate the checked-out `main` frontend
-commit, transfer an immutable frontend release bundle over native OpenSSH, and
-activate it on Ubuntu with the root Docker Compose frontend service. Releases
-use timestamped directories and an atomic `current` symlink. Health gates
-activation; the previous release remains for rollback. Runtime `.env` values
-stay on the server outside the bundle.
+commit, transfer an immutable release bundle over native OpenSSH, and activate
+it on Ubuntu with `docker-compose.production.yml`. Releases use timestamped
+directories and an atomic `current` symlink. Health gates activation; the
+previous release remains for rollback. Runtime environment values stay on the
+server outside the bundle.
+
+Amended by US-125 (2026-07-19): this decision originally named "the root Docker
+Compose frontend service". That file was a leftover website-cloner template
+with no backend and no database, and has been removed. The production stack is
+`docker-compose.production.yml`, and its environment file is `.env.production`
+— never the developer `.env`, whose credentials are treated as exposed.
 
 ## Alternatives Considered
 
@@ -44,7 +50,8 @@ Positive:
 Tradeoffs:
 
 - The operator must provision Docker, the deploy user, host-key pinning, and
-  the server `.env` before the first deploy.
+  the server `.env.production` before the first deploy, and must run
+  `scripts/deploy-preflight.sh` once to create the external `pgdata` volume.
 - Artifact transfer is slower than pulling a prebuilt image and needs retention
   cleanup on the host.
 

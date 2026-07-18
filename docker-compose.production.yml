@@ -8,6 +8,11 @@
 #
 # Never combine this file with infra/docker-compose.dev.yml: that override
 # publishes PostgreSQL on the host and is for local development only.
+#
+# Reads .env.production, never the developer .env: production credentials must
+# not be the ones sitting in a working tree. Copy .env.production.example and
+# fill it in on the host. Run scripts/deploy-preflight.sh first — the pgdata
+# volume is external and must exist before the first `up`.
 name: advisor-production
 
 services:
@@ -67,12 +72,15 @@ services:
     restart: unless-stopped
     expose:
       - "8000"
-    env_file: .env
+    env_file: .env.production
     environment:
       # Force the in-network database target regardless of host-oriented .env
       # values such as POSTGRES_HOST=localhost.
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
+      # Forced, not merely defaulted: production must never silently serve the
+      # read-only workbook because the database was misconfigured.
+      REQUIRE_POSTGRES: "true"
     volumes:
       - ./data:/app/data:ro
     depends_on:
@@ -96,7 +104,7 @@ services:
       context: .
       dockerfile: infra/backend.Dockerfile
     image: advisor-backend:local
-    env_file: .env
+    env_file: .env.production
     environment:
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
@@ -113,7 +121,7 @@ services:
     restart: unless-stopped
     expose:
       - "5432"
-    env_file: .env
+    env_file: .env.production
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

@@ -28,7 +28,8 @@ are mandatory.
 ## Affected Product Docs
 
 - `README.md`
-- `docker-compose.yml`
+- `docker-compose.production.yml` (was the root `docker-compose.yml`; revised
+  by US-125 on 2026-07-19 when that stale template file was removed)
 - `.github/workflows/`
 - `docs/decisions/0017-github-actions-ubuntu-deployment.md`
 
