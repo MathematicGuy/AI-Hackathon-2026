@@ -56,7 +56,7 @@ For each accepted implementation change: record intake, create or update the app
 | M1.5 | Core FastAPI/LangGraph Vertical Slice | C/D | M1.1–M1.4 | Primary request becomes deterministic cards with trace | Story packet, integration proof, trace | ⬜ Planned |
 | M1.6 | Grounded Response & Output Guard | C/F | M1.5 | Validated response and deterministic fallback | Story packet, unit/integration proof, trace | ⬜ Planned |
 | M1.7 | Extended Multi-turn Intents | C/D | M1.5 | Compare, show-more, change, and stop script | Story packet, integration proof, trace | ⬜ Planned |
-| M1.8 | frontend Decision UI | E | M1.0 mock; M1.5 API | Real recommendation UI | Story packet, E2E proof, trace | 🟨 In progress |
+| M1.8 | frontend Decision UI | E | M1.0 mock; M1.5 API | Real recommendation UI | No formal user story — `frontend/` delivered on `frontend` branch; see M1.8 WBS note | ✅ Done |
 | M1.9 | Langfuse Eval & Release Gate | F | Starts M1.0; integrates M1.5/M1.6 | 26-case M1 dataset release report | Story packet, dataset integrity, deterministic assertions, Langfuse import, trace | ⬜ Planned |
 | M1.10 | Deployment, Pilot & Demo | D/A | M1.6–M1.9 | Deployed demo and pilot package | Story packet, platform proof, trace | ⬜ Planned |
 
@@ -74,7 +74,7 @@ implementation status and proof evidence agree.
 | US-102 | M1.3 | ✅ Implemented | Harness matrix records unit proof; tracker records 25 passing tests, separate review approval. |
 | US-103 | M1.3 | ✅ Implemented | Reconciled. Harness matrix records unit proof (13 tests; full suite 108) and trace 14. |
 | US-104 | M1.4 | ✅ Implemented | Harness matrix records unit proof; tracker records 25 passing tests, separate review approval. |
-| US-115 | M1.8 | 🟨 In progress | PR #1 claims frontend Tasks 1–4 only, not the missing Playwright Task 10. The story remains unfinished and waits for API integration when the backend is ready; the durable record is `in_progress`, orphaned, and unverified. |
+| US-115 | M1.8 | ❌ Retired | Story retired. The `frontend/` folder is complete on the `frontend` branch and intentionally carries no formal user story. No Playwright E2E or API-integration tasks are outstanding at this layer. |
 
 ## 3. Work Breakdown Structure
 
@@ -118,9 +118,10 @@ implementation status and proof evidence agree.
 - **M1.7 — Multi-turn Intents and Recommendation Continuity**
   - Implement show-more, comparison, product detail, availability, changed-constraint, and stop flows.
   - Exit: a five-turn scripted conversation completes without state corruption or duplicate recommendations.
-- **M1.8 — Frontend Decision-Support UI**
+- **M1.8 — Frontend Decision-Support UI** ✅ Done
   - Build cards, merged badges, clarification/assumption UI, trade-offs, error/degraded/no-match states, show-more/compare, and API integration.
   - Exit: the UI passes the primary, clarification, no-match, show-more, and fallback scenarios with real API responses.
+  - **Note:** The `frontend/` folder is complete and resides on the `frontend` branch. No formal user story (US-115 retired). The code was delivered as an approved mock-first design; no outstanding Playwright or API-integration tasks exist at this layer.
 
 ### 3.5 Phase E — Evaluation, Pilot & Release
 
@@ -283,7 +284,7 @@ This is planning guidance only. The durable story record and proof status are ma
 | US-112 | Output schema and grounding guard | M1.6 | C/F | P0 | ⬜ planned |
 | US-113 | Show-more continuation | M1.7 | C/D | P1 | ⬜ planned |
 | US-114 | Compare and product-detail paths | M1.7 | C/D | P1 | ⬜ planned |
-| US-115 | Product decision UI | M1.8 | E | P0 | 🟨 in_progress |
+| US-115 | Product decision UI | M1.8 | E | P0 | ❌ retired — `frontend/` done on `frontend` branch, no US required |
 | US-116 | Langfuse trace tree | M1.5/M1.9 | F | P0 | ⬜ planned |
 | US-117 | 26-case M1 evaluation dataset and golden regression | M1.9 | F/A | P0 | ⬜ planned |
 | US-118 | Release gate report | M1.9 | F/A | P0 | ⬜ planned |
