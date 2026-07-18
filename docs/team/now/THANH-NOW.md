@@ -125,7 +125,7 @@ Keep `resources/` out of scope.
   skipped) with `AGENT_DATA_BACKEND=excel`. Only the live-Postgres endpoint
   integration test is excluded — it needs a running database server.
 - **Live Langfuse smoke trace captured** (2026-07-19): trace
-  `9a7e6a4216344b009ac432aac251651e` confirmed in the real Langfuse project
+  `033beedefc9f4d48b4056bc39a8c1bb8` confirmed in the real Langfuse project
   with `LangfuseAgentObserver`. Full priority tree verified under `agent_turn`
   (input_guardrail → understanding → understanding_model_call GENERATION →
   state_update → route_decision → product_search → filter_and_rank →

@@ -50,8 +50,8 @@ so E2E trace-tree evidence is explicitly pending rather than inferred.
 
 ### Live Langfuse smoke trace (2026-07-19)
 
-**Trace ID:** `9a7e6a4216344b009ac432aac251651e`
-**Langfuse URL:** `https://jp.cloud.langfuse.com/project/cmrqtlknr008vad0dwhwviuv6/traces/9a7e6a4216344b009ac432aac251651e`
+**Trace ID:** `033beedefc9f4d48b4056bc39a8c1bb8`
+**Langfuse URL:** `https://jp.cloud.langfuse.com/project/cmrqtlknr008vad0dwhwviuv6/traces/033beedefc9f4d48b4056bc39a8c1bb8`
 **Observer:** `LangfuseAgentObserver` (live, fail-open no-op confirmed inactive)
 
 One agent turn (`tư vấn máy lạnh cho phòng 20m2`) produced a complete trace

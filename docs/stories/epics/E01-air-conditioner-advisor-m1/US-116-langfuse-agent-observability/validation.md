@@ -84,8 +84,8 @@ and without an observer.
 
 ### Live Langfuse smoke trace (2026-07-19)
 
-**Trace ID:** `9a7e6a4216344b009ac432aac251651e`
-**Langfuse URL:** `https://jp.cloud.langfuse.com/project/cmrqtlknr008vad0dwhwviuv6/traces/9a7e6a4216344b009ac432aac251651e`
+**Trace ID:** `033beedefc9f4d48b4056bc39a8c1bb8`
+**Langfuse URL:** `https://jp.cloud.langfuse.com/project/cmrqtlknr008vad0dwhwviuv6/traces/033beedefc9f4d48b4056bc39a8c1bb8`
 **Observer:** `LangfuseAgentObserver` (live, not no-op)
 **Environment:** `AGENT_DATA_BACKEND=excel`, no `OPENAI_API_KEY` (OpenRouter
 route used for the understanding model call via the existing LLM client)

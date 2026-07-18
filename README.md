@@ -80,6 +80,53 @@ Provider variable conventions follow the official
 and
 [Langfuse SDK guidance](https://langfuse.com/docs/observability/sdk/troubleshooting-and-faq).
 
+## Agent Observability (Langfuse)
+
+Every agent turn emits a priority-boundary trace tree to Langfuse so teammates
+can diagnose behavior and model calls. Tracing is **fail-open**: when the three
+`LANGFUSE_*` variables are absent the agent runs unchanged with a silent no-op
+observer, so this is never required to run the app.
+
+**Example live trace** (E02 multi-category agent, one turn):
+
+- `https://jp.cloud.langfuse.com/project/cmrqtlknr008vad0dwhwviuv6/traces/033beedefc9f4d48b4056bc39a8c1bb8`
+
+Viewing requires membership in that Langfuse project; ask the project owner for
+an invite (Langfuse → Settings → Members). The tree nests as
+`agent_turn → input_guardrail → understanding → understanding_model_call →
+state_update → route_decision → product_search → filter_and_rank →
+response_generation → output_validation → final_state`. Secrets (API keys, auth
+headers, secret env values) are redacted from every payload.
+
+### Reproduce a trace with your own input
+
+1. In `.env` set the Langfuse variables (real project keys) and force the Excel
+   catalog backend so no database is required:
+
+   ```dotenv
+   LANGFUSE_ENABLED=true
+   LANGFUSE_PUBLIC_KEY=pk-lf-...
+   LANGFUSE_SECRET_KEY=sk-lf-...
+   LANGFUSE_BASE_URL=https://jp.cloud.langfuse.com
+   AGENT_DATA_BACKEND=excel
+   ```
+
+   The `understanding_model_call` generation is captured when a provider key
+   (`OPENAI_API_KEY` or `OPENROUTER_API_KEY`) is set; without one the
+   deterministic fallback still traces the rest of the tree.
+
+2. Run the interactive agent CLI, type one message, then `exit` (the observer
+   flushes on exit):
+
+   ```bash
+   uv run python -m backend.app.agent.demo
+   ```
+
+3. Open the trace in Langfuse: **Tracing → Traces**, newest first. Each run
+   prints nothing sensitive; the trace ID is generated per turn.
+
+Never commit or paste real keys — `.env` is git-ignored.
+
 ## Local Data Platform (PostgreSQL + pgvector)
 
 A local, Dockerized data platform stores the provided product catalog
