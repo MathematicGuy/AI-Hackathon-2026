@@ -144,10 +144,6 @@ export function ChatComparisonResult({
             So sánh nhanh theo giá và điểm mạnh nổi bật.
           </p>
         </div>
-        <span className="hidden shrink-0 items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-500 shadow-sm sm:flex">
-          <MoveHorizontal className="size-3.5" aria-hidden="true" />
-          Kéo ngang
-        </span>
       </div>
 
       <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-medium text-slate-500 sm:hidden">
@@ -157,24 +153,24 @@ export function ChatComparisonResult({
 
       <div
         data-testid="chat-comparison-table-scroll"
-        className="overflow-x-auto overscroll-x-contain"
+        className="chat-scrollbar overflow-x-auto overscroll-x-contain focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#176fc9]"
         role="region"
         tabIndex={0}
         aria-label="Bảng có thể cuộn ngang"
       >
-        <table className="min-w-[656px] table-fixed border-separate border-spacing-0 text-left sm:min-w-[720px]">
+        <table className="min-w-[656px] table-fixed border-separate border-spacing-0 text-left sm:min-w-[640px]">
           <caption className="sr-only">
             So sánh giá, công suất, công nghệ và đánh giá của ba máy lạnh
           </caption>
           <colgroup>
-            <col className="w-[104px] sm:w-[132px]" />
+            <col className="w-[104px] sm:w-[112px]" />
             {comparisonProducts.map((product) => (
-              <col key={product.id} className="w-[184px] sm:w-[196px]" />
+              <col key={product.id} className="w-[184px] sm:w-[176px]" />
             ))}
           </colgroup>
           <thead>
             <tr>
-              <th className="sticky left-0 z-20 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 align-top text-xs font-bold text-slate-600">
+              <th scope="col" className="sticky left-0 z-20 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 align-top text-xs font-bold text-slate-600">
                 Sản phẩm
               </th>
               {comparisonProducts.map((product) => (
@@ -198,7 +194,7 @@ export function ChatComparisonResult({
                     <div className="mb-2 flex h-24 items-center justify-center rounded-xl bg-white">
                       <SafeImage
                         src={product.image}
-                        alt={product.name}
+                        alt=""
                         className="h-full w-full object-contain p-1"
                         fallbackLabel={product.name}
                         loading="lazy"
@@ -210,39 +206,54 @@ export function ChatComparisonResult({
                     <strong className="mt-1 text-base text-[#d70018]">
                       {formatMoney(product.price)}
                     </strong>
-                    <Link
-                      href={product.href}
-                      onClick={onNavigate}
-                      aria-label={`Xem sản phẩm ${product.name}`}
-                      className="mt-3 inline-flex min-h-11 items-center justify-center gap-1 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-[#0754ad] transition hover:border-blue-300 hover:bg-blue-100"
-                    >
-                      Xem sản phẩm
-                      <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                    </Link>
                   </div>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {comparisonRows.map((row, rowIndex) => (
+            {comparisonRows.map((row) => (
               <tr key={row.label}>
                 <th
                   scope="row"
-                  className={`sticky left-0 z-10 border-r border-slate-200 bg-slate-50 px-3 py-3 text-xs font-bold text-slate-600 ${rowIndex < comparisonRows.length - 1 ? "border-b" : ""}`}
+                   className="sticky left-0 z-10 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
                 >
                   {row.label}
                 </th>
                 {comparisonProducts.map((product) => (
                   <td
                     key={product.id}
-                    className={`border-r border-slate-200 bg-white px-3 py-3 text-xs leading-5 text-slate-700 last:border-r-0 ${rowIndex < comparisonRows.length - 1 ? "border-b" : ""}`}
+                    className="border-b border-r border-slate-200 bg-white px-3 py-3 text-[13px] leading-5 text-slate-700 last:border-r-0"
                   >
                     {row.value(product)}
                   </td>
                 ))}
               </tr>
             ))}
+            <tr>
+              <th
+                scope="row"
+                className="sticky left-0 z-10 border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
+              >
+                Xem chi tiết
+              </th>
+              {comparisonProducts.map((product) => (
+                <td
+                  key={product.id}
+                  className="border-r border-slate-200 bg-white px-3 py-3 last:border-r-0"
+                >
+                  <Link
+                    href={product.href}
+                    onClick={onNavigate}
+                    aria-label={`Xem sản phẩm ${product.name}`}
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-[#0754ad] transition hover:border-blue-300 hover:bg-blue-100"
+                  >
+                    Xem sản phẩm
+                    <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                  </Link>
+                </td>
+              ))}
+            </tr>
           </tbody>
         </table>
       </div>
@@ -251,14 +262,14 @@ export function ChatComparisonResult({
         <p className="mb-2 text-xs font-bold text-slate-700">
           Bạn muốn hỏi tiếp điều gì?
         </p>
-        <div className="scrollbar-none flex gap-2 overflow-x-auto pb-1">
+        <div className="grid gap-2 sm:flex sm:flex-wrap">
           {followUpQuestions.map((question) => (
             <button
               key={question}
               type="button"
               disabled={disabled}
               onClick={() => onSuggestion(question)}
-              className="min-h-11 shrink-0 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-[#0754ad] active:scale-[0.98]"
+              className="min-h-11 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-[#0754ad] active:scale-[0.98] sm:rounded-full sm:text-xs"
             >
               {question}
             </button>

@@ -1,16 +1,13 @@
 "use client";
 
 import {
-  Mic,
   RefreshCw,
   RotateCcw,
   Send,
-  ThumbsDown,
-  ThumbsUp,
   X,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SafeImage } from "@/components/SafeImage";
 import { ChatComparisonResult } from "@/components/chat/ChatComparisonResult";
 import { useToast } from "@/components/ToastProvider";
@@ -100,7 +97,7 @@ function suggestionForPath(pathname: string) {
   if (pathname === "/lich-su-mua-hang") {
     return "Hỗ trợ kiểm tra đơn hàng";
   }
-  return "Tivi được đánh giá tốt nhất";
+  return "Bạn cần tư vấn chọn sản phẩm?";
 }
 
 export function ChatbotAssistant() {
@@ -114,23 +111,36 @@ export function ChatbotAssistant() {
   const [failedQuery, setFailedQuery] = useState("");
   const sequence = useRef(1);
   const failedOnce = useRef(new Set<string>());
+  const launcher = useRef<HTMLButtonElement>(null);
+  const dialog = useRef<HTMLElement>(null);
+  const composer = useRef<HTMLTextAreaElement>(null);
+  const replyTimer = useRef<number | null>(null);
   const conversationEnd = useRef<HTMLDivElement>(null);
   const latestComparison = useRef<HTMLDivElement>(null);
+
+  const closeChat = useCallback(() => {
+    setIsOpen(false);
+    window.requestAnimationFrame(() => launcher.current?.focus());
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
       return;
     }
     const latestMessage = messages[messages.length - 1];
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches
+      ? "auto"
+      : "smooth";
     if (latestMessage?.kind === "comparison") {
       latestComparison.current?.scrollIntoView({
-        behavior: "smooth",
+        behavior,
         block: "start",
       });
       return;
     }
     conversationEnd.current?.scrollIntoView({
-      behavior: "smooth",
+      behavior,
       block: "nearest",
     });
   }, [isOpen, messages, isSending]);
@@ -139,14 +149,51 @@ export function ChatbotAssistant() {
     if (!isOpen) {
       return;
     }
-    const closeOnEscape = (event: KeyboardEvent) => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.requestAnimationFrame(() => composer.current?.focus());
+
+    const handleDialogKeyboard = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setIsOpen(false);
+        closeChat();
+        return;
+      }
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusable = dialog.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) {
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [isOpen]);
+    window.addEventListener("keydown", handleDialogKeyboard);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleDialogKeyboard);
+    };
+  }, [closeChat, isOpen]);
+
+  useEffect(
+    () => () => {
+      if (replyTimer.current !== null) {
+        window.clearTimeout(replyTimer.current);
+      }
+    },
+    [],
+  );
 
   const openChat = () => {
     if (!openedAt) {
@@ -159,7 +206,8 @@ export function ChatbotAssistant() {
     setIsSending(true);
     setFailedQuery("");
 
-    window.setTimeout(() => {
+    replyTimer.current = window.setTimeout(() => {
+      replyTimer.current = null;
       const normalized = query.trim().toLocaleLowerCase("vi-VN");
       const shouldFail = normalized.includes("lỗi") && !failedOnce.current.has(normalized);
 
@@ -222,81 +270,97 @@ export function ChatbotAssistant() {
   };
 
   const resetChat = () => {
+    if (replyTimer.current !== null) {
+      window.clearTimeout(replyTimer.current);
+      replyTimer.current = null;
+    }
     setMessages([]);
     setInput("");
     setFailedQuery("");
     setIsSending(false);
     setOpenedAt(formatChatTime(new Date()));
     showToast({ variant: "info", title: "Đã làm mới hội thoại", description: "Bạn có thể bắt đầu câu hỏi mới." });
+    window.requestAnimationFrame(() => composer.current?.focus());
   };
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-5 right-4 z-[80] flex flex-col-reverse items-end gap-2 sm:bottom-20 sm:right-14">
+      <div className="fixed bottom-5 right-4 z-[80] sm:bottom-20 sm:right-14">
         <button
+          ref={launcher}
           type="button"
           onClick={openChat}
-          className="group relative flex size-[55px] items-center justify-center rounded-full transition hover:scale-105 active:scale-95"
-          aria-label="Mở Trợ lý AI Điện máy XANH"
+          className="group flex flex-col items-end gap-2 transition hover:-translate-y-0.5 active:translate-y-0"
+          aria-label={`Mở Trợ lý AI Điện máy XANH: ${suggestionForPath(pathname)}`}
         >
-          <SafeImage src="/images/chatbot/chat-bot.png" alt="Trợ lý AI Điện máy XANH" className="size-[55px] rounded-full object-cover shadow-lg" fallbackLabel="AI" />
-          <span className="absolute -right-3 -top-1 rounded-full bg-[linear-gradient(#fff,#ddd)] px-1.5 py-px text-[9px] font-bold leading-[14px] text-[#526478] shadow-sm">BETA</span>
-        </button>
-        <button
-          type="button"
-          onClick={openChat}
-          className="min-h-11 max-w-[250px] rounded-[20px] bg-white px-3 py-2 text-left text-xs text-[#374151] shadow-[0_4px_12px_rgba(0,0,0,0.12)] transition hover:text-[#2a83e9] active:translate-y-px"
-        >
-          {suggestionForPath(pathname)}
+          <span className="max-w-[250px] rounded-[18px] bg-white px-3.5 py-2.5 text-left text-xs font-semibold leading-5 text-slate-700 shadow-[0_6px_20px_rgba(15,23,42,0.16)] transition group-hover:text-[#0754ad]">
+            {suggestionForPath(pathname)}
+          </span>
+          <span className="relative flex size-[58px] items-center justify-center rounded-full bg-white shadow-lg ring-2 ring-white">
+            <SafeImage src="/images/chatbot/chat-bot.png" alt="" className="size-[56px] rounded-full object-cover" fallbackLabel="AI" />
+            <span className="absolute -right-2 -top-1 rounded-full bg-white px-1.5 py-px text-[9px] font-bold leading-[14px] text-slate-600 shadow-sm">BETA</span>
+          </span>
         </button>
       </div>
     );
   }
 
   return (
+    <>
+      <div
+        className="fixed inset-0 z-[79] bg-slate-950/25 backdrop-blur-[1px]"
+        aria-hidden="true"
+        onMouseDown={closeChat}
+      />
     <section
+      ref={dialog}
       role="dialog"
-      aria-modal="false"
-      aria-label="Trợ lý AI Điện máy XANH"
-      className="fixed inset-x-2 bottom-2 z-[80] flex h-[calc(100dvh-16px)] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_4px_24px_rgba(0,0,0,0.22)] sm:inset-auto sm:bottom-4 sm:right-4 sm:h-[min(720px,calc(100dvh-32px))] sm:w-[min(720px,calc(100vw-32px))]"
+      aria-modal="true"
+      aria-labelledby="chatbot-title"
+      className="chatbot-panel fixed z-[80] flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_16px_48px_rgba(15,23,42,0.28)]"
     >
-      <header className="flex min-h-14 shrink-0 items-center justify-between border-b border-[#dde5ee] bg-[#2a83e9] px-3 py-2 text-white sm:px-4">
+      <header className="flex min-h-16 shrink-0 items-center justify-between border-b border-blue-800/20 bg-[#176fc9] px-3 py-2 text-white sm:px-4">
         <div className="flex items-center gap-2">
-          <SafeImage src="/images/chatbot/mascot.png" alt="Điện máy XANH" className="size-7 rounded-full object-cover" fallbackLabel="AI" />
+          <SafeImage src="/images/chatbot/mascot.png" alt="" className="size-9 rounded-full border border-white/30 object-cover" fallbackLabel="AI" />
           <div className="leading-tight">
-            <p className="text-sm font-semibold">Điện máy XANH</p>
-            <p className="mt-0.5 flex items-center gap-1 text-[11px] text-white/80"><span className="size-1.5 rounded-full bg-green-400" /> Trực tuyến</p>
+            <p id="chatbot-title" className="text-sm font-bold">Trợ lý AI Điện máy XANH</p>
+            <p className="mt-1 text-xs font-medium text-white">Phản hồi tự động</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={resetChat} className="flex size-11 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20 active:scale-95 sm:size-9" aria-label="Làm mới hội thoại" title="Làm mới">
+          <button type="button" onClick={resetChat} disabled={isSending || messages.length === 0} className="flex size-11 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20 focus-visible:outline-white active:scale-95 sm:size-9" aria-label="Làm mới hội thoại" title="Làm mới">
             <RefreshCw className="size-4" />
           </button>
-          <button type="button" onClick={() => setIsOpen(false)} className="flex size-11 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20 active:scale-95 sm:size-9" aria-label="Đóng chatbot" title="Đóng">
+          <button type="button" onClick={closeChat} className="flex size-11 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20 focus-visible:outline-white active:scale-95 sm:size-9" aria-label="Đóng chatbot" title="Đóng">
             <X className="size-5" />
           </button>
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-5 sm:px-4">
+      <div className="min-h-0 flex-1 overscroll-y-contain overflow-y-auto px-3 pb-5 sm:px-4">
+        {messages.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-5 text-center sm:py-6">
-          <SafeImage src="/images/chatbot/chat-bot.png" alt="Trợ lý AI ĐMX" className="size-16 rounded-full border border-[#f5f8fd] sm:size-20" fallbackLabel="AI" />
-          <p className="text-sm font-medium leading-[21px] text-[#333]">
-            Chào anh/chị, em là <strong className="font-semibold text-[#2a83e9]">Trợ lý AI ĐMX</strong><br />
-            Em trả lời thắc mắc và giúp anh/chị lựa chọn sản phẩm phù hợp
-          </p>
+          <SafeImage src="/images/chatbot/chat-bot.png" alt="" className="size-16 rounded-full border border-blue-50 sm:size-20" fallbackLabel="AI" />
+          <div>
+            <h2 className="text-base font-bold text-slate-900">
+              Chọn máy lạnh dễ hơn cùng AI
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Cho mình biết diện tích phòng, ngân sách và điều bạn ưu tiên.
+            </p>
+          </div>
           <div className="w-full max-w-xl">
             <p className="mb-2 text-xs font-semibold text-slate-500">
-              Câu hỏi gợi ý
+              Bắt đầu nhanh
             </p>
-            <div className="scrollbar-none flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-center">
+            <div className="grid gap-2 sm:flex sm:flex-wrap sm:justify-center">
               {QUICK_QUESTIONS.map((question) => (
                 <button
                   key={question}
                   type="button"
                   disabled={isSending}
                   onClick={() => sendQuery(question)}
-                  className="min-h-11 shrink-0 rounded-full border border-blue-100 bg-blue-50 px-3.5 py-2 text-xs font-semibold text-[#0754ad] transition hover:border-blue-300 hover:bg-blue-100 active:scale-[0.98]"
+                  className="min-h-11 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-[#0754ad] transition hover:border-blue-300 hover:bg-blue-100 active:scale-[0.98] sm:rounded-full sm:text-xs"
                 >
                   {question}
                 </button>
@@ -304,16 +368,23 @@ export function ChatbotAssistant() {
             </div>
           </div>
         </div>
+        ) : null}
 
-        <p className="text-center text-xs text-[#515764]">Hôm nay, {openedAt}</p>
+        <p className="text-center text-xs font-medium text-slate-500">Bắt đầu lúc {openedAt}</p>
         <div className="mt-3 flex items-end gap-1.5">
           <SafeImage src="/images/chatbot/mascot.png" alt="" className="size-9 shrink-0 rounded-full" fallbackLabel="AI" />
-          <div className="max-w-[88%] rounded-[20px] rounded-ss-none bg-[#f2f5f9] px-4 py-3 text-sm leading-[1.4] text-[#333]">
-            Dạ em có thể giúp gì ạ.
+          <div className="max-w-[88%] rounded-[20px] rounded-ss-none bg-slate-100 px-4 py-3 text-sm leading-6 text-slate-800">
+            Bạn đang cần chọn máy lạnh cho phòng bao nhiêu m² và ngân sách khoảng bao nhiêu?
           </div>
         </div>
 
-        <div className="mt-2 space-y-2">
+        <div
+          className="mt-3 space-y-3"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions text"
+          aria-busy={isSending}
+        >
           {messages.map((message) => {
             const isComparison =
               message.role === "assistant" && message.kind === "comparison";
@@ -345,10 +416,7 @@ export function ChatbotAssistant() {
                   }
                 >
                   <div
-                    aria-live={
-                      message.role === "assistant" ? "polite" : undefined
-                    }
-                    className={`rounded-[20px] px-4 py-3 text-sm leading-[1.5] ${message.role === "user" ? "rounded-ee-none bg-[#2a83e9] text-white" : "rounded-ss-none bg-[#f2f5f9] text-[#333]"}`}
+                    className={`rounded-[20px] px-4 py-3 text-sm leading-6 ${message.role === "user" ? "rounded-ee-none bg-[#176fc9] text-white" : "rounded-ss-none bg-slate-100 text-slate-800"}`}
                   >
                     {message.text}
                   </div>
@@ -356,48 +424,14 @@ export function ChatbotAssistant() {
                     <div className="-ml-[42px] w-[calc(100%+42px)]">
                       <ChatComparisonResult
                         disabled={isSending}
-                        onNavigate={() => setIsOpen(false)}
+                        onNavigate={closeChat}
                         onSuggestion={sendQuery}
                       />
                     </div>
                   ) : null}
-                  <p className="mt-1 px-1 text-[11px] text-slate-400">
+                  <p className="mt-1 px-1 text-xs font-medium text-slate-500">
                     {message.time}
                   </p>
-                  {message.role === "assistant" ? (
-                    <div className="mt-1 flex justify-end gap-0.5 text-slate-400">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          showToast({
-                            variant: "success",
-                            title: "Cảm ơn phản hồi",
-                            description:
-                              "Phản hồi này giúp cải thiện trợ lý.",
-                          })
-                        }
-                        className="flex size-11 items-center justify-center rounded-full hover:bg-slate-100 hover:text-[#2a83e9] sm:size-9"
-                        aria-label="Phản hồi hữu ích"
-                      >
-                        <ThumbsUp className="size-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          showToast({
-                            variant: "info",
-                            title: "Đã ghi nhận",
-                            description:
-                              "Trợ lý sẽ điều chỉnh câu trả lời phù hợp hơn.",
-                          })
-                        }
-                        className="flex size-11 items-center justify-center rounded-full hover:bg-slate-100 hover:text-rose-500 sm:size-9"
-                        aria-label="Phản hồi chưa hữu ích"
-                      >
-                        <ThumbsDown className="size-4" />
-                      </button>
-                    </div>
-                  ) : null}
                 </div>
               </div>
             );
@@ -407,6 +441,7 @@ export function ChatbotAssistant() {
             <div className="flex items-end gap-1.5">
               <SafeImage src="/images/chatbot/mascot.png" alt="" className="size-9 shrink-0 rounded-full" fallbackLabel="AI" />
               <div className="flex h-10 items-center gap-1 rounded-[20px] rounded-ss-none bg-[#f2f5f9] px-4" role="status" aria-label="Trợ lý đang trả lời">
+                <span className="sr-only">Trợ lý đang trả lời</span>
                 <span className="size-1.5 animate-bounce rounded-full bg-slate-400" />
                 <span className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:120ms]" />
                 <span className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:240ms]" />
@@ -415,7 +450,7 @@ export function ChatbotAssistant() {
           ) : null}
 
           {failedQuery ? (
-            <div className="ml-10 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            <div role="alert" className="ml-10 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
               <p>Không thể nhận phản hồi cho tin nhắn này.</p>
               <button type="button" onClick={() => requestReply(failedQuery)} className="mt-2 inline-flex items-center gap-1 font-semibold text-rose-700 hover:underline">
                 <RotateCcw className="size-4" /> Thử lại
@@ -426,33 +461,34 @@ export function ChatbotAssistant() {
         </div>
       </div>
 
-      <footer className="shrink-0 border-t border-slate-100 bg-white px-3 pb-2 pt-2 sm:px-4">
-        <form onSubmit={submitMessage} className="flex min-h-14 items-center rounded-[22px] border border-transparent bg-[#f2f5f9] px-1 focus-within:border-[#2a83e9]" noValidate>
-          <button type="button" onClick={() => showToast({ variant: "info", title: "Nhập bằng giọng nói", description: "Trình duyệt demo chưa cấp quyền microphone. Bạn hãy nhập nội dung bằng bàn phím." })} className="flex size-11 shrink-0 items-center justify-center rounded-full text-[#9da7bc] hover:bg-white hover:text-[#2a83e9] sm:size-9" aria-label="Nhập bằng giọng nói">
-            <Mic className="size-5" />
-          </button>
+      <footer className="shrink-0 border-t border-slate-200 bg-white px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 sm:px-4">
+        <form onSubmit={submitMessage} className="flex min-h-14 items-end rounded-[22px] border border-slate-200 bg-slate-100 px-1.5 py-1 focus-within:border-[#176fc9] focus-within:ring-2 focus-within:ring-blue-100" noValidate>
           <textarea
+            ref={composer}
             value={input}
-            onChange={(event) => setInput(event.target.value.slice(0, 1000))}
+            onChange={(event) => setInput(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
+              if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
                 event.preventDefault();
                 event.currentTarget.form?.requestSubmit();
               }
             }}
-            placeholder="Nhập tin nhắn..."
+            placeholder="Mô tả nhu cầu của bạn..."
             rows={1}
-            className="h-11 min-w-0 flex-1 resize-none bg-transparent px-3 py-3 text-[15px] leading-5 outline-none placeholder:text-[#9da7bc]"
+            maxLength={1000}
+            className="min-h-11 max-h-28 min-w-0 flex-1 resize-none bg-transparent px-3 py-3 text-[15px] leading-5 text-slate-900 outline-none [field-sizing:content] placeholder:text-slate-500"
             aria-label="Tin nhắn"
+            aria-describedby="chatbot-disclaimer"
           />
-          <button type="submit" disabled={!input.trim() || isSending} className="flex size-11 shrink-0 items-center justify-center rounded-full text-white transition enabled:bg-[#2a83e9] enabled:hover:bg-[#176fc9] disabled:text-[#9da7bc] sm:size-9" aria-label="Gửi tin nhắn">
+          <button type="submit" disabled={!input.trim() || isSending} className="flex size-11 shrink-0 items-center justify-center rounded-full text-white transition enabled:bg-[#176fc9] enabled:hover:bg-[#0754ad] disabled:text-slate-400 sm:size-9" aria-label="Gửi tin nhắn">
             <Send className="size-[22px]" />
           </button>
         </form>
-        <p className="mt-1.5 text-center text-[10px] leading-4 text-[#7b8495] sm:text-[11px]">
+        <p id="chatbot-disclaimer" className="mt-1.5 text-center text-xs leading-4 text-slate-600">
           AI có thể sai. Vui lòng xác nhận giá và tồn kho trước khi mua.
         </p>
       </footer>
     </section>
+    </>
   );
 }
