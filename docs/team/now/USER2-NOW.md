@@ -2,7 +2,14 @@
 
 ## Outcome
 
-Deliver the M1.4 state and conversation-control chain so corrections, clarification, routing, and persistence are ready for the M1.5 vertical slice.
+**Active focus (2026-07-18, Cường's direction): the E02 multi-category sales
+agent** — see `docs/stories/epics/E02-multi-category-agent/README.md`,
+ADR-0015/ADR-0016, and `docs/product/architecture/multi-category-agent.md`.
+Stories US-201→US-206 run in `backend/app/agent/` (no E01 file collisions);
+the M1.4 chain below is complete history except US-105, which stays available
+for the M1 rig's vertical slice.
+
+Previous outcome: deliver the M1.4 state and conversation-control chain so corrections, clarification, routing, and persistence are ready for the M1.5 vertical slice.
 
 ## Ownership boundary
 
