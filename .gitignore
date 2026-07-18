@@ -100,3 +100,5 @@ scripts/bin/harness-cli.exe
 !.codebase-memory/graph.db.zst
 
 # Harness durable layer
+.tokensave/tokensave.db
+.tokensave/tokensave.db-wal

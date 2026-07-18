@@ -1,1 +1,13 @@
-"""Model adapters for the M1 advisor (intent extraction, explanation)."""
+from backend.app.models.routing import (
+    ModelRoutes,
+    ModelRoutingError,
+    ResolvedModelRoute,
+    resolve_model_routes,
+)
+
+__all__ = [
+    "ModelRoutes",
+    "ModelRoutingError",
+    "ResolvedModelRoute",
+    "resolve_model_routes",
+]

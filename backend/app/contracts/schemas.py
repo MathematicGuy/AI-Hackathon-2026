@@ -3,10 +3,6 @@ from typing import Any, Literal, TypedDict
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 
-INTENT_MODEL = "gpt-5.4-nano"
-EXPLANATION_PROVIDER = "openrouter"
-EXPLANATION_MODEL = "deepseek/deepseek-v4-flash"
-
 Intent = Literal[
     "new_search",
     "change_constraints",

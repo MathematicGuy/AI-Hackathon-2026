@@ -43,7 +43,7 @@ implementation continues.
 The following changes require a new ADR or an explicit PRD amendment:
 
 ```text
-runtime model role
+runtime model responsibility or failure policy
 workflow node order
 supported intent or route
 clarification limit
@@ -99,7 +99,7 @@ The product is an augmentation system. The customer keeps decision authority.
 7. **Alternative is not a fourth role:** A useful distinct alternative may be selected for display, but it is not added to `RoleWinners`.
 8. **User-first Main Selling Point:** The customer’s explicit primary priority controls the main recommendation lens.
 9. **One question per response:** A clarification cycle may contain at most three clarification questions, but each response contains at most one.
-10. **Grounded explanation only:** deepseek/deepseek-v4-flash (OpenRouter) receives verified products, deterministic winners, evidence, assumptions, and allowed next questions. It cannot rerank.
+10. **Grounded explanation only:** The configured `main` route receives verified products, deterministic winners, evidence, assumptions, and allowed next questions; provider failure advances once to `fallback`. Neither route can rerank.
 11. **Explicit state:** Confirmed facts, unconfirmed assumptions, rejected products, shown products, and cursor are stored separately.
 12. **LangGraph owns execution and persistence.**
 13. **Langfuse owns traces, sessions, datasets, scores, and release evaluation.**
@@ -127,7 +127,7 @@ flowchart TD
 
     INPUT_GUARD["Input Guardrail<br/>word limit → regex/payload → NeMo → scope"]
 
-    INTENT["GPT-5.4 Nano<br/>Intent Classifier + Need Extractor"]
+    INTENT["Configured role routes<br/>main: intent classifier<br/>extraction: need extractor"]
 
     MERGE["Merge Agent State<br/>need + assumptions + shown/rejected products + cursor"]
 
@@ -149,7 +149,7 @@ flowchart TD
 
     DEDUPE["UI Deduplication<br/>merge role badges by product_id<br/>select useful distinct alternative"]
 
-    EXPLAIN["deepseek/deepseek-v4-flash (OpenRouter)<br/>Grounded selling-point explanation"]
+    EXPLAIN["Configured main route<br/>Grounded selling-point explanation<br/>fallback on provider failure"]
 
     OUTPUT_GUARD["Output Guardrail<br/>Instructor → Pydantic → grounding rules → business rules → NeMo"]
 
@@ -233,8 +233,10 @@ flowchart LR
     end
 
     subgraph Providers["External providers"]
-        OPENAI_NANO["OpenAI GPT-5.4 Nano"]
-        OPENROUTER_EXPLAINER["deepseek/deepseek-v4-flash via OpenRouter"]
+        MAIN_ROUTE["Main runtime route<br/>provider + model from environment"]
+        EXTRACTION_ROUTE["Extraction runtime route<br/>provider + model from environment"]
+        FALLBACK_ROUTE["Fallback runtime route<br/>provider + model from environment"]
+        JUDGE_ROUTE["Judge evaluation route<br/>provider + model from environment"]
         NEMO["NeMo Guardrails"]
         PRODUCT_DATA["Approved catalog / product API or fixed demo snapshot"]
         LANGFUSE["Langfuse"]
@@ -246,8 +248,10 @@ flowchart LR
     GRAPH --> TOOLS
     GRAPH <--> CHECKPOINT
     GRAPH -. explicit confirmed memory only .-> STORE
-    GRAPH --> OPENAI_NANO
-    GRAPH --> OPENROUTER_EXPLAINER
+    GRAPH --> MAIN_ROUTE
+    GRAPH --> EXTRACTION_ROUTE
+    GRAPH -. provider failure .-> FALLBACK_ROUTE
+    GRAPH -. evaluation only .-> JUDGE_ROUTE
     GUARDS --> NEMO
     TOOLS --> PRODUCT_DATA
     FASTAPI -. trace metadata .-> LANGFUSE
@@ -377,13 +381,18 @@ A node may be internally decomposed, but the canonical order and responsibility 
 
 ### 5.4 Model layer
 
-| Runtime role | Milestone 1 model | Allowed responsibility | Prohibited responsibility |
+| Runtime role | Environment-owned route | Allowed responsibility | Prohibited responsibility |
 |---|---|---|---|
-| Intent classifier and need extractor | OpenAI GPT-5.4 Nano | classify supported intent; extract explicit need patch; produce structured output | filtering, price math, role ranking, product invention |
-| Grounded recommendation explainer | `deepseek/deepseek-v4-flash` through OpenRouter | explain verified products, winners, trade-offs, premium verdicts, and customer benefit | independent reranking; unsupported claims; changing role winners |
+| Intent classifier | `main` then `fallback` | classify supported intent; produce structured output | need extraction, filtering, price math, role ranking, product invention |
+| Need extractor | `extraction` then `fallback` | extract explicit need patch; produce structured output | intent routing, filtering, price math, role ranking, product invention |
+| Grounded recommendation explainer | `main` then `fallback` | explain verified products, winners, trade-offs, premium verdicts, and customer benefit | independent reranking; unsupported claims; changing role winners |
+| Evaluation judge | `judge` only; fail closed | score configured evaluation criteria | substituting a fallback score; changing runtime results |
 | Engineering coding assistant | OpenRouter `deepseek/deepseek-v4-flash` | repository analysis, code/test generation, debugging, documentation updates | every customer-facing runtime action |
 
-Model and prompt versions are configuration values for observability, but changing either runtime model role requires an ADR or PRD amendment.
+Runtime provider and model identifiers are operator environment values. Changing
+an identifier requires only an environment edit. Changing role
+responsibilities, route order, or failure policy requires an ADR or PRD
+amendment. Prompt versions remain configuration values for observability.
 
 ### 5.5 Product, catalog, and availability tools
 
@@ -730,7 +739,8 @@ Alternative order:
 
 ### 8.1 Explainer input boundary
 
-deepseek/deepseek-v4-flash (OpenRouter) receives only:
+The configured `main` route, followed by `fallback` on provider failure,
+receives only:
 
 - validated customer need;
 - confirmed and disclosed assumptions;
@@ -1026,8 +1036,18 @@ Required metadata:
   "session_id": "session_123",
   "request_id": "request_456",
   "turn_number": 4,
-  "intent_model": "gpt-5.4-nano",
-  "response_model": "deepseek/deepseek-v4-flash",
+  "intent_model_role": "main",
+  "intent_provider": "<resolved-provider>",
+  "intent_model": "<resolved-model>",
+  "extraction_model_role": "extraction",
+  "extraction_provider": "<resolved-provider>",
+  "extraction_model": "<resolved-model>",
+  "explanation_model_role": "main",
+  "explanation_provider": "<resolved-provider>",
+  "explanation_model": "<resolved-model>",
+  "judge_model_role": "judge",
+  "judge_provider": "<resolved-provider>",
+  "judge_model": "<resolved-model>",
   "prompt_version": "recommendation-v1",
   "aircon_rules_version": "v1",
   "catalog_snapshot": "catalog-m1",
@@ -1116,7 +1136,10 @@ No release may be marked complete by demo quality alone.
 
 | Failure | Required behavior |
 |---|---|
-| Intent model failure | Use deterministic keyword fallback, mark `intent_model_degraded`, avoid destructive state changes, ask one safe question if still ambiguous |
+| Intent model failure | Exhaust `main` then `fallback`; if both fail, use deterministic keyword fallback, mark `intent_model_degraded`, avoid destructive state changes, and ask one safe question if still ambiguous |
+| Need extraction failure | Exhaust `extraction` then `fallback`; if both fail, preserve prior need state, mark extraction degraded, and never invent numeric values |
+| Explanation provider failure | Exhaust `main` then `fallback`; if both fail, render the deterministic grounded response and record degradation |
+| Judge provider failure | Fail closed without a substituted score |
 | NeMo unavailable | Keep deterministic input/output checks, mark `guardrail_degraded`, continue only for low-risk shopping requests |
 | Product tool unavailable | Return data-unavailable response; never generate product recommendations from model memory |
 | Missing product evidence | Keep only when eligibility remains valid, lower data confidence when applicable, disclose the missing field, make no claim from it |
@@ -1237,7 +1260,7 @@ The frontend mapping is an implementation addition. The backend mapping is synch
 | ADR-004 | Formal roles | Best Overall, Best Value, Cheapest Qualified |
 | ADR-005 | Duplicate winners | Preserve truth, merge UI badges |
 | ADR-006 | Ranking ownership | LLM understands; deterministic code filters/ranks; LLM explains |
-| ADR-007 | Runtime models | GPT-5.4 Nano for intent/extraction; deepseek/deepseek-v4-flash (OpenRouter) for explanation |
+| ADR-007 | Runtime models | Environment-owned `main`, `extraction`, `fallback`, and fail-closed `judge` routes |
 | ADR-008 | State and persistence | LangGraph checkpointer plus Store interface |
 | ADR-009 | Procedural context | Versioned Markdown; live state in persistence |
 | ADR-010 | Pagination | Initial three cards; variable limit, cursor, exclusions |
@@ -1250,7 +1273,7 @@ The frontend mapping is an implementation addition. The backend mapping is synch
 
 ## 16. Architecture acceptance criteria
 
-- [ ] Input guardrails execute before GPT-5.4 Nano.
+- [ ] Input guardrails execute before the configured `main` intent route.
 - [ ] The exact input order is word count → regex/payload → NeMo → scope.
 - [ ] Every supported intent reaches the route specified in Section 3.
 - [ ] Structured intent and need fields are validated.
@@ -1265,7 +1288,9 @@ The frontend mapping is an implementation addition. The backend mapping is synch
 - [ ] Only three formal roles exist in `RoleWinners`.
 - [ ] Duplicate role winners render once with merged badges.
 - [ ] A useful alternative does not alter role truth.
-- [ ] deepseek/deepseek-v4-flash (OpenRouter) receives verified results only and cannot rerank.
+- [ ] The configured explanation route receives verified results only and cannot rerank.
+- [ ] Intent and explanation use `main` then `fallback`; need extraction uses `extraction` then `fallback`.
+- [ ] Judge evaluation uses `judge` only and fails closed.
 - [ ] Output validation follows Instructor → Pydantic → grounding → business rules → NeMo.
 - [ ] Failed output uses at most one retry and then deterministic fallback.
 - [ ] State matches the canonical `AdvisorState`.
@@ -1283,7 +1308,7 @@ Run this checklist whenever the PRD, architecture, prompts, schemas, or graph ch
 
 | Check | Required equality |
 |---|---|
-| Model routing | GPT-5.4 Nano = intent/extraction; `deepseek/deepseek-v4-flash` through OpenRouter = explanation |
+| Model routing | intent/explanation = `main` → `fallback`; extraction = `extraction` → `fallback`; judge = `judge` only |
 | Formal role enum | exactly three roles |
 | Intent enum | exactly eight intents |
 | Input guard order | word count → regex/payload → NeMo → scope → intent |

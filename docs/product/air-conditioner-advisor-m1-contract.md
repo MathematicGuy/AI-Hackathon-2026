@@ -3,22 +3,31 @@
 ## Status and authority
 
 This contract freezes M1.0 interfaces derived from the approved
-`docs/product/requirements/air-conditioner-advisor-m1-prd.md`. Decision
-`docs/decisions/0009-m1-explanation-model-routing.md` overrides the former
-GPT-5.4 Mini explainer references.
+`WORKFLOW-MVP(4).md`. Decision
+`docs/decisions/0009-m1-explanation-model-routing.md` defines the
+environment-owned runtime routing policy.
 
 Fixture data under `data/aircon-m1-test-data/` is synthetic. It must never be
 presented as current Điện Máy XANH data.
 
 ## Runtime ownership
 
-- GPT-5.4 Nano classifies intent and extracts a structured need patch.
+- The configured `main` route classifies intent, followed by `fallback` on
+  provider failure.
+- The configured `extraction` route extracts a structured need patch, followed
+  by `fallback` on provider failure.
 - Deterministic code normalizes, filters, ranks, selects role winners, and
   deduplicates display cards.
-- `deepseek/deepseek-v4-flash` through OpenRouter explains verified results
-  only and cannot rerank.
+- The configured `main` route explains verified results only and cannot rerank;
+  it follows the same immutable `main` then `fallback` order.
+- The configured `judge` route evaluates outputs without fallback and fails
+  closed when unavailable.
 - LangGraph owns workflow execution and state persistence.
 - Langfuse owns turn traces, datasets, and evaluation scores.
+
+Provider and model identifiers are operator environment values. Changing those
+identifiers requires only an environment edit; changing role responsibilities,
+route order, or failure policy requires architecture and ADR review.
 
 ## Frozen enums
 
