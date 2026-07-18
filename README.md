@@ -182,6 +182,74 @@ curl -s -X POST localhost:8000/api/v1/products/search \
   }'
 ```
 
+## Production Deployment
+
+`docker-compose.production.yml` runs nginx, the frontend, the backend, and the
+database as one project on one network, so the stack has a single lifecycle,
+health gate, and rollback unit.
+
+```bash
+docker compose -f docker-compose.production.yml up -d --build
+```
+
+Nginx is the only container published to the host, and by default it binds to
+`127.0.0.1:8080` (`HTTP_BIND`, `HTTP_PORT`). Ports 3000 and 8000 are not
+published and must not be accessed directly. The container nginx routes `/api/`
+and `/health` to the backend and everything else to the frontend, so the browser
+talks to one origin and no CORS configuration is involved.
+
+TLS and the public domain belong to a host nginx in front of this stack. It
+terminates HTTPS and proxies to the loopback port above; the container nginx
+keeps the `/api/` routing so that rule stays versioned with the code rather
+than living only on the server. The host server block needs:
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    # The agent waits on an upstream LLM call; the 60s default truncates it.
+    proxy_read_timeout 120s;
+}
+```
+
+Set `HTTP_BIND=0.0.0.0` and `HTTP_PORT=80` only when no host nginx is involved
+and this stack is the outermost edge.
+
+### First deploy on a new host
+
+Two steps are easy to miss, and both fail loudly rather than silently:
+
+```bash
+cp .env.example .env          # set POSTGRES_PASSWORD and the provider keys
+
+# The catalog volume is declared external, so Compose will not invent it.
+# Without this, `up` aborts with: external volume ... not found
+docker volume create advisor-data-platform_pgdata
+
+docker compose -f docker-compose.production.yml up -d --build
+
+# Migrations run automatically; the catalog load does not. Run it once,
+# or every catalog endpoint returns an empty result.
+docker compose -f docker-compose.production.yml run --rm ingestion
+```
+
+The volume is external on purpose: `docker compose down -v` cannot delete it,
+so a redeploy cannot wipe the catalog.
+
+The frontend calls the agent at the relative path `/api/v1/agent/respond`. No
+backend hostname is baked into the client bundle, and there is no
+`NEXT_PUBLIC_AGENT_API_URL`. For host-side development, `next dev` proxies
+`/api/*` to `BACKEND_ORIGIN` (default `http://127.0.0.1:8000`); that variable is
+read on the server only and never reaches the browser.
+
+The stack attaches to the existing `advisor-data-platform_pgdata` volume, which
+is declared external so `docker compose down -v` cannot delete the catalog.
+Never combine this file with `infra/docker-compose.dev.yml`: that override
+publishes PostgreSQL on the host and is for local development only.
+
 ## Validation
 
 The project requires Python 3.12 or newer. Run the isolated regression suite

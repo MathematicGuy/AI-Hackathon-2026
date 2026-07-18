@@ -53,9 +53,8 @@ function formatChatTime(date: Date) {
 }
 
 // Live E02 sales agent (backend/app/agent). Falls back to the retry UI when
-// the API is unreachable.
-const AGENT_API_BASE =
-  process.env.NEXT_PUBLIC_AGENT_API_URL ?? "http://127.0.0.1:8000";
+// the API is unreachable. The path is same-origin on purpose: nginx routes
+// /api/ to the backend in production, next.config.ts rewrites it in dev.
 
 // Natural progress line while waiting, picked from the query (replaces "...").
 function statusForQuery(query: string) {
@@ -231,14 +230,11 @@ export function ChatbotAssistant() {
     let started = false;
 
     try {
-      const response = await fetch(
-        `${AGENT_API_BASE}/api/v1/agent/respond/stream`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: sessionId.current, message: query }),
-        },
-      );
+      const response = await fetch("/api/v1/agent/respond/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId.current, message: query }),
+      });
       if (!response.ok || !response.body) {
         throw new Error(`HTTP ${response.status}`);
       }

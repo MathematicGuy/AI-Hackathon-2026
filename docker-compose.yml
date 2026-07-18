@@ -18,7 +18,13 @@ services:
       - path: .env
         required: false
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      # The runner stage is node:*-slim, which ships no wget. Probe with the
+      # Node runtime that is guaranteed to be present.
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
