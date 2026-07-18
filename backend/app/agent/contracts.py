@@ -66,6 +66,9 @@ class AgentState:
     # Product memory: the concrete records last presented, so follow-ups like
     # "cái thứ hai" or comparisons can resolve without a new search.
     last_presented_ids: list[str] = field(default_factory=list)
+    # The cold-start question awaiting an answer; the next reply that carries
+    # no structured signal is captured as this question's answer.
+    pending_question_key: str | None = None
     guardrail_flags: list[str] = field(default_factory=list)
 
     @property

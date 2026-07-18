@@ -60,7 +60,10 @@ def render_suggestions(
     *,
     category_name: str,
     next_question: str | None = None,
+    also_consider: list[GenericProduct] | None = None,
 ) -> ProposedResponse:
+    # The three ranked roles always lead the answer; extra worthwhile options
+    # follow in a "tham khảo thêm" section (Cường 2026-07-18).
     lines = [
         f"Dạ em gợi ý anh/chị mấy mẫu {category_name} đang có ưu đãi tốt ạ:",
         "",
@@ -76,12 +79,28 @@ def render_suggestions(
             + " ạ.)"
         )
         lines.append("")
+    extras = list(also_consider or [])
+    if extras:
+        lines.append("Ngoài ra anh/chị có thể tham khảo thêm:")
+        for product in extras:
+            price = (
+                format_vnd(product.effective_price)
+                if product.effective_price is not None
+                else "giá đang cập nhật"
+            )
+            note = ""
+            if product.promotion.discount_percent:
+                note = f", đang giảm {product.promotion.discount_percent:.0f}%"
+            if product.gift_promotion:
+                note += ", có quà tặng"
+            lines.append(f"• {product.name} — {price}{note}")
+        lines.append("")
     question = next_question or (
         "Anh/chị muốn em so sánh chi tiết hai mẫu nào, hay xem thêm lựa chọn khác ạ?"
     )
     lines.append(question)
     return ProposedResponse(
         text="\n".join(lines).strip(),
-        allowed_products=suggestions.distinct_products,
+        allowed_products=suggestions.distinct_products + extras,
         question=question,
     )

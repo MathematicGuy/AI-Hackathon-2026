@@ -40,6 +40,26 @@ _POLICY_VIOLATION_MARKERS = (
     "không chịu phí", "miễn phí 100%", "bỏ qua điều khoản",
 )
 
+# Attempts to extract benefits the data does not grant: demanding extra
+# discounts/gifts, claiming the bot promised something, or asking the bot to
+# commit a private deal. The bot only reports promotions that exist in data.
+_EXPLOIT_MARKERS = (
+    "cam kết giảm", "hứa giảm", "giảm thêm cho", "bớt cho mình", "bớt thêm",
+    "tặng thêm cho", "áp mã", "ghi nhận khuyến mãi", "bạn vừa hứa",
+    "bạn đã hứa", "em vừa hứa", "chốt giá rẻ hơn", "deal riêng",
+    "miễn phí cho mình", "free cho mình", "giảm 50% cho mình",
+)
+
+EXPLOIT_REPLY = (
+    "Dạ em rất tiếc là em không thể tự tạo hay cam kết thêm ưu đãi ngoài "
+    "chương trình chính thức ạ. Mọi khuyến mãi, quà tặng em tư vấn đều theo "
+    "đúng dữ liệu hệ thống của Điện Máy XANH. Anh/chị muốn em kiểm tra các "
+    "khuyến mãi đang có cho sản phẩm mình quan tâm để tận dụng tốt nhất không ạ?"
+)
+
+# Explicit cues that the user really wants to change product category.
+_SWITCH_CUES = ("thôi", "chuyển", "đổi sang", "sang xem", "quay lại", "xem giúp")
+
 GUARDRAIL_REPLY = (
     "Dạ em xin phép không xử lý nội dung này ạ. Em là trợ lý tư vấn sản phẩm "
     "của Điện Máy XANH — anh/chị cần tìm sản phẩm nào để em hỗ trợ ạ?"
@@ -59,8 +79,13 @@ class AgentDependencies:
     extractor: UnderstandingExtractor | None = None
 
     @classmethod
-    def from_default_paths(cls) -> "AgentDependencies":
-        return cls(products=ExcelDatasetAdapter().load())
+    def from_default_paths(cls, *, with_llm: bool = True) -> "AgentDependencies":
+        extractor = None
+        if with_llm:
+            from backend.app.agent.llm.client import default_extractor
+
+            extractor = default_extractor()
+        return cls(products=ExcelDatasetAdapter().load(), extractor=extractor)
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,23 +110,60 @@ def _category_menu(registry: CategoryRegistry) -> str:
 
 
 async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> AgentReply:
-    # 1. Guard (word count, payload, injection; agent scope = all categories).
+    # 1. Benefit-exploit guard first: the bot never grants or commits
+    # promotions. The reply is a fixed refusal that processes no content, so
+    # checking before the input guard is safe.
+    low = message.lower()
+    if any(marker in low for marker in _EXPLOIT_MARKERS):
+        state.guardrail_flags.append("promotion_exploit_blocked")
+        return AgentReply(
+            text=EXPLOIT_REPLY,
+            intent="unsupported",
+            flags=["promotion_exploit_blocked"],
+        )
+
+    # 2. Input guard (word count, payload, injection; agent scope = all
+    # categories). A plain answer to the pending cold-start question is
+    # in-scope by construction — never fail closed on it.
     guard = evaluate_input(
         message,
         in_scope_markers=_agent_scope_markers(deps.registry),
         other_category_markers=(),
     )
     state.guardrail_flags.extend(guard.flags)
-    if guard.blocked:
+    expecting_answer = state.pending_question_key is not None
+    if guard.blocked and not (
+        expecting_answer and guard.reason == "degraded_fail_closed"
+    ):
         state.guardrail_flags.append("guardrail_block")
         text = guard.message or GUARDRAIL_REPLY
         return AgentReply(text=text, intent="unsupported", flags=list(guard.flags))
 
     # 2. Understand (LLM route when configured, deterministic fallback always).
     understanding, flags = await understand_turn(
-        message, extractor=deps.extractor, registry=deps.registry
+        message,
+        extractor=deps.extractor,
+        state_summary=_state_summary(state),
+        registry=deps.registry,
     )
     state.guardrail_flags.extend(flags)
+
+    # 2b. A low-confidence (fallback) category switch mid-conversation needs an
+    # explicit switch cue — merely mentioning another appliance ("mình chưa có
+    # màn hình" while buying a PC) must not reroute the whole consultation.
+    if (
+        understanding.confidence <= 0.35
+        and state.need.category_code is not None
+        and understanding.need_patch.category_code
+        not in (None, state.need.category_code)
+        and not any(cue in low for cue in _SWITCH_CUES)
+    ):
+        patch = understanding.need_patch.model_copy(update={"category_code": None})
+        understanding = understanding.model_copy(update={"need_patch": patch})
+
+    # 2c. Capture the pending cold-start answer when the reply carried no
+    # structured signal (keeps per-category filter memory complete).
+    understanding = _capture_pending_answer(state, message, understanding)
 
     # 3. Remember (fixed-format need; patch / correction / category switch).
     memory.apply_turn(state, understanding)
@@ -118,6 +180,49 @@ async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> 
         return AgentReply(text=_category_menu(deps.registry), intent=intent, flags=flags)
 
     return _product_flow(state, deps, intent, flags)
+
+
+def _state_summary(state: AgentState) -> str:
+    need = state.need
+    if need.category_code is None:
+        return ""
+    parts = [f"ngành đang tư vấn: {need.category_code}"]
+    if need.usage_purpose:
+        parts.append(f"mục đích: {need.usage_purpose}")
+    if need.budget_max:
+        parts.append(f"ngân sách tối đa: {need.budget_max}")
+    if state.pending_question_key:
+        parts.append(f"đang chờ khách trả lời câu hỏi: {state.pending_question_key}")
+    return "; ".join(parts)
+
+
+def _capture_pending_answer(state, message: str, understanding):
+    key = state.pending_question_key
+    if not key:
+        return understanding
+    patch = understanding.need_patch
+    switching = patch.category_code not in (None, state.need.category_code)
+    if switching:
+        state.pending_question_key = None
+        return understanding
+    explicit = patch.model_fields_set - {"requested_roles"}
+    has_signal = any(
+        getattr(patch, name) not in (None, [], {}) for name in explicit
+    )
+    if understanding.intent == "unsupported" or not has_signal:
+        answer = message.strip()[:120]
+        if key == "purpose" and state.need.usage_purpose is None:
+            state.need = state.need.model_copy(update={"usage_purpose": answer})
+        else:
+            constraints = dict(state.need.attribute_constraints)
+            constraints[key] = answer
+            state.need = state.need.model_copy(
+                update={"attribute_constraints": constraints}
+            )
+        if understanding.intent == "unsupported":
+            understanding = understanding.model_copy(update={"intent": "new_search"})
+    state.pending_question_key = None
+    return understanding
 
 
 def _policy_flow(message: str, deps: AgentDependencies, flags: list[str]) -> AgentReply:
@@ -181,6 +286,7 @@ def _product_flow(
         question = coldstart.next_question(state)
         if question is not None:
             coldstart.record_asked(state, question)
+            state.pending_question_key = question.key
             return AgentReply(text=question.ask, intent=intent, flags=flags)
 
     # Enough to act: search, suggest by roles, sell.
@@ -213,15 +319,21 @@ def _product_flow(
     suggestions = suggest_products(
         result.items, category_code=category, roles=roles
     )
+    winner_ids = {p.productidweb for p in suggestions.distinct_products}
+    also_consider = [
+        p for p in result.items if p.productidweb not in winner_ids
+    ][:3]
     follow_up = coldstart.next_question(state)
     question_text = None
     if follow_up is not None:
         coldstart.record_asked(state, follow_up)
+        state.pending_question_key = follow_up.key
         question_text = follow_up.ask
     response = render_suggestions(
         suggestions,
         category_name=registry_category.sheet_name,
         next_question=question_text,
+        also_consider=also_consider,
     )
     validation = validate_response(
         response.text, allowed_products=response.allowed_products
