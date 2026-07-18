@@ -1,4 +1,4 @@
-# Air Conditioner Advisor M1 Contract
+# Product Advisor Contract — Milestone 1 (Air-Conditioner)
 
 ## Status and authority
 

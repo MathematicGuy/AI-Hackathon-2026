@@ -1,4 +1,4 @@
-# Air Conditioner Advisor — Milestone 1 Product Requirements (PRD)
+# Product Advisor — Milestone 1 Product Requirements (PRD) (Air-Conditioner slice)
 
 > **Project:** AI Product Comparison Advisor — Điện Máy XANH  
 > **Milestone:** Milestone 1 — the first vertical slice of the general

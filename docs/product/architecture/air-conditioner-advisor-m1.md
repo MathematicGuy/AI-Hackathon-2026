@@ -1,4 +1,4 @@
-# Air Conditioner Advisor M1 Product Architecture
+# Product Advisor M1 Product Architecture (Air-Conditioner slice)
 
 > **Status:** Synced with the approved Milestone 1 PRD  
 > **Scope:** One product category only — máy lạnh  

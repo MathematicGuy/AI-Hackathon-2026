@@ -11,7 +11,7 @@ first vertical slice. M1 is deliberately scoped to one category (see ADR-001) so
 the general advisor framework — guardrails, need extraction, state, deterministic
 ranking, grounded explanation, evaluation — is proven end-to-end before later
 milestones extend it to the other categories. Files and schemas named
-`air-conditioner`/`aircon` are M1's category-specific artifacts, not the whole
+`air-conditioner`/`aircon` are M1's category-specific slice artifacts, not the whole
 product's scope.
 
 The current backend foundation defines the accepted request, response, product,

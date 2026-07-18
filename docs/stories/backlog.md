@@ -10,7 +10,7 @@ the work is selected or when a product decision needs a durable place to land.
 
 | Epic | Description | Status |
 | --- | --- | --- |
-| E01 — Air Conditioner Advisor M1 | Vietnamese máy lạnh decision-support MVP, including dataset-backed evaluation | candidate |
+| E01 — AI Product Advisor M1 (Air-Conditioner) | Vietnamese máy lạnh decision-support MVP, including dataset-backed evaluation | candidate |
 
 ## Candidate Stories
 
