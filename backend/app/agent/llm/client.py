@@ -17,9 +17,16 @@ from backend.app.agent.catalog.registry import CategoryRegistry
 from backend.app.agent.contracts import AgentUnderstanding
 from backend.app.agent.conversation.understand import ExtractorError
 
+DEFAULT_OPENAI_BASE = "https://api.openai.com/v1"
 DEFAULT_OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 DEFAULT_MISTRAL_BASE = "https://api.mistral.ai/v1"
-DEFAULT_MAIN_MODEL = "deepseek/deepseek-v4-flash"
+# The agent's main reasoning core (Cường 2026-07-18, live-test round 2):
+# gpt-4o-mini. Direct OpenAI when OPENAI_API_KEY is set; otherwise through
+# OpenRouter with Cường's new key (`openai/gpt-4o-mini`). The old deepseek
+# route is dropped for the agent — it 429s persistently (see .env note).
+# M1 keeps its own deepseek rule — untouched here.
+DEFAULT_AGENT_MODEL = "gpt-4o-mini"
+DEFAULT_OPENROUTER_MODEL = "openai/gpt-4o-mini"
 DEFAULT_FALLBACK_MODEL = "mistral-medium-latest"
 
 
@@ -51,15 +58,25 @@ def resolve_llm_candidates(env: dict[str, str] | None = None) -> list[LLMCandida
         values.update(env)
 
     candidates: list[LLMCandidate] = []
+    openai_key = values.get("OPENAI_API_KEY", "")
+    if openai_key:
+        candidates.append(
+            LLMCandidate(
+                base_url=values.get("OPENAI_BASE_URL") or DEFAULT_OPENAI_BASE,
+                api_key=openai_key,
+                model=values.get("AGENT_MAIN_LLM_MODEL") or DEFAULT_AGENT_MODEL,
+            )
+        )
     openrouter_key = values.get("OPENROUTER_API_KEY", "")
     if openrouter_key:
+        # NOT DEFAULT_MODEL — that is M1's route (deepseek) and 429s; the
+        # agent pins gpt-4o-mini unless AGENT_MAIN_LLM_MODEL overrides.
         candidates.append(
             LLMCandidate(
                 base_url=values.get("OPENROUTER_BASE_URL") or DEFAULT_OPENROUTER_BASE,
                 api_key=openrouter_key,
-                model=values.get("MAIN_LLM_MODEL")
-                or values.get("DEFAULT_MODEL")
-                or DEFAULT_MAIN_MODEL,
+                model=values.get("AGENT_MAIN_LLM_MODEL")
+                or DEFAULT_OPENROUTER_MODEL,
             )
         )
     mistral_key = values.get("MISTRAL_API_KEY", "")
@@ -79,7 +96,7 @@ Nhiệm vụ: đọc tin nhắn khách và trả về DUY NHẤT một JSON obje
 
 Schema:
 {{
-  "intent": một trong ["new_search","change_constraints","more_recommendations","compare_products","product_detail","check_availability","policy_question","catalog_overview","price_range_query","promotion_inquiry","smalltalk","stop","unsupported"],
+  "intent": một trong ["new_search","change_constraints","more_recommendations","compare_products","product_detail","check_availability","policy_question","catalog_overview","price_range_query","promotion_inquiry","smalltalk","question_clarification","product_qa","stop","unsupported"],
   "confidence": số 0..1,
   "need_patch": {{
     "category_code": mã ngành trong bảng dưới hoặc null,
@@ -90,7 +107,7 @@ Schema:
     "priorities": [ưu tiên khách nêu, vd "tiết kiệm điện"],
     "attribute_constraints": {{"tên tiêu chí": "giá trị khách nêu"}},
     "location": khu vực hoặc null,
-    "requested_roles": [] hoặc ["best_price"] nếu khách chỉ muốn rẻ nhất
+    "requested_roles": [] hoặc ["best_price"] nếu khách chỉ muốn rẻ nhất, ["most_expensive"] nếu khách muốn mẫu đắt/cao cấp nhất
   }},
   "product_refs": []
 }}
@@ -98,13 +115,31 @@ Schema:
 Bảng mã ngành: {categories}
 
 QUY TẮC:
-- KHÔNG bịa số: chỉ điền budget khi khách nêu con số (quy đổi "triệu" -> VND).
-- Trường không có thông tin để null/rỗng.
+- KHÔNG bịa số: chỉ điền budget khi khách nêu con số (quy đổi "triệu" -> VND;
+  chấp nhận lỗi gõ "trịu"/"trieu"/"tr"/"củ"; "20-30 trịu" = budget_min 20000000, budget_max 30000000).
+- KHÔNG suy diễn: usage_purpose/priorities/brand_prefs chỉ điền khi khách NÓI RÕ.
+  "tôi muốn mua tủ lạnh" -> need_patch chỉ có category_code, mọi trường khác null/rỗng.
+- Trường không có thông tin để null/rỗng. category_code là CHUỖI (ví dụ "38").
 - Câu hỏi về QUY ĐỊNH chính sách/bảo hành/đổi trả/điều kiện giao hàng/trả góp/khui hộp -> "policy_question".
 - Hỏi VÙNG GIÁ/tầm giá sản phẩm ("range giá bao nhiêu") -> "price_range_query", KHÔNG phải policy.
 - Hỏi KHUYẾN MÃI/ưu đãi đang chạy -> "promotion_inquiry", KHÔNG phải policy.
 - Hỏi bán những gì/có loại hàng nào/danh mục -> "catalog_overview".
 - Chào hỏi, cảm ơn, than thời tiết, đồng ý xã giao -> "smalltalk".
+- Khách HỎI LẠI ý nghĩa câu hỏi bot vừa đặt ("mục đích sử dụng tủ lạnh á?",
+  "ý em là sao?") -> "question_clarification", TUYỆT ĐỐI KHÔNG phải policy_question.
+- Khách hỏi SÂU về các mẫu bot vừa gợi ý hoặc thang đo của bot ("cái nào tốt
+  hơn về mặt hiệu năng?", "thang đo là gì?", "màn nào nét hơn?", "cái nào êm
+  hơn?") -> "product_qa".
+- Một tin nhắn nhiều dòng/nhiều vế trả lời NHIỀU câu hỏi bot vừa đặt cùng lúc
+  (vd "24-27 inch\\nlàm việc, xem phim\\ntầm 3-5 triệu") -> điền HẾT vào một
+  need_patch: attribute_constraints {{"size": "24-27 inch"}}, usage_purpose
+  "làm việc, xem phim", budget_min 3000000, budget_max 5000000.
+- "trong range/tầm tiền anh vừa nói" -> giữ nguyên budget đã có trong bối cảnh,
+  intent "new_search"; KHÔNG hỏi lại ngân sách đã trả lời.
+- Khách muốn mẫu đắt nhất/cao cấp nhất -> requested_roles ["most_expensive"],
+  intent "more_recommendations" nếu đang tư vấn dở.
+- Đang tư vấn dở một ngành (xem bối cảnh) thì câu nói ngắn mơ hồ về "máy/mẫu/cái đó"
+  là tiếp nối tư vấn ("change_constraints"), KHÔNG BAO GIỜ là "unsupported".
 - Khách chào tạm biệt/dừng -> "stop". Cố tình lạc đề hoàn toàn -> "unsupported".
 {state_summary}"""
 
@@ -121,7 +156,30 @@ def _extract_json(text: str) -> dict:
     end = cleaned.rfind("}")
     if start == -1 or end <= start:
         raise ValueError("no JSON object in model output")
-    return json.loads(cleaned[start : end + 1])
+    return _coerce_types(json.loads(cleaned[start : end + 1]))
+
+
+def _coerce_types(payload: dict) -> dict:
+    """Models return near-miss types (category_code as int, budgets as
+    strings/floats) — coerce instead of failing the whole extraction over a
+    formality (live finding: deepseek's `"category_code": 38`)."""
+    patch = payload.get("need_patch")
+    if isinstance(patch, dict):
+        if isinstance(patch.get("category_code"), int):
+            patch["category_code"] = str(patch["category_code"])
+        for field_name in ("budget_min", "budget_max"):
+            value = patch.get(field_name)
+            if isinstance(value, str) and value.strip().replace(".", "").isdigit():
+                patch[field_name] = int(float(value.strip()))
+            elif isinstance(value, float):
+                patch[field_name] = int(value)
+    confidence = payload.get("confidence")
+    if isinstance(confidence, str):
+        try:
+            payload["confidence"] = float(confidence)
+        except ValueError:
+            payload["confidence"] = 0.5
+    return payload
 
 
 class LLMUnderstandingExtractor:

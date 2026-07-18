@@ -79,25 +79,57 @@ def _aircon_rules(need: GenericNeed) -> list[Predicate]:
 
 
 def _monitor_rules(need: GenericNeed) -> list[Predicate]:
-    """Màn hình: requested size (inch) within ±2 inch of 'Kích thước màn hình'."""
+    """Màn hình: a size RANGE ("24-27 inch") keeps products inside
+    [low-0.5, high+0.5] (23.8" satisfies a 24" ask); a single size keeps ±2."""
     answer = need.attribute_constraints.get("size")
-    size = _first_number(answer)
-    if size is None:
+    stated = _numbers(answer)
+    if not stated:
         return []
+    if len(stated) >= 2:
+        low, high = min(stated[:2]) - 0.5, max(stated[:2]) + 0.5
+    else:
+        low, high = stated[0] - 2.0, stated[0] + 2.0
 
     def close_enough(product: GenericProduct) -> bool:
         actual = _first_number(product.attributes.get("Kích thước màn hình"))
         if actual is None:
             return True
-        return abs(actual - size) <= 2.0
+        return low <= actual <= high
 
     return [close_enough]
+
+
+def _washer_rules(need: GenericNeed) -> list[Predicate]:
+    """Máy giặt: household size → load band on 'Khối lượng tải chính' (data
+    verified 2026-07-18: the sheet now carries specs at ~70% fill).
+    1–2 người ≤ 8.5kg; 3–4 người 8–10kg; 5+ người ≥ 9.5kg."""
+    size = _household_size(need) or _first_number(
+        need.attribute_constraints.get("load")
+    )
+    if size is None:
+        return []
+    size = int(size)
+    if size <= 2:
+        low, high = 0.0, 8.5
+    elif size <= 4:
+        low, high = 8.0, 10.0
+    else:
+        low, high = 9.5, 99.0
+
+    def fits(product: GenericProduct) -> bool:
+        load = _first_number(product.attributes.get("Khối lượng tải chính"))
+        if load is None:
+            return True
+        return low <= load <= high
+
+    return [fits]
 
 
 _RULES: dict[str, Callable[[GenericNeed], list[Predicate]]] = {
     "38": _fridge_rules,
     "36": _aircon_rules,
     "73": _monitor_rules,
+    "115": _washer_rules,
 }
 
 

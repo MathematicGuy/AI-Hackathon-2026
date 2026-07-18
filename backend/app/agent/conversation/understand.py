@@ -41,10 +41,29 @@ _SMALLTALK = (
     "đồng ý", "ok em", "oke", "được đó", "hay đấy", "tốt quá", "ừ em",
 )
 
+# Money units tolerate live-chat typos: "trịu", "trieu", bare "tr", "củ".
+_MILLION_UNIT = r"triệu|trịu|trieu|tr\b|củ\b"
 _BUDGET = re.compile(
-    r"(?:dưới|khoảng|tầm|từ)?\s*(\d{1,3}(?:[.,]\d{3})*|\d+)\s*(triệu|tr\b|k\b|nghìn|ngàn)",
+    r"(?:dưới|khoảng|tầm|từ)?\s*(\d{1,3}(?:[.,]\d{3})*|\d+)\s*"
+    rf"({_MILLION_UNIT}|k\b|nghìn|ngàn)",
     re.IGNORECASE,
 )
+
+# "đắt nhất/mắc nhất/xịn nhất" — the customer wants the top-priced model.
+_MOST_EXPENSIVE = ("đắt nhất", "mắc nhất", "xịn nhất", "cao cấp nhất")
+
+# Screen-size mention ("24-27 inch", "27 inch", '24"') — captured as a size
+# constraint for screen categories (monitor 73, tablet 30).
+_SIZE_INCH = re.compile(
+    r"(\d{1,2}(?:[.,]\d)?)\s*(?:-|–|đến\s*)?\s*(\d{1,2}(?:[.,]\d)?)?\s*(?:inch|in\b|\")",
+    re.IGNORECASE,
+)
+_SCREEN_CATEGORIES = ("73", "30")
+
+# Room area ("phòng 18m2", "20 m²") — feeds the air-conditioner coverage rule.
+_ROOM_AREA = re.compile(r"(\d{1,3})\s*m(?:²|2)\b", re.IGNORECASE)
+# Generic product references that mean "continue this consultation".
+_CONTINUATION_HINTS = ("máy", "mẫu", "cái", "con", "em nó", "sản phẩm", "loại")
 
 # Obvious usage purposes the deterministic fallback can extract safely.
 _PURPOSE_MARKERS = (
@@ -66,7 +85,7 @@ def _parse_budget_vnd(text: str) -> tuple[int | None, int | None]:
     'dưới 20 triệu', 'tầm 15tr', '18-20 triệu'. Returns (min, max)."""
     low = text.lower()
     range_match = re.search(
-        r"(\d{1,3})\s*[-–đến\s]+\s*(\d{1,3})\s*(triệu|tr\b)", low
+        rf"(\d{{1,3}})\s*[-–đến\s]+\s*(\d{{1,3}})\s*({_MILLION_UNIT})", low
     )
     if range_match:
         a, b = int(range_match.group(1)), int(range_match.group(2))
@@ -77,7 +96,11 @@ def _parse_budget_vnd(text: str) -> tuple[int | None, int | None]:
         return None, None
     amount = int(re.sub(r"[.,]", "", match.group(1)))
     unit = match.group(2).strip()
-    value = amount * 1_000_000 if unit.startswith(("tr", "triệu")) else amount * 1_000
+    value = (
+        amount * 1_000_000
+        if unit.startswith(("tr", "củ")) or unit in ("triệu", "trịu", "trieu")
+        else amount * 1_000
+    )
     prefix = low[max(0, match.start() - 12): match.start()]
     if "từ" in prefix:
         return value, None
@@ -85,7 +108,10 @@ def _parse_budget_vnd(text: str) -> tuple[int | None, int | None]:
 
 
 def fallback_understanding(
-    message: str, *, registry: CategoryRegistry | None = None
+    message: str,
+    *,
+    registry: CategoryRegistry | None = None,
+    active_category: str | None = None,
 ) -> AgentUnderstanding:
     registry = registry or CategoryRegistry()
     low = message.lower()
@@ -99,12 +125,29 @@ def fallback_understanding(
         need_kwargs["budget_min"] = budget_min
     if budget_max is not None:
         need_kwargs["budget_max"] = budget_max
-    if "rẻ nhất" in low or "giá thấp nhất" in low:
+    if any(
+        k in low for k in ("rẻ nhất", "giá thấp nhất", "rẻ càng tốt", "càng rẻ")
+    ):
         need_kwargs["requested_roles"] = ["best_price"]
+    elif any(k in low for k in _MOST_EXPENSIVE):
+        need_kwargs["requested_roles"] = ["most_expensive"]
     for purpose in _PURPOSE_MARKERS:
         if purpose in low:
             need_kwargs["usage_purpose"] = purpose
             break
+    effective_category = (
+        category.code if category is not None else active_category
+    )
+    if effective_category in _SCREEN_CATEGORIES:
+        size_match = _SIZE_INCH.search(low)
+        if size_match:
+            need_kwargs["attribute_constraints"] = {"size": size_match.group(0)}
+    elif effective_category == "36":
+        area_match = _ROOM_AREA.search(low)
+        if area_match:
+            need_kwargs["attribute_constraints"] = {
+                "room_area": area_match.group(0)
+            }
 
     # Price/promotion questions are catalog questions, never policy — even if
     # the LLM route is down (Cường's live-test finding).
@@ -128,12 +171,23 @@ def fallback_understanding(
         intent = "check_availability"
     elif any(k in low for k in _DETAIL):
         intent = "product_detail"
+    elif any(k in low for k in _MOST_EXPENSIVE) and (
+        category is not None or active_category is not None
+    ):
+        intent = "more_recommendations"
     elif category is not None:
         intent = "new_search"
     elif budget_min is not None or budget_max is not None:
         intent = "change_constraints"
     elif any(k in low for k in _SMALLTALK):
         intent = "smalltalk"
+    elif active_category is not None and any(
+        hint in low for hint in _CONTINUATION_HINTS
+    ):
+        # Mid-consultation follow-up that names no category and matches no
+        # marker ("máy đắt nhất đi em") — stay in the product flow instead of
+        # dumping the category menu (Cường's live-test 2 finding).
+        intent = "change_constraints"
     else:
         intent = "unsupported"
 
@@ -144,17 +198,66 @@ def fallback_understanding(
     )
 
 
+def _augment_understanding(
+    message: str,
+    understanding: AgentUnderstanding,
+    *,
+    active_category: str | None,
+) -> AgentUnderstanding:
+    """Fill fields the LLM missed using the deterministic extractors — never
+    override what the model DID return (live finding: the model skipped
+    'phòng 18m2' and the room got re-asked)."""
+    patch = understanding.need_patch
+    low = message.lower()
+    updates: dict = {}
+    if patch.budget_min is None and patch.budget_max is None:
+        budget_min, budget_max = _parse_budget_vnd(message)
+        if budget_min is not None:
+            updates["budget_min"] = budget_min
+        if budget_max is not None:
+            updates["budget_max"] = budget_max
+    category = patch.category_code or active_category
+    constraints = dict(patch.attribute_constraints)
+    if category in _SCREEN_CATEGORIES and "size" not in constraints:
+        size_match = _SIZE_INCH.search(low)
+        if size_match:
+            constraints["size"] = size_match.group(0)
+    elif category == "36" and "room_area" not in constraints:
+        area_match = _ROOM_AREA.search(low)
+        if area_match:
+            constraints["room_area"] = area_match.group(0)
+    if constraints != dict(patch.attribute_constraints):
+        updates["attribute_constraints"] = constraints
+    if not updates:
+        return understanding
+    return understanding.model_copy(
+        update={"need_patch": patch.model_copy(update=updates)}
+    )
+
+
 async def understand_turn(
     message: str,
     *,
     extractor: UnderstandingExtractor | None,
     state_summary: str = "",
     registry: CategoryRegistry | None = None,
+    active_category: str | None = None,
 ) -> tuple[AgentUnderstanding, list[str]]:
     if extractor is not None:
         try:
-            return await extractor.extract(message, state_summary=state_summary), []
+            extracted = await extractor.extract(message, state_summary=state_summary)
+            return (
+                _augment_understanding(
+                    message, extracted, active_category=active_category
+                ),
+                [],
+            )
         except (ExtractorError, ValidationError):
             pass
     flags = ["understanding_degraded"] if extractor is not None else []
-    return fallback_understanding(message, registry=registry), flags
+    return (
+        fallback_understanding(
+            message, registry=registry, active_category=active_category
+        ),
+        flags,
+    )
