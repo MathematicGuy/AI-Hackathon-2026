@@ -18,6 +18,8 @@ CASES_PATH = Path("data") / "agent-eval" / "agent-golden-cases.jsonl"
 
 
 def load_cases():
+    if not CASES_PATH.exists():
+        return []
     lines = CASES_PATH.read_text(encoding="utf-8").splitlines()
     return [json.loads(line) for line in lines if line.strip()]
 

@@ -1273,18 +1273,18 @@ The frontend mapping is an implementation addition. The backend mapping is synch
 
 ## 16. Architecture acceptance criteria
 
-- [x] Input guardrails execute before the configured `main` intent route.
-- [x] The exact input order is word count → regex/payload → NeMo → scope.
+- [ ] Input guardrails execute before the configured `main` intent route.
+- [ ] The exact input order is word count → regex/payload → NeMo → scope.
 - [ ] Every supported intent reaches the route specified in Section 3.
-- [x] Structured intent and need fields are validated.
+- [ ] Structured intent and need fields are validated.
 - [ ] Explicit user corrections win state merge.
 - [ ] Each response contains at most one clarification question.
 - [ ] Each clarification cycle contains at most three questions.
-- [x] Search supports `limit`, `cursor`, and `exclude_product_ids`.
-- [x] Search returns `total_candidates` and `source_snapshot`.
-- [x] Normalization preserves `null` and evidence paths.
-- [x] Hard constraints execute before role ranking.
-- [x] No ineligible product reaches a normal recommendation.
+- [ ] Search supports `limit`, `cursor`, and `exclude_product_ids`.
+- [ ] Search returns `total_candidates` and `source_snapshot`.
+- [ ] Normalization preserves `null` and evidence paths.
+- [ ] Hard constraints execute before role ranking.
+- [ ] No ineligible product reaches a normal recommendation.
 - [ ] Only three formal roles exist in `RoleWinners`.
 - [ ] Duplicate role winners render once with merged badges.
 - [ ] A useful alternative does not alter role truth.
@@ -1293,7 +1293,7 @@ The frontend mapping is an implementation addition. The backend mapping is synch
 - [ ] Judge evaluation uses `judge` only and fails closed.
 - [ ] Output validation follows Instructor → Pydantic → grounding → business rules → NeMo.
 - [ ] Failed output uses at most one retry and then deterministic fallback.
-- [x] State matches the canonical `AdvisorState`.
+- [ ] State matches the canonical `AdvisorState`.
 - [ ] Cursor advances only after successful product presentation.
 - [ ] API envelopes include `session_id`, `request_id`, `trace_id`, and `data`.
 - [ ] Every turn produces the canonical Langfuse tree, metadata, and scores.
