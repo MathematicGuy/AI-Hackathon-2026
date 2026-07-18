@@ -125,6 +125,14 @@ Keep `resources/` out of scope.
   skipped) with `AGENT_DATA_BACKEND=excel`. Only the live-Postgres endpoint
   integration test is excluded — it needs a running database server.
 
+## Deferred / Follow-ups
+
+- Live-Postgres integration test `backend/tests/integration/api/test_catalog_endpoints.py`
+  is deferred: its fixtures require a running Postgres server the local env does
+  not host, so the full-suite pass excludes it via `--ignore`. Tackle later —
+  either stand up a test Postgres (or container) or add a skip-when-unreachable
+  guard. This is data-platform (US-206) territory, not observability.
+
 ## Definition of Done
 
 - Focused and full backend tests pass.
