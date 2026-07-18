@@ -6,6 +6,7 @@ deferred and recorded on US-206. Separate from the M1 rig's advisor endpoint.
 
 import os
 import uuid
+from collections.abc import Callable
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,15 +30,24 @@ class AgentResponse(BaseModel):
     presented_ids: list[str] = []
 
 
-def create_agent_router(deps: AgentDependencies) -> APIRouter:
+def create_agent_router(
+    deps: AgentDependencies | Callable[[], AgentDependencies],
+) -> APIRouter:
+    """Mount POST /api/v1/agent/respond.
+
+    `deps` may be a provider so a host app can build the router at import time
+    and resolve dependencies later from its own lifespan (see
+    `backend.app.api.main`).
+    """
     router = APIRouter()
     sessions: dict[str, AgentState] = {}
+    resolve = deps if callable(deps) else lambda: deps
 
     @router.post("/api/v1/agent/respond", response_model=AgentResponse)
     async def respond(request: AgentRequest) -> AgentResponse:
         session_id = request.session_id or f"session-{uuid.uuid4().hex[:12]}"
         state = sessions.setdefault(session_id, AgentState(session_id=session_id))
-        reply = await run_turn(state, request.message, deps)
+        reply = await run_turn(state, request.message, resolve())
         return AgentResponse(
             session_id=session_id,
             request_id=f"request-{uuid.uuid4().hex[:12]}",

@@ -16,6 +16,15 @@ from backend.app.agent.contracts import AgentState
 
 CASES_PATH = Path("data") / "agent-eval" / "agent-golden-cases.jsonl"
 
+# The fixture lives under the gitignored /data/ tree, so a clean checkout (CI,
+# a fresh clone) does not have it. Skip the module instead of failing
+# collection, which would abort the entire pytest run.
+if not CASES_PATH.exists():
+    pytest.skip(
+        f"golden eval fixture not found: {CASES_PATH}",
+        allow_module_level=True,
+    )
+
 
 def load_cases():
     lines = CASES_PATH.read_text(encoding="utf-8").splitlines()
