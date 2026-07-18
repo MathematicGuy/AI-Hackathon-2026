@@ -133,6 +133,7 @@ export async function sendMessage(req: AdvisorRequest): Promise<AdvisorResponse>
 - Components import **only** `sendMessage` for data. Backend integration = flip
   `NEXT_PUBLIC_ADVISOR_MODE` to `live` and set `NEXT_PUBLIC_ADVISOR_API_URL`.
 
+
 ## 6. Mock scenarios (`lib/mock/`)
 
 Ordered keyword matchers on `message`; first match wins; fall-through → `recommendation`.

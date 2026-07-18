@@ -1,9 +1,6 @@
 """Frozen public contracts for the advisor."""
 
 from .schemas import (
-    EXPLANATION_MODEL,
-    EXPLANATION_PROVIDER,
-    INTENT_MODEL,
     AdvisorRequest,
     AdvisorResponse,
     AdvisorState,
@@ -14,9 +11,6 @@ from .schemas import (
 )
 
 __all__ = [
-    "EXPLANATION_MODEL",
-    "EXPLANATION_PROVIDER",
-    "INTENT_MODEL",
     "AdvisorRequest",
     "AdvisorResponse",
     "AdvisorState",
@@ -25,4 +19,3 @@ __all__ = [
     "NormalizedAirConditioner",
     "RecommendationRole",
 ]
-

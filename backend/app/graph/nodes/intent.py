@@ -1,9 +1,10 @@
 """Intent classification + need extraction node with deterministic fallback.
 
-The primary path uses an injected `IntentExtractor` (GPT-5.4 Nano). On provider
-or schema failure the node falls back to a deterministic keyword classifier and
-flags `intent_model_degraded`. The fallback never invents numeric values — it
-only classifies intent and leaves the need patch empty.
+The primary path uses an injected `IntentExtractor` configured from the
+environment-owned main route. On provider or schema failure the node falls back
+to a deterministic keyword classifier and flags `intent_model_degraded`. The
+fallback never invents numeric values — it only classifies intent and leaves
+the need patch empty.
 """
 
 from pydantic import ValidationError

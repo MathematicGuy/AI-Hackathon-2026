@@ -1,6 +1,6 @@
 # Project Management — AI Product Comparison Advisor MVP
 
-> **Last updated:** 2026-07-17
+> **Last updated:** 2026-07-18
 > **Current sprint deadline:** 2026-07-17 13:47 UTC (3 hours from task start)
 > **Epic:** Release Milestone 1 — Máy lạnh decision-support advisor
 > **Product requirements:** `docs/product/requirements/air-conditioner-advisor-m1-prd.md`
@@ -39,9 +39,9 @@ For each accepted implementation change: record intake, create or update the app
 | Phase | Milestones | Outcome / exit evidence | Status |
 |---|---|---|---|
 | Phase A — Contract & Testability | M1.0 | Contract tests and renderable mock payloads | ✅ Done |
-| Phase B — Parallel Foundations | M1.1–M1.4 | Four independently testable foundations | ⬜ Planned |
+| Phase B — Parallel Foundations | M1.1–M1.4 | Four independently testable foundations | 🟨 In progress |
 | Phase C — Core Vertical Slice | M1.5 | Request reaches role winners with a trace | ⬜ Planned |
-| Phase D — Trustworthy Customer Experience | M1.6–M1.8 | Validated response, multi-turn flows, and UI | ⬜ Planned |
+| Phase D — Trustworthy Customer Experience | M1.6–M1.8 | Validated response, multi-turn flows, and UI | 🟨 In progress |
 | Phase E — Evaluation, Pilot & Release | M1.9–M1.10 | Release-gate report and deployed demo | ⬜ Planned |
 
 ## 2. Milestone Tracker
@@ -49,16 +49,30 @@ For each accepted implementation change: record intake, create or update the app
 | ID | Milestone | Primary lane | Dependency | Demo proof | Expected Harness proof | Status |
 |---|---|---|---|---|---|---|
 | M1.0 | Architecture & Interface Contract Freeze | A | Approved workflow | Mock request/response and contract tests | Intake, contract validation, trace | ✅ Done |
-| M1.1 | Catalog Search & Normalization | B | M1.0 | Normalized product search with cursor | Story packet, unit proof, trace | ⬜ Planned |
+| M1.1 | Catalog Search & Normalization | B | M1.0 | Normalized product search with cursor | Story packet, unit proof, trace | 🟨 In progress |
 | M1.2 | Deterministic Decision Engine | B | M1.0 + fixtures | Eligible set, role winners, deduplicated cards | Story packet, unit proof, trace | ⬜ Planned |
 | M1.3 | Guardrails & Intent/Need Extraction | C | M1.0 | Vietnamese request becomes validated need | Story packet, unit proof, trace | ⬜ Planned |
 | M1.4 | State, Clarification, Routing & Persistence | C/D | M1.0 | Multi-turn clarification resumes by session | Story packet, unit/integration proof, trace | ⬜ Planned |
 | M1.5 | Core FastAPI/LangGraph Vertical Slice | C/D | M1.1–M1.4 | Primary request becomes deterministic cards with trace | Story packet, integration proof, trace | ⬜ Planned |
 | M1.6 | Grounded Response & Output Guard | C/F | M1.5 | Validated response and deterministic fallback | Story packet, unit/integration proof, trace | ⬜ Planned |
 | M1.7 | Extended Multi-turn Intents | C/D | M1.5 | Compare, show-more, change, and stop script | Story packet, integration proof, trace | ⬜ Planned |
-| M1.8 | Frontend Decision UI | E | M1.0 mock; M1.5 API | Real recommendation UI | Story packet, E2E proof, trace | ⬜ Planned |
+| M1.8 | Frontend Decision UI | E | M1.0 mock; M1.5 API | Real recommendation UI | Story packet, E2E proof, trace | 🟨 In progress |
 | M1.9 | Langfuse Eval & Release Gate | F | Starts M1.0; integrates M1.5/M1.6 | 26-case M1 dataset release report | Story packet, dataset integrity, deterministic assertions, Langfuse import, trace | ⬜ Planned |
 | M1.10 | Deployment, Pilot & Demo | D/A | M1.6–M1.9 | Deployed demo and pilot package | Story packet, platform proof, trace | ⬜ Planned |
+
+### 2.1 Current User-Story Evidence
+
+The following statuses reconcile the durable story records, proof matrix, and
+active workstream tracker. A story is counted as complete here only when its
+implementation status and proof evidence agree.
+
+| Story ID | Milestone | Status | Evidence / limitation |
+|---|---|---|---|
+| US-100 | M1.0 | ✅ Implemented | Harness matrix records unit, integration, and platform proof. |
+| US-121 | M1.0 prerequisite | ✅ Implemented | Harness matrix records unit proof; tracker records eight tests, separate review approval, and trace 11. |
+| US-106 | M1.1 | ✅ Implemented | Harness matrix records unit proof; tracker records 53 passing tests, separate review approval, and trace 12. |
+| US-103 | M1.3 | 🟦 Proof status conflict | Durable story record says `implemented`; operational matrix says `planned` with no proof. Do not count this story or M1.3 as complete until the evidence is reconciled. |
+| US-115 | M1.8 | 🟨 In progress | PR #1 claims frontend Tasks 1–4 only, not the missing Playwright Task 10. The story remains unfinished and waits for API integration when the backend is ready; the durable record is `in_progress`, orphaned, and unverified. |
 
 ## 3. Work Breakdown Structure
 
@@ -256,7 +270,7 @@ This is planning guidance only. The durable story record and proof status are ma
 | US-103 | Vietnamese intent and need extraction | M1.3 | C | P0 | planned |
 | US-104 | State merge and correction precedence | M1.4 | C/D | P0 | planned |
 | US-105 | Material clarification policy | M1.4 | C | P0 | planned |
-| US-106 | Catalog adapter and pagination | M1.1 | B | P0 | planned |
+| US-106 | Catalog adapter and pagination | M1.1 | B | P0 | implemented |
 | US-107 | Product normalization and evidence | M1.1 | B | P0 | planned |
 | US-108 | Hard constraint filtering | M1.2 | B | P0 | planned |
 | US-109 | Deterministic role ranking | M1.2 | B | P0 | planned |
@@ -265,7 +279,7 @@ This is planning guidance only. The durable story record and proof status are ma
 | US-112 | Output schema and grounding guard | M1.6 | C/F | P0 | planned |
 | US-113 | Show-more continuation | M1.7 | C/D | P1 | planned |
 | US-114 | Compare and product-detail paths | M1.7 | C/D | P1 | planned |
-| US-115 | Product decision UI | M1.8 | E | P0 | planned |
+| US-115 | Product decision UI | M1.8 | E | P0 | in_progress |
 | US-116 | Langfuse trace tree | M1.5/M1.9 | F | P0 | planned |
 | US-117 | 26-case M1 evaluation dataset and golden regression | M1.9 | F/A | P0 | planned |
 | US-118 | Release gate report | M1.9 | F/A | P0 | planned |

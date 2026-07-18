@@ -1,4 +1,4 @@
-"""Injected GPT-5.4 Nano intent classifier and need extractor.
+"""Injected intent classifier and need extractor.
 
 The extractor calls an injected OpenAI-compatible client, validates the
 structured output into the frozen ``IntentOutput`` contract, and retries the
@@ -11,7 +11,7 @@ from typing import Any, Protocol
 
 from pydantic import ValidationError
 
-from backend.app.contracts.schemas import INTENT_MODEL, IntentOutput
+from backend.app.contracts.schemas import IntentOutput
 
 
 class ProviderError(Exception):
@@ -31,7 +31,7 @@ class OpenAIIntentExtractor:
         self,
         client: IntentClient,
         *,
-        model: str = INTENT_MODEL,
+        model: str,
         max_retries: int = 1,
     ) -> None:
         self.client = client
