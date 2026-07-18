@@ -198,6 +198,24 @@ def test_payload_scrubs_credential_key_variants_and_embedded_env_secrets(monkeyp
     }
 
 
+def test_short_env_secret_does_not_over_redact_raw_message(monkeypatch) -> None:
+    monkeypatch.setenv("OBSERVATION_API_KEY", "1")
+    backend = FakeLangfuse()
+    observer = LangfuseAgentObserver(backend)
+
+    with observer.start_turn(
+        trace_id="h" * 32,
+        session_id="session-1",
+        request_id="request-1",
+        user_id=None,
+        input={"message": "máy lạnh 18m2"},
+        metadata={},
+    ):
+        pass
+
+    assert backend.observations[0].input == {"message": "máy lạnh 18m2"}
+
+
 def test_sdk_and_flush_failures_never_escape() -> None:
     observer = LangfuseAgentObserver(RaisingLangfuse())
 

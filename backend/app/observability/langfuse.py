@@ -30,6 +30,9 @@ _SECRET_ENV_NAMES = {
     "GOOGLE_API_KEY",
     "AZURE_OPENAI_API_KEY",
 }
+# Real credentials are long; treating a 1-2 char env value as a secret to
+# substring-replace corrupts legitimate trace text (e.g. "18m2" -> "[REDACTED]8m2").
+_MIN_SECRET_VALUE_LENGTH = 8
 
 
 def _normalise_key(key: object) -> str:
@@ -59,7 +62,11 @@ def _secret_values() -> set[str]:
         for name in os.environ
         if any(marker in name.upper() for marker in ("SECRET", "API_KEY", "TOKEN", "PASSWORD"))
     )
-    return {value for name in names if (value := os.getenv(name))}
+    return {
+        value
+        for name in names
+        if (value := os.getenv(name)) and len(value) >= _MIN_SECRET_VALUE_LENGTH
+    }
 
 
 def redact_payload(value: object) -> object:
