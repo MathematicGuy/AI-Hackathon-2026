@@ -10,7 +10,7 @@ normal
 
 ## Product Contract
 
-A testing-only Next.js frontend (`frontend-mvp/`) renders all 8
+A testing-only Next.js frontend (`frontend/`) renders all 8
 `RecommendationOutput.answer_type` states from mock fixtures and is swappable to
 the real advisor backend by flipping one env var
 (`NEXT_PUBLIC_ADVISOR_MODE=mock|live`). The UI renders server-owned fields only:

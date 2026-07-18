@@ -56,7 +56,7 @@ For each accepted implementation change: record intake, create or update the app
 | M1.5 | Core FastAPI/LangGraph Vertical Slice | C/D | M1.1–M1.4 | Primary request becomes deterministic cards with trace | Story packet, integration proof, trace | ⬜ Planned |
 | M1.6 | Grounded Response & Output Guard | C/F | M1.5 | Validated response and deterministic fallback | Story packet, unit/integration proof, trace | ⬜ Planned |
 | M1.7 | Extended Multi-turn Intents | C/D | M1.5 | Compare, show-more, change, and stop script | Story packet, integration proof, trace | ⬜ Planned |
-| M1.8 | frontend-mvp Decision UI | E | M1.0 mock; M1.5 API | Real recommendation UI | Story packet, E2E proof, trace | 🟨 In progress |
+| M1.8 | frontend Decision UI | E | M1.0 mock; M1.5 API | Real recommendation UI | Story packet, E2E proof, trace | 🟨 In progress |
 | M1.9 | Langfuse Eval & Release Gate | F | Starts M1.0; integrates M1.5/M1.6 | 26-case M1 dataset release report | Story packet, dataset integrity, deterministic assertions, Langfuse import, trace | ⬜ Planned |
 | M1.10 | Deployment, Pilot & Demo | D/A | M1.6–M1.9 | Deployed demo and pilot package | Story packet, platform proof, trace | ⬜ Planned |
 
@@ -148,7 +148,7 @@ flowchart LR
     M15["M1.5 Core Vertical Slice"]
     M16["M1.6 Grounded Response & Output Guard"]
     M17["M1.7 Extended Multi-turn Intents"]
-    M18["M1.8 frontend-mvp Decision UI"]
+    M18["M1.8 frontend Decision UI"]
     M19["M1.9 Eval & Release Gate"]
     M110["M1.10 Deploy, Pilot & Demo"]
 
