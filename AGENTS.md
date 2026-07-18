@@ -3,16 +3,16 @@
 <!-- AI-LOGGING:BEGIN -->
 ## Mandatory AI Session Logging
 
-Before planning, editing, running commands, or invoking tools other than
-reading repository instructions:
+Before substantive work:
 
 1. Read `ai-logs/README.md`.
 2. Resolve the current team member exactly as required by that policy. A valid
    `TEAM_MEMBER` value may identify the member; otherwise ask the canonical
    identity question.
 3. Read that member's `BOT_INSTRUCTIONS.md`.
-4. Create the session log before substantive work and finalize it before
-   ending the session.
+4. Create or update the session log only when a durable deliverable is produced,
+   the task is complete, or a major bug/blocker is reached; finalize it before
+   ending the session when one exists.
 
 Never infer identity from a tracker alias, Git configuration, operating-system
 username, earlier session, branch name, or task content.
@@ -48,9 +48,9 @@ Apply this gate only after the logging and repository read gates above.
 
 - For a read-only answer, explanation, review, diagnosis, plan, or status
   request, inspect only the material needed to respond. Do not bootstrap,
-  initialize or migrate a database, record intake, or record a trace. Creating
-  and finalizing the mandatory AI session log is the only permitted repository
-  write.
+  initialize or migrate a database, record intake, or record a trace. A session
+  log may be created or finalized only at a durable milestone or major
+  bug/blocker.
 - For an explicit change, build, fix, or repository-artifact request, first run
   `scripts/bootstrap-harness.sh` on macOS/Linux or
   `.\scripts\bootstrap-harness.ps1` on Windows. Then use

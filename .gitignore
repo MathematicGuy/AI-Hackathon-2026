@@ -19,6 +19,21 @@
 temp/
 
 # Agent and browser state
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+.next/
+out/
+build/
+dist/
+
+# Local environment files
+.env
+
+# Agent Memory
 .agents/memory/
 chrome_profile/
 browser_recordings/
