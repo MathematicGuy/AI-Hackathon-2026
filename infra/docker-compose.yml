@@ -1,0 +1,74 @@
+# Local data platform for the AI Product Advisor.
+# Run from the repository root, e.g.:
+#   docker compose -f infra/docker-compose.yml up -d --build
+# Interpolation reads ./.env (repo root); services also load ../.env.
+name: advisor-data-platform
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    # POSTGRES_DB / POSTGRES_USER / POSTGRES_PASSWORD come from the repo-root
+    # .env. POSTGRES_PASSWORD must be set there or the database will not start.
+    env_file: ../.env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-advisor} -d ${POSTGRES_DB:-advisor}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    # No host port on purpose: the database is reachable only inside this
+    # compose network. To connect from the host for local debugging, add a
+    # loopback mapping in an override file (e.g. "127.0.0.1:55432:5432").
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ..
+      dockerfile: infra/backend.Dockerfile
+    image: advisor-backend:local
+    env_file: ../.env
+    environment:
+      # Force in-network DB target regardless of host-oriented .env values.
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      # Host port configurable to avoid clashes; container port stays 8000.
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      # Provided business data, mounted read-only.
+      - ../data:/app/data:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 25s
+    restart: unless-stopped
+
+  # One-shot ingestion worker. Not started by `up`; run explicitly:
+  #   docker compose -f infra/docker-compose.yml run --rm ingestion
+  ingestion:
+    build:
+      context: ..
+      dockerfile: infra/backend.Dockerfile
+    image: advisor-backend:local
+    env_file: ../.env
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../data:/app/data:ro
+    profiles: ["tools"]
+    command: ["python", "-m", "backend.app.ingestion.run", "--source", "/app/data/dataset"]
+
+volumes:
+  pgdata:

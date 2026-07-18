@@ -33,8 +33,7 @@ Each member has a personalized guide at
 
 ## Mandatory Preflight
 
-Before planning, editing project files, running terminal commands, or invoking
-non-reading tools, the AI must:
+Before substantive work, the AI must:
 
 1. Read this canonical policy.
 2. Resolve the current team member's identity.
@@ -42,18 +41,18 @@ non-reading tools, the AI must:
 4. Collect session metadata only from information already exposed by the
    client or current context, using the documented safe fallbacks for anything
    else.
-5. Create the session log from `ai-logs/SESSION_TEMPLATE.md`.
+5. Do not create a session log yet. Create or update one only when a durable
+   deliverable is produced (for example, a spec, plan, code, or test), the task
+   is completed, or a major bug or blocker is reached; finalize it before the
+   session ends when one exists.
 
 Reading repository instructions, reading only the `TEAM_MEMBER` assignment from
 the repository `.env`, asking the identity question, and asking questions needed
-to clarify the task are allowed before a session log exists. Creating and
-maintaining the log is also an allowed preflight operation. Every other action
-is substantive work and must wait until preflight is complete. Preflight must
-not run a terminal command to discover metadata other than reading only that
-`TEAM_MEMBER` assignment. In particular, use a branch name before log creation
-only when the client already exposes it; otherwise record `unknown`, create the
-log, and only then optionally run a sanitized Git command and update the
-metadata.
+to clarify the task are allowed before a session log exists. Preflight must not
+run a terminal command to discover metadata other than reading only that
+`TEAM_MEMBER` assignment. When a milestone log is created, use a branch name
+already exposed by the client; otherwise record `unknown`, then optionally run a
+sanitized Git command and update the metadata.
 
 If this policy conflicts with a duplicated workflow in a client shim or member
 guide, this policy is the workflow source of truth. Higher-priority system,
@@ -104,7 +103,8 @@ message identifier in log metadata, filenames, or log content.
 
 ## Log Creation and Naming
 
-Copy the structure of `ai-logs/SESSION_TEMPLATE.md` into:
+When a milestone requires a log, copy the structure of
+`ai-logs/SESSION_TEMPLATE.md` into:
 
 ```text
 ai-logs/<member-slug>/sessions/<UTC_TIMESTAMP>_<CLIENT>_<LOGGING_SESSION_ID>.md
@@ -115,7 +115,7 @@ deliberately uppercase. Only the `CLIENT` and `LOGGING_SESSION_ID` components
 are restricted to lowercase ASCII letters, digits, and hyphens. Normalize the
 client name to that character set and generate the local random logging
 identifier in that character set. Never use an external or client conversation
-identifier as either component. Create the file before substantive work starts
+identifier as either component. Create the file when the milestone is reached
 and populate every metadata field. Use `unknown` only where this policy permits
 it.
 
@@ -137,8 +137,8 @@ unresolved placeholder markers in a completed log.
 
 ## Interaction Logging
 
-Append a structured entry after each meaningful interaction or related action
-group. Each applicable entry records:
+When a session log exists, append a concise structured entry for each completed
+milestone or major bug/blocker. Each applicable entry records:
 
 - A UTC timestamp.
 - A concise summary of the human request.
@@ -151,9 +151,8 @@ group. Each applicable entry records:
 
 Summarize behavior and evidence. Do not reproduce full prompts, full model
 responses, long command output, generated files, binary content, or raw request
-and response payloads. Group closely related commands when that preserves the
-important sequence and outcome. Record enough detail to understand what was
-attempted and what changed without turning the log into a transcript.
+and response payloads. Group related work into one milestone entry; do not log
+every tool call or intermediate step.
 
 Update `Files Touched`, `Validation`, and `Errors and Blockers` as work
 progresses. Include inspected files only when the inspection materially
@@ -189,7 +188,8 @@ redaction must happen before repository content is written.
 
 ## Finalization and Continuation
 
-Before sending the final response for the task, update the log with:
+Before sending the final response for the task, update the log when one exists
+with:
 
 - The final outcome and current status.
 - Fresh validation evidence.
@@ -211,9 +211,10 @@ requires finalizing the current log and starting another.
   create a log in a guessed directory.
 - If the member guide cannot be read, report its path and do not begin
   substantive work.
-- If log creation or append fails, report the failure immediately. Retain only
-  a sanitized pending summary in the current session context, retry after the
-  filesystem problem is resolved, and do not silently continue.
+- If a required milestone log creation or append fails, report the failure
+  immediately. Retain only a sanitized pending summary in the current session
+  context, retry after the filesystem problem is resolved, and do not silently
+  continue.
 - If the repository or Git branch cannot be detected, record `unknown`; this
   condition does not block work.
 - If command output is too large or potentially sensitive, record only the
@@ -233,8 +234,8 @@ This policy is being followed only when:
   exact identity question before substantive work.
 - Confirmed identity maps to the correct member guide and independent session
   directory.
-- A complete structured Markdown log is created from the template without a
-  helper runtime.
+- A complete structured Markdown log is created from the template at a durable
+  milestone, major bug/blocker, or task completion, without a helper runtime.
 - Human requests, AI decisions, tool activity, file changes, validation,
   errors, and outcomes are summarized as applicable.
 - Sensitive values are excluded or redacted before writing.
