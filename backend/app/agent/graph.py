@@ -29,6 +29,7 @@ from backend.app.agent.tools.search import search_products
 from backend.app.agent.tools.suggest import suggest_products
 from backend.app.agent.validate import degrade_to_facts, validate_response
 from backend.app.guardrails.input_rules import evaluate_input
+from backend.app.observability import AgentObserver
 
 _SHOPPING_MARKERS = (
     "mua", "tư vấn", "sản phẩm", "giá", "khuyến mãi", "so sánh", "gợi ý",
@@ -82,10 +83,12 @@ class AgentDependencies:
     corpus: PolicyCorpus = field(default_factory=PolicyCorpus)
     extractor: UnderstandingExtractor | None = None
     polisher: object | None = None  # LLMPolisher; optional rephrasing pass
+    observer: AgentObserver | None = None
 
     @classmethod
     def from_default_paths(cls, *, with_llm: bool = True) -> "AgentDependencies":
         from backend.app.agent.catalog.dataset_adapter import default_adapter
+        from backend.app.observability import default_agent_observer
 
         extractor = None
         polisher = None
@@ -98,6 +101,7 @@ class AgentDependencies:
             products=default_adapter().load(),
             extractor=extractor,
             polisher=polisher,
+            observer=default_agent_observer(),
         )
 
 

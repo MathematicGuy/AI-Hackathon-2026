@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from backend.app.agent.contracts import AgentState
 from backend.app.agent.graph import AgentDependencies, run_turn
+from backend.app.observability import noop_agent_observer
 
 
 class AgentRequest(BaseModel):
@@ -23,6 +24,7 @@ class AgentRequest(BaseModel):
 class AgentResponse(BaseModel):
     session_id: str
     request_id: str
+    trace_id: str
     intent: str
     text: str
     flags: list[str] = []
@@ -36,11 +38,33 @@ def create_agent_router(deps: AgentDependencies) -> APIRouter:
     @router.post("/api/v1/agent/respond", response_model=AgentResponse)
     async def respond(request: AgentRequest) -> AgentResponse:
         session_id = request.session_id or f"session-{uuid.uuid4().hex[:12]}"
+        request_id = f"request-{uuid.uuid4().hex[:12]}"
+        trace_id = uuid.uuid4().hex
         state = sessions.setdefault(session_id, AgentState(session_id=session_id))
-        reply = await run_turn(state, request.message, deps)
+        observer = deps.observer or noop_agent_observer()
+        try:
+            with observer.start_turn(
+                trace_id=trace_id,
+                session_id=session_id,
+                request_id=request_id,
+                user_id=None,
+                input={"message": request.message, "state": state},
+                metadata={
+                    "environment": "hackathon",
+                    "turn_number": state.turn_number + 1,
+                },
+            ) as turn:
+                reply = await run_turn(state, request.message, deps)
+                turn.update(output={"reply": reply, "state": state})
+        finally:
+            try:
+                observer.flush()
+            except Exception:
+                pass
         return AgentResponse(
             session_id=session_id,
-            request_id=f"request-{uuid.uuid4().hex[:12]}",
+            request_id=request_id,
+            trace_id=trace_id,
             intent=reply.intent,
             text=reply.text,
             flags=reply.flags,
