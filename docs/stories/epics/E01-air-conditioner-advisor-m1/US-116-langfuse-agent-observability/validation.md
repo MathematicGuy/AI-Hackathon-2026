@@ -40,3 +40,34 @@ rtk git diff --check
 
 Implementation must attach focused/full test output, lock validation, and a
 sanitized priority tree. Complete-tree evidence is outside this story.
+
+### Recorded evidence (2026-07-19)
+
+Focused suite (`backend/tests/unit/observability backend/tests/unit/graph
+backend/tests/unit/models backend/tests/contract/test_m1_contracts.py`):
+**70 passed**.
+
+Full backend suite: **350 passed, 1 skipped**. Two ingestion/API modules
+(`test_catalog_endpoints.py`, `unit/ingestion/test_catalog.py`) were excluded
+because the local environment lacks the optional `psycopg` dependency; this is
+unrelated to observability and pre-dates this story.
+
+Dependencies unchanged — no `pyproject.toml`/lock edits — so lock validation is
+a no-op for this story. `git diff --check` reports no whitespace errors.
+
+Implemented priority observations under an active `advisor_turn` (sanitized;
+no credentials, no auth headers, no environment secrets in any payload):
+
+```text
+advisor_turn
+├── input_guardrail        # raw message in, guardrail flags/blocked out
+├── intent_classifier      # raw message in, resolved intent out
+│   ├── intent_model_call  # generation, one per candidate/retry attempt,
+│   │                      #   raw model I/O + role/provider/model metadata
+│   └── deterministic_fallback  # span, only when provider/schema call fails
+└── state_merge            # before/after workflow state
+```
+
+Node outputs and existing M1 contracts are unchanged: every node defaults to
+the US-207 no-op adapter, and the focused suite asserts identical outputs with
+and without an observer.

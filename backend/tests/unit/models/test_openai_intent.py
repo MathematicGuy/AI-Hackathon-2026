@@ -106,3 +106,47 @@ async def test_extractor_raises_validation_after_retry_exhausted(models):
     with pytest.raises(ValidationError):
         await extractor.extract("mua máy lạnh")
     assert len(client.calls) == 2
+
+
+async def test_extractor_records_generation_with_raw_io(models, recording_observer):
+    client = FakeClient([GOLDEN])
+    extractor = models.OpenAIIntentExtractor(
+        client, model="configured-model", observer=recording_observer
+    )
+    result = await extractor.extract("máy lạnh phòng 18m2")
+    generation = recording_observer.only("intent_model_call")
+    assert generation.kind == "generation"
+    assert generation.model == "configured-model"
+    assert generation.input == {
+        "model": "configured-model",
+        "message": "máy lạnh phòng 18m2",
+    }
+    assert generation.output == GOLDEN
+    assert result.intent == "new_search"
+    assert "api_key" not in repr(generation).lower()
+
+
+async def test_extractor_records_error_generation_on_provider_failure(
+    models, recording_observer
+):
+    client = FakeClient([], raise_exc=RuntimeError("boom"))
+    extractor = models.OpenAIIntentExtractor(
+        client, model=TEST_MODEL, observer=recording_observer
+    )
+    with pytest.raises(models.ProviderError):
+        await extractor.extract("mua máy lạnh")
+    generation = recording_observer.only("intent_model_call")
+    assert generation.updates[-1]["error"] == {"type": "RuntimeError"}
+    assert generation.ended
+
+
+async def test_extractor_records_one_generation_per_retry_attempt(
+    models, recording_observer
+):
+    client = FakeClient([INVALID, GOLDEN])
+    extractor = models.OpenAIIntentExtractor(
+        client, model=TEST_MODEL, observer=recording_observer
+    )
+    result = await extractor.extract("mua máy lạnh")
+    assert result.intent == "new_search"
+    assert recording_observer.names == ["intent_model_call", "intent_model_call"]
