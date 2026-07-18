@@ -6,6 +6,11 @@ Inject an in-memory observer and fake LLM transports. Compare responses with and
 without tracing, then assert priority-boundary parentage, lifecycle closure,
 payloads, metadata, errors, and flush behavior.
 
+Task 4 additionally verifies that `AgentDependencies.from_default_paths()`
+injects one observer into both default LLM clients, so generation observations
+attach to the active root turn. Raw provider exception text is excluded from
+captured error metadata.
+
 ## Test Plan
 
 | Layer | Cases |
@@ -29,15 +34,16 @@ rtk git diff --check
 
 ## Acceptance Evidence
 
-Attach focused/full test results, response-equivalence proof, lock validation,
-secret-scan result, and one sanitized exported trace-tree example.
+Final evidence is recorded below. No live Langfuse credentials were available,
+so E2E trace-tree evidence is explicitly pending rather than inferred.
 
 ## Task 4 Evidence (2026-07-18)
 
-- Focused generation tests: `backend/tests/unit/agent/test_observation_llm.py` — 3 passed.
-- Task 1–3 observer/agent regressions plus Task 4 tests — 43 passed, 1 existing Starlette deprecation warning.
+- Focused generation and factory-wiring tests: `backend/tests/unit/agent/test_observation_llm.py` — 4 passed.
+- Agent and observability regressions (`backend/tests/unit/agent backend/tests/unit/observability`) — 120 passed, 1 existing Starlette deprecation warning.
 - Full backend suite was attempted with the repository-safe pytest command but timed out after 124 seconds without completing; no failure traceback was emitted.
 - `uv lock --check` — passed (`Resolved 72 packages`).
 - `git diff --check` — passed.
-- Fake transports verified complete system/user prompts, raw outputs, candidate order/index, provider/model/role, temperatures, fallback error metadata, and that API keys never enter captured payloads. Tracing exceptions are fail-open in the LLM client.
+- Fake transports verified complete system/user prompts, raw outputs, candidate order/index, provider/model/role, temperatures, fallback markers, observer injection, and that API keys, authorization material, and raw provider error text never enter captured payloads. Tracing exceptions are fail-open in the LLM client.
+- Task 4 scope includes the minimal `backend/app/agent/graph.py` wiring required to pass the active root observer into default extractor/polisher instances.
 - No live Langfuse project or E2E trace was used; sanitized E2E evidence remains pending credentials and environment access.
