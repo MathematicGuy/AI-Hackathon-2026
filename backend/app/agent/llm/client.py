@@ -229,16 +229,21 @@ class LLMUnderstandingExtractor:
                         "role": "understanding",
                     },
                 ) as generation:
-                    raw = await self._call(candidate, system, message)
-                    _safe_update(generation, output=raw)
-                return AgentUnderstanding.model_validate(_extract_json(raw))
+                    try:
+                        raw = await self._call(candidate, system, message)
+                        _safe_update(generation, output=raw)
+                        result = AgentUnderstanding.model_validate(_extract_json(raw))
+                    except Exception as exc:
+                        last_error = exc
+                        _safe_update(
+                            generation,
+                            error={"type": type(exc).__name__},
+                            output={"fallback": True},
+                        )
+                        continue
+                return result
             except Exception as exc:  # provider, parse, or validation failure
                 last_error = exc
-                _safe_update(
-                    generation,
-                    error={"type": type(exc).__name__},
-                    output={"fallback": True},
-                )
         raise ExtractorError(str(last_error))
 
 
@@ -316,18 +321,20 @@ class LLMPolisher:
                         "role": "response_polish",
                     },
                 ) as generation:
-                    raw = await self._call(candidate, _POLISH_SYSTEM, text)
-                    _safe_update(generation, output=raw)
-                polished = raw.strip()
-                if polished:
-                    return polished
-                _safe_update(generation, output={"fallback": True, "reason": "empty"})
+                    try:
+                        raw = await self._call(candidate, _POLISH_SYSTEM, text)
+                        _safe_update(generation, output=raw)
+                        polished = raw.strip()
+                        if polished:
+                            return polished
+                        _safe_update(generation, output={"fallback": True, "reason": "empty"})
+                    except Exception as exc:
+                        _safe_update(
+                            generation,
+                            error={"type": type(exc).__name__},
+                            output={"fallback": True},
+                        )
             except Exception as exc:
-                _safe_update(
-                    generation,
-                    error={"type": type(exc).__name__},
-                    output={"fallback": True},
-                )
                 continue
         return text
 

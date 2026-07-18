@@ -35,6 +35,27 @@ class RecordingObserver:
         return RecordingHandle(record)
 
 
+class ActiveOnlyHandle(RecordingHandle):
+    def __init__(self, record: dict[str, object]) -> None:
+        super().__init__(record)
+        self.ended = False
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.ended = True
+
+    def update(self, **kwargs: object) -> None:
+        if self.ended:
+            raise AssertionError("generation updated after context exit")
+        super().update(**kwargs)
+
+
+class ActiveOnlyObserver(RecordingObserver):
+    def span(self, name: str, **kwargs: object) -> ActiveOnlyHandle:
+        record: dict[str, object] = {"name": name, **kwargs}
+        self.records.append(record)
+        return ActiveOnlyHandle(record)
+
+
 def _candidates() -> list[LLMCandidate]:
     return [
         LLMCandidate("https://openrouter.ai/api/v1", "openrouter-secret", "primary"),
@@ -139,6 +160,28 @@ async def test_tracing_failure_does_not_change_model_result() -> None:
     )
     result = await extractor.extract("dừng lại")
     assert result.intent == "stop"
+
+
+@pytest.mark.asyncio
+async def test_failed_generation_updates_before_observation_ends() -> None:
+    observer = ActiveOnlyObserver()
+
+    async def transport(candidate, system, user):
+        if candidate.model == "primary":
+            raise RuntimeError("https://user:secret@example.invalid Authorization: Bearer key")
+        return '{"intent":"stop","confidence":1,"need_patch":{}}'
+
+    extractor = LLMUnderstandingExtractor(
+        _candidates(), transport=transport, observer=observer
+    )
+    result = await extractor.extract("dừng lại")
+
+    assert result.intent == "stop"
+    first = observer.records[0]
+    assert _latest(first)["error"] == {"type": "RuntimeError"}
+    assert _latest(first)["output"] == {"fallback": True}
+    assert "secret" not in repr(observer.records)
+    assert "authorization" not in repr(observer.records).lower()
 
 
 def test_default_dependencies_inject_one_observer_into_llm_factories(monkeypatch) -> None:
