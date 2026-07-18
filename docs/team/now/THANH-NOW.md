@@ -2,123 +2,46 @@
 
 ## Demo promise
 
-Vietnamese customer asks:
+Vietnamese customers receive grounded, read-only product advice from the
+available catalog data. The advisor does not invent product facts, grant
+promotions, or modify operational data.
 
-> Em muốn mua máy lạnh dưới 20 triệu cho phòng 18m², tiết kiệm điện, ít ồn.
+## Coordination scope
 
-MVP returns deterministic role winners from the synthetic M1 catalog, with evidence and no invented product facts.
+Đinh Nhật Thành owns cross-cutting coordination and architecture-document
+maintenance for the current repository state. Detailed implementation status
+and verification evidence belong in the Harness matrix and their owning
+documentation, not in this tracker.
 
-## Current milestone
+## Current documentation work
 
-Milestone 1: M1.0 contract freeze is complete; build M1.1–M1.4 foundations into the M1.5 vertical slice. Current sprint deadline: **2026-07-17 13:47 UTC**.
+- Keep `ARCHITECTURE_v2.md` synchronized with the executable agent runtime.
+- Keep this tracker limited to current coordination facts; do not duplicate
+  work-item histories here.
+- Keep `resources/` out of scope unless a human explicitly requests it.
 
-## Owner focus
+## Current agent-runtime facts
 
-- Đinh Nhật Thành — M1.1–M1.8 execution controller and contract owner.
-- Context investigation assignments request `gpt-5.6-luna-high`; code implementation assignments request `gpt-5.6-terra-high`. The current subagent API cannot enforce model selection, so these are requested labels, not verified runtime models.
+- `backend/app/agent/` is a constrained single-agent pipeline, not a
+  multi-agent mesh.
+- The request path is FastAPI router -> process-local `AgentState` ->
+  `run_turn` -> structured response.
+- Guardrails run before understanding; deterministic code owns product search,
+  filtering, suggestion, comparison, response validation, and fact fallback.
+- Optional LLM capabilities are limited to understanding and text polishing.
+- The agent currently loads a catalog snapshot through its adapter; it does not
+  call the separate catalog API in its runtime path.
+- Durable agent checkpoints and Langfuse tracing are target-state concerns, not
+  wired features of the current agent path.
 
-## Ownership boundary
+## Working boundaries
 
-Thành owns active coordination for:
-
-1. US-107 — normalization and evidence.
-2. US-108 — hard constraints.
-3. US-109 — injected deterministic ranking.
-4. US-110 — truthful deduplication.
-5. US-101 — gateway and graph integration.
-6. US-116 — trace integration.
-7. US-111 — grounded output.
-8. US-112 — deterministic fallback.
-9. US-113 — conversation continuations.
-10. US-114 — additional continuation behavior.
-11. US-115 — frontend delivery and integration.
-
-Completed stories are historical proof, not active ownership. Each story above
-remains blocked until its registered story packet defines current scope,
-dependencies, file ownership, and verification.
-
-## File boundary
-
-Until a registered story packet is activated, the controller owns only:
-
+- `ARCHITECTURE_v2.md`
 - `docs/team/now/THANH-NOW.md`
 
-Product implementation files must be added from the accepted story packet
-before a story becomes ready. A legacy plan cannot assign files.
+## Reference material
 
-## M1.1–M1.8 delegated execution board
-
-| Order | Milestone / stories | Delegated role | Requested model | Depends on | Status |
-| ---: | --- | --- | --- | --- | --- |
-| 0 | Contract reconciliation / US-121 | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-100 | ✅ Done — 8 tests, review approved, trace 11 |
-| 1 | M1.1 / US-106 catalog pagination | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 | ✅ Done — 53 tests, review approved, trace 12 |
-| 2 | M1.1 / US-107 normalization and evidence | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-106 | ✅ Done — 14 unit tests, 166 full-backend green, review approved, trace 22, matrix `implemented` |
-| 3 | M1.3 / US-102 layered input guardrail | USER1 — details in `docs/team/now/USER1-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; blocked until USER1 is mapped to a human |
-| 4 | M1.3 / US-103 Vietnamese intent/need extraction | USER1 — details in `docs/team/now/USER1-NOW.md` | `gpt-5.6-terra-high` | US-102 | ⬜ USER1 queued after mapping and US-102 merge |
-| 5 | M1.4 / US-104 state merge and correction precedence | USER2 — details in `docs/team/now/USER2-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; blocked until USER2 is mapped to a human |
-| 6 | M1.2 / US-108 hard constraints | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-107 | ✅ Done — 20 unit tests, 186 full-backend passing, packet review approved, trace 23, matrix `implemented` |
-| 7 | M1.2 / US-109 injected deterministic ranking | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-108 | ⬜ Queued; production policy remains injected |
-| 8 | M1.2 / US-110 truthful deduplication | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-109 | ⬜ Queued |
-| 9 | M1.4 / US-105 clarification/routing/persistence | USER2 — details in `docs/team/now/USER2-NOW.md` | `gpt-5.6-terra-high` | US-103, US-104 | ⬜ USER2 blocked until mapping and both merges |
-| 10 | M1.5 / US-101 + US-116 gateway, graph, trace | Fresh integration subagent, then separate reviewer | `gpt-5.6-terra-high` | US-105, US-106–US-110 | ⬜ Dependency-gated |
-| 11 | M1.6 / US-111 + US-112 grounded output/fallback | Fresh integration subagent, then separate reviewer | `gpt-5.6-terra-high` | M1.5 | ⬜ Dependency-gated |
-| 12 | M1.7 / US-113 + US-114 continuations | Fresh integration subagent, then separate reviewer | `gpt-5.6-terra-high` | M1.5 | ⬜ Dependency-gated |
-| 13 | M1.8 / US-115 mock-first frontend | Fresh frontend implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-121 mock contract | ⬜ Queued |
-| 14 | M1.8 / US-115 real API E2E | Fresh frontend integration subagent, then separate reviewer | `gpt-5.6-terra-high` | M1.5–M1.7 | ⬜ Dependency-gated |
-
-Legacy provenance only: `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md`.
-It may inform a new story packet but cannot authorize scope, file ownership, or
-RED/GREEN commands.
-
-## Parallel workstreams
-
-- Thành: `agent/m1-implementation` — US-107 → US-110 and serialized M1 integration.
-- USER1: unassigned alias; after human mapping, use `agent/user1-m1-3-guardrails-intent` for US-102 → US-103 and update only `docs/team/now/USER1-NOW.md`.
-- USER2: unassigned alias; after human mapping, use `agent/user2-m1-4-state-routing` for US-104 → US-105 and update only `docs/team/now/USER2-NOW.md`.
-- Every workstream uses an isolated worktree or clone. Thành merges reviewed story commits one at a time and updates this controller ledger after each integration.
-
-## Frozen evaluation contract
-
-- Dataset: `data/aircon-m1-test-data/` only. Do not use `data-template-enriched.json` for M1.
-- Catalog: 14 synthetic products in `aircon-m1-catalog-enriched.json`; never present them as live Điện Máy XANH facts.
-- Evaluation: 26 JSONL cases in `aircon-m1-eval-cases.jsonl`; validate with `aircon-m1-data-validation.json` before runs.
-- Golden regression: `AIRCON-M1-001` must produce Best Overall `AC-M1-002`, Best Value `AC-M1-003`, and Cheapest Qualified `AC-M1-006`.
-
-## Active work
-
-- M1.0 — request, response, state, product, graph, and model-routing contracts frozen with `US-100` proof.
-- US-122 environment-owned model routing — Tasks 1–4 complete (`ab6bc1f..fcda6ae`; 34 settings, 9 routing, 8 contract, 51 focused and 96 full-backend tests; all independent reviews approved). Waiting for the explicit command to merge remote `main` into the current branch; no later task has started.
-- M1.1–M1.8 — historical implementation provenance exists; US-121, US-106,
-  US-107, and US-108 are complete. US-109 (M1.2 injected deterministic ranking)
-  is next in dependency order.
-- M1.9 / US-117 — implement dataset loader, deterministic assertions, Langfuse import, and release report when selected.
-
-## Integration status
-
-- Completed US-100/US-121 scope committed on `agent/m1-implementation` as `8ce3b51` plus fixture proof `f551a2a`.
-- Local `main` merged those commits as `bfc097c` and `07fbbc9`.
-- Completed US-106 scope committed on `agent/m1-implementation` as `a4dedfd` and merged to local `main` as `9dc9363`.
-- Clean-main US-106 verification: 53 passed; third-party pytest plugin autoload was disabled because the global `deepeval` plugin attempted an out-of-scope filesystem write.
-- Completed US-107 scope implemented on `agent/m1-implementation` (uncommitted; awaits explicit merge/commit command): 14 unit tests, 166 full-backend passing, golden `normalized_fixture` oracle holds for all 14 products, separate review found no blocking findings, trace 22, matrix `implemented`.
-- Completed US-108 scope on `agent/m1-implementation`: 20 focused unit tests, 186 full-backend passing with an isolated workspace pytest base directory, golden eligibility split holds, separate packet review approved, trace 23, matrix `implemented`.
-
-## Working files
-
-- `PROJECT_MANAGEMENT.md` — milestone plan, evaluation tasks, proof expectations.
-- `docs/stories/backlog.md` — US-117 candidate only; no active story packet yet.
-- `data/aircon-m1-test-data/` — committed evaluation fixtures; inspect, do not treat as production catalog data.
-
-## Blockers and risks
-
-- Ranking fixture is test-only; production ranking policy still needs approval.
-- Subagent model names are requested in prompts but cannot be enforced by the current delegation API.
-- Keep `resources/` out of scope unless explicitly requested.
-
-## Next integration checkpoint
-
-- Milestone 1.2 continues with US-109 injected deterministic ranking. Handoff:
-  `.agents/handoffs/m1-2-constraints-ranking-dedup.md` (scope, DoD, dependency
-  order US-108 → US-109 → US-110, and carried tech constraints).
-- Create and separately review the registered US-109 story packet before
-  implementation, then complete RED → GREEN and proceed to US-110.
-- Keep all later story packets uncreated until their turn in the dependency order.
+- `docs/product/air-conditioner-advisor-m1-contract.md`
+- `docs/product/requirements/air-conditioner-advisor-m1-prd.md`
+- `docs/product/architecture/air-conditioner-advisor-m1.md`
+- `backend/app/agent/`
