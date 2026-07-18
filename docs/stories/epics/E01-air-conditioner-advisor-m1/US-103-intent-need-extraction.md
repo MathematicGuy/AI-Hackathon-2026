@@ -11,12 +11,12 @@ normal
 ## Product Contract
 
 The intent node classifies a Vietnamese message into exactly one of the eight
-frozen intents and extracts a validated `AirConditionerNeed` patch, using
-`INTENT_MODEL` (GPT-5.4 Nano) through an injected adapter with structured
-output, one retry, and Pydantic validation. Unknown values stay `null`; the
-model never invents numeric values. On provider or schema failure the node
-returns a deterministic keyword fallback and flags `intent_model_degraded`. The
-node never filters, ranks, or selects role winners.
+frozen intents and extracts a validated `AirConditionerNeed` patch through an
+injected adapter configured from the environment-owned main route, with
+structured output, one retry, and Pydantic validation. Unknown values stay
+`null`; the model never invents numeric values. On provider or schema failure
+the node returns a deterministic keyword fallback and flags
+`intent_model_degraded`. The node never filters, ranks, or selects role winners.
 
 ## Relevant Product Docs
 
@@ -35,7 +35,8 @@ node never filters, ranks, or selects role winners.
   `intent_model_degraded`; the fallback never invents numbers.
 - The deterministic keyword fallback reaches ≥ 90% intent accuracy on the
   curated Vietnamese scenario set.
-- `INTENT_MODEL` is exactly `gpt-5.4-nano`; no ranking model is used.
+- The adapter requires an injected model identifier; no public contract model
+  constant or ranking model is used.
 
 ## Design Notes
 
@@ -71,4 +72,7 @@ contract suite. Intake #9 recorded 2026-07-18.
   the degraded fallback so any in-scope máy lạnh message with no other signal
   classifies as `new_search` rather than `unsupported` (precision: no overfire
   of a legitimate question), with a regression test.
+- 2026-07-18 merge integration: removed the stale public `INTENT_MODEL`
+  dependency and verified that the adapter forwards an injected sentinel model;
+  65 focused tests and 152 full-backend tests passed.
 

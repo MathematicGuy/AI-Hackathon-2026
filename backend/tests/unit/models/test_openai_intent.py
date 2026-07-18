@@ -3,7 +3,10 @@ import importlib
 import pytest
 from pydantic import ValidationError
 
-from backend.app.contracts.schemas import INTENT_MODEL, IntentOutput
+from backend.app.contracts.schemas import IntentOutput
+
+
+TEST_MODEL = "test-intent-model"
 
 
 class MissingModule:
@@ -20,6 +23,13 @@ def models():
         return importlib.import_module("backend.app.models.openai_intent")
     except ModuleNotFoundError:
         return MissingModule("openai intent")
+
+
+def test_module_does_not_depend_on_contract_model_constant():
+    try:
+        importlib.import_module("backend.app.models.openai_intent")
+    except ImportError as exc:
+        pytest.fail(f"intent adapter still depends on a removed contract symbol: {exc}")
 
 
 GOLDEN = {
@@ -56,7 +66,7 @@ class FakeClient:
 
 async def test_extractor_returns_golden_need(models):
     client = FakeClient([GOLDEN])
-    extractor = models.OpenAIIntentExtractor(client)
+    extractor = models.OpenAIIntentExtractor(client, model=TEST_MODEL)
     result = await extractor.extract("Em muốn mua máy lạnh dưới 20 triệu cho phòng 18m²")
     assert isinstance(result, IntentOutput)
     assert result.intent == "new_search"
@@ -67,17 +77,17 @@ async def test_extractor_returns_golden_need(models):
     assert priorities["low_noise"].importance == "secondary"
 
 
-async def test_extractor_uses_exact_intent_model(models):
+async def test_extractor_forwards_injected_model(models):
     client = FakeClient([GOLDEN])
-    extractor = models.OpenAIIntentExtractor(client)
-    assert extractor.model == INTENT_MODEL == "gpt-5.4-nano"
+    extractor = models.OpenAIIntentExtractor(client, model=TEST_MODEL)
+    assert extractor.model == TEST_MODEL
     await extractor.extract("mua máy lạnh")
-    assert client.calls[0]["model"] == "gpt-5.4-nano"
+    assert client.calls[0]["model"] == TEST_MODEL
 
 
 async def test_extractor_retries_once_on_invalid_then_succeeds(models):
     client = FakeClient([INVALID, GOLDEN])
-    extractor = models.OpenAIIntentExtractor(client)
+    extractor = models.OpenAIIntentExtractor(client, model=TEST_MODEL)
     result = await extractor.extract("mua máy lạnh")
     assert result.intent == "new_search"
     assert len(client.calls) == 2
@@ -85,14 +95,14 @@ async def test_extractor_retries_once_on_invalid_then_succeeds(models):
 
 async def test_extractor_raises_provider_error_on_client_failure(models):
     client = FakeClient([], raise_exc=RuntimeError("boom"))
-    extractor = models.OpenAIIntentExtractor(client)
+    extractor = models.OpenAIIntentExtractor(client, model=TEST_MODEL)
     with pytest.raises(models.ProviderError):
         await extractor.extract("mua máy lạnh")
 
 
 async def test_extractor_raises_validation_after_retry_exhausted(models):
     client = FakeClient([INVALID, INVALID])
-    extractor = models.OpenAIIntentExtractor(client)
+    extractor = models.OpenAIIntentExtractor(client, model=TEST_MODEL)
     with pytest.raises(ValidationError):
         await extractor.extract("mua máy lạnh")
     assert len(client.calls) == 2

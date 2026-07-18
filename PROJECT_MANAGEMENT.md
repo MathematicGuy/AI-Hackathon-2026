@@ -72,7 +72,7 @@ implementation status and proof evidence agree.
 | US-121 | M1.0 prerequisite | ✅ Implemented | Harness matrix records unit proof; tracker records eight tests, separate review approval, and trace 11. |
 | US-106 | M1.1 | ✅ Implemented | Harness matrix records unit proof; tracker records 53 passing tests, separate review approval, and trace 12. |
 | US-103 | M1.3 | 🟦 Proof status conflict | Durable story record says `implemented`; operational matrix says `planned` with no proof. Do not count this story or M1.3 as complete until the evidence is reconciled. |
-| US-115 | M1.8 | 🟨 In progress | Durable story record is `in_progress`; the Harness audit reports it as orphaned and unverified. |
+| US-115 | M1.8 | 🟨 In progress | PR #1 claims frontend Tasks 1–4 only, not the missing Playwright Task 10. The story remains unfinished and waits for API integration when the backend is ready; the durable record is `in_progress`, orphaned, and unverified. |
 
 ## 3. Work Breakdown Structure
 
