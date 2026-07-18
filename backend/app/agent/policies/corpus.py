@@ -108,7 +108,9 @@ class PolicyCorpus:
             ]
         return self._sections
 
-    def search(self, query: str, *, top: int = 3) -> list[PolicySection]:
+    def search(
+        self, query: str, *, top: int = 3, min_score: float = 0.0
+    ) -> list[PolicySection]:
         query_words = {
             word
             for word in _tokens(_fold(query))
@@ -133,7 +135,7 @@ class PolicyCorpus:
             score = float(sum(min(body_counts[word], 3) for word in matched))
             score += 3.0 * len(matched & heading_words)
             score /= 1.0 + len(section.text) / 1500.0
-            if len(matched) >= 2 or score >= 2.0:
+            if (len(matched) >= 2 or score >= 2.0) and score >= min_score:
                 scored.append((score, index, section))
         scored.sort(key=lambda entry: (-entry[0], entry[1]))
         return [section for _, _, section in scored[:top]]

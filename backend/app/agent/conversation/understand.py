@@ -22,6 +22,24 @@ _CHANGE = ("đổi ngân sách", "thay đổi", "chuyển sang tầm", "nâng ng
 _MORE = ("xem thêm", "thêm mẫu", "mẫu khác", "còn mẫu", "gợi ý thêm", "rẻ hơn nữa")
 _AVAILABILITY = ("còn hàng", "tình trạng kho", "hết hàng", "có sẵn")
 _DETAIL = ("chi tiết", "thông số", "thông tin sản phẩm", "xem kỹ")
+_CATALOG_OVERVIEW = (
+    "bán cái gì", "bán những gì", "có những loại hàng", "loại hàng nào",
+    "có những ngành", "danh mục", "những mặt hàng", "mặt hàng nào",
+    "có loại nào", "những sản phẩm gì",
+)
+_PRICE_RANGE = (
+    "range giá", "tầm giá bao nhiêu", "giá rơi vào", "giá từ bao nhiêu",
+    "khoảng giá", "giá dao động", "vùng giá",
+)
+_PROMOTION_INQUIRY = (
+    "chương trình khuyến mãi", "đang có khuyến mãi", "khuyến mãi nào",
+    "khuyến mãi gì", "ưu đãi gì", "ưu đãi nào", "đang giảm giá nào",
+)
+_SMALLTALK = (
+    "cảm ơn", "cám ơn", "chào em", "xin chào", "hello", "hi em",
+    "nóng quá", "lạnh quá", "nóng bức", "oi bức", "mưa quá",
+    "đồng ý", "ok em", "oke", "được đó", "hay đấy", "tốt quá", "ừ em",
+)
 
 _BUDGET = re.compile(
     r"(?:dưới|khoảng|tầm|từ)?\s*(\d{1,3}(?:[.,]\d{3})*|\d+)\s*(triệu|tr\b|k\b|nghìn|ngàn)",
@@ -88,8 +106,16 @@ def fallback_understanding(
             need_kwargs["usage_purpose"] = purpose
             break
 
+    # Price/promotion questions are catalog questions, never policy — even if
+    # the LLM route is down (Cường's live-test finding).
     if any(k in low for k in _STOP):
         intent = "stop"
+    elif any(k in low for k in _PRICE_RANGE):
+        intent = "price_range_query"
+    elif any(k in low for k in _PROMOTION_INQUIRY):
+        intent = "promotion_inquiry"
+    elif any(k in low for k in _CATALOG_OVERVIEW):
+        intent = "catalog_overview"
     elif any(k in low for k in _POLICY):
         intent = "policy_question"
     elif any(k in low for k in _COMPARE):
@@ -106,6 +132,8 @@ def fallback_understanding(
         intent = "new_search"
     elif budget_min is not None or budget_max is not None:
         intent = "change_constraints"
+    elif any(k in low for k in _SMALLTALK):
+        intent = "smalltalk"
     else:
         intent = "unsupported"
 

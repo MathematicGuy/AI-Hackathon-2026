@@ -19,6 +19,10 @@ AgentIntent = Literal[
     "product_detail",
     "check_availability",
     "policy_question",
+    "catalog_overview",
+    "price_range_query",
+    "promotion_inquiry",
+    "smalltalk",
     "stop",
     "unsupported",
 ]
