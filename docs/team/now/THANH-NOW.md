@@ -80,6 +80,14 @@ US-116 must not duplicate or fork the shared Langfuse adapter.
 1. US-207
 2. US-116
 
+US-116 M1 implementation files currently overlap USER1/USER2 ownership and are
+not claimed here until the integration controller resolves the conflict:
+
+- backend/app/graph/nodes/input_guard.py
+- backend/app/graph/nodes/intent.py
+- backend/app/graph/nodes/merge_state.py
+- backend/app/models/openai_intent.py
+
 ## File boundary
 
 Planning and coordination:
@@ -96,22 +104,10 @@ Implementation after execution starts:
 - `backend/app/agent/llm/client.py`
 - `backend/app/agent/conversation/understand.py`
 - `backend/app/agent/demo.py`
-- `backend/app/graph/nodes/input_guard.py`
-- `backend/app/graph/nodes/intent.py`
-- `backend/app/graph/nodes/merge_state.py`
-- `backend/app/models/openai_intent.py`
 - focused tests under `backend/tests/unit/observability/`,
   `backend/tests/unit/agent/`, `backend/tests/unit/graph/nodes/`, and
   `backend/tests/unit/models/`
 - `.env.example`
-
-US-116 M1 implementation files currently overlap USER1/USER2 ownership and are
-not claimed here until the integration controller resolves the conflict:
-
-- `backend/app/graph/nodes/input_guard.py`
-- `backend/app/graph/nodes/intent.py`
-- `backend/app/graph/nodes/merge_state.py`
-- `backend/app/models/openai_intent.py`
 
 Keep `resources/` out of scope.
 
