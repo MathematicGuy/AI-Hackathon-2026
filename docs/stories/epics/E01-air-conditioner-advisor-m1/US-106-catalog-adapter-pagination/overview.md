@@ -6,7 +6,7 @@ The synthetic 14-product catalog is committed and contract-validated, but no run
 
 ## Target Behavior
 
-Provide a read-only catalog adapter and deterministic air-conditioner search with region filtering, limit 1–10, stable cursor scanning, exclusions, candidate count, snapshot, and terminal-page behavior.
+Provide a read-only catalog adapter and deterministic product search (air-conditioner slice) with region filtering, limit 1–10, stable cursor scanning, exclusions, candidate count, snapshot, and terminal-page behavior.
 
 ## Non-Goals
 
