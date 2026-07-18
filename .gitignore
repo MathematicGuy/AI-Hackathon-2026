@@ -1,3 +1,24 @@
+# Local environment files
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+!.env.*.example
+!**/.env.*.example
+.envrc
+.direnv/
+.tokensave/
+
+# User-specific skills (not part of the template)
+.claude/skills/customize/
+.claude/skills/release/
+
+# Local temp files
+temp/
+
+# Agent and browser state
 # Dependencies
 node_modules/
 .pnp
@@ -40,6 +61,12 @@ venv/
 /test_output.txt
 /chrome_launch.log
 
+# Node.js, Next.js, and TypeScript generated files
+node_modules/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+
 # Local worktrees and scratch output
 _git/
 .superpowers/
@@ -69,3 +96,4 @@ scripts/bin/harness-cli.exe
 # Harness durable layer
 .tokensave/tokensave.db
 .tokensave/tokensave.db-wal
+env

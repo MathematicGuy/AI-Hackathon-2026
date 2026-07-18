@@ -194,12 +194,50 @@
     display: none;
   }
 
+  .chatbot-panel {
+    inset-block-start: max(0.5rem, env(safe-area-inset-top));
+    inset-inline: 0.5rem;
+    inset-block-end: max(0.5rem, env(safe-area-inset-bottom));
+    overscroll-behavior: contain;
+  }
+
+  .chat-scrollbar {
+    scrollbar-color: #94a3b8 #f1f5f9;
+    scrollbar-width: thin;
+  }
+
+  .chat-scrollbar::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .chat-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  .chat-scrollbar::-webkit-scrollbar-thumb {
+    border: 2px solid #f1f5f9;
+    border-radius: 999px;
+    background: #94a3b8;
+  }
+
   .flashsale-campaign-hero {
     min-height: 500px;
     background-image: url("/images/flashsale/campaign-background.jpg");
     background-position: center top;
     background-repeat: no-repeat;
     background-size: auto 500px;
+  }
+}
+
+@media (min-width: 768px) {
+  .chatbot-panel {
+    inset-block-start: auto;
+    inset-inline-start: auto;
+    inset-inline-end: 1rem;
+    inset-block-end: 1rem;
+    /* Leave the desktop storefront usable beside the chat panel. */
+    width: min(520px, calc(100vw - 2rem));
+    height: min(640px, calc(100dvh - 2rem));
   }
 }
 
