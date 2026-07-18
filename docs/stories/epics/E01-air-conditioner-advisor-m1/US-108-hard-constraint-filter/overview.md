@@ -23,12 +23,11 @@ the frozen `FilterResult` contract:
   fit, stock policy, and required evidence for the active primary priority.
 - Ground every exclusion in the offending normalized field value (which is
   itself evidence-backed); never exclude on a guessed or unknown value.
-- Treat a `null`/unknown normalized field as unknown, not a violation — a
-  product is excluded only when a **known** field value violates a constraint.
-  The sole exception is required evidence for the customer's primary priority:
-  when the fixture marks a field as required for that priority and it is
-  missing, the product is excluded because the primary priority cannot be
-  substantiated (PRD §10.7, §4.10).
+- Treat a `null`/unknown normalized field as unknown, not a violation unless a
+  selected hard policy requires a known value. Thus missing primary-priority
+  evidence and an unknown stock value fail their selected policies, while
+  unknown price or room bounds do not create guessed violations (PRD §10.7,
+  §4.10).
 - For the golden case `AIRCON-M1-001` (budget 20,000,000 VND, room 18 m²,
   primary `energy_saving`, secondary `low_noise`), the eligible set is exactly
   `AC-M1-001 … AC-M1-008` and the excluded set is `AC-M1-009 … AC-M1-014`.

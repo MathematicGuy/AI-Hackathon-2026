@@ -20,11 +20,12 @@
      - each `ExcludedProduct.reasons` cites the expected constraint (budget,
        room fit, stock, or missing primary evidence).
    - Per-constraint unit cases (small hand-built `NormalizedProduct` inputs):
-     budget over/at/under; room below/within/above range; stock
-     available/unavailable/unknown; primary-evidence present/missing;
+     budget over/at/under; room below/within/above range and one-sided bounds;
+     stock available/unavailable/unknown; primary-evidence present/missing;
      secondary-evidence missing (must stay eligible); multiple simultaneous
-     violations accumulate all reasons; unknown price / unknown area preserve
-     the product.
+     violations accumulate all reasons; unknown price / unknown room bounds
+     preserve the product on that dimension; exclusion reasons assert populated
+     fields map to `evidence` and missing policy fields map to `missing_fields`.
    - Run: expect failures (module absent).
 2. **GREEN — implement `backend/app/domain/air_conditioner/hard_constraints.py`.**
    - `filter_products(products, need) -> FilterResult` per design.md.
@@ -43,13 +44,13 @@
 
 ```powershell
 $env:PYTHONPATH="E:/VIN-INTERNSHIP/AI-Hackathon-2026"
-pytest backend/tests/unit/domain/air_conditioner/test_hard_constraints.py -q   # iterate
-pytest -q                                                                       # final
+python -m pytest backend/tests/unit/domain/air_conditioner/test_hard_constraints.py -q -p no:cacheprovider   # iterate
+python -m pytest -q -p no:cacheprovider                                                          # final
 ```
 
 ## Closure
 
-- `harness-cli story verify` → record standard-tier Trace (`--read` + `--friction`,
+- `harness-cli story verify US-108` → record standard-tier Trace (`--read` + `--friction`,
   outcome `completed`) → `harness-cli audit` → `harness-cli propose`.
 - Update `docs/team/now/THANH-NOW.md`.
 - Finalize the session log.

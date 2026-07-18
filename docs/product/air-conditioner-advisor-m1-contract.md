@@ -3,7 +3,7 @@
 ## Status and authority
 
 This contract freezes M1.0 interfaces derived from the approved
-`WORKFLOW-MVP(4).md`. Decision
+Milestone 1 requirements. Decision
 `docs/decisions/0009-m1-explanation-model-routing.md` defines the
 environment-owned runtime routing policy.
 

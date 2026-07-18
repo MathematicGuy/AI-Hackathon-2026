@@ -198,6 +198,89 @@ flowchart TD
     MEMORY -.-> TRACE
 ```
 
+### Agent Flow Architecture (`backend/app`)
+
+The implemented `backend/app/agent/` runtime is a constrained, in-process
+single-agent pipeline. It is not currently a compiled LangGraph workflow: the
+request handler keeps `AgentState` in its process-local session dictionary and
+passes that state through `run_turn`. The canonical diagram above remains the
+product target; this subsection maps the executable flow as it exists today.
+
+```mermaid
+flowchart TD
+    CLIENT["Client"] --> HTTP["POST /api/v1/agent/respond"]
+    HTTP --> SESSION["create_agent_router\nprocess-local sessions: session_id -> AgentState"]
+    SESSION --> TURN["run_turn(state, message, dependencies)"]
+
+    TURN --> EXPLOIT{"Promotion-exploit marker?"}
+    EXPLOIT -- Yes --> REFUSE["Fixed refusal\npromotion_exploit_blocked"]
+    EXPLOIT -- No --> GUARD["evaluate_input\nword count -> regex/payload -> NeMo -> scope"]
+    GUARD --> BLOCKED{"Blocked?"}
+    BLOCKED -- Yes --> SAFE["Guardrail response"]
+    BLOCKED -- No --> UNDERSTAND["understand_turn\noptional extractor -> deterministic fallback"]
+    UNDERSTAND --> REMEMBER["memory.apply_turn\nneed patch, corrections, category state"]
+    REMEMBER --> ROUTE{"Intent"}
+
+    ROUTE -- stop --> STOP["Fixed closing reply"]
+    ROUTE -- policy_question --> POLICY["Policy corpus -> quote/degradation -> validate"]
+    ROUTE -- unsupported --> MENU["Category menu"]
+    ROUTE -- product intent --> PRODUCT{"Product route"}
+
+    PRODUCT -- missing material need --> CLARIFY["coldstart.next_question\nrecord pending question"]
+    PRODUCT -- check_availability --> AVAIL["Deterministic no-live-stock reply"]
+    PRODUCT -- compare_products --> COMPARE["compare_products\nvalidate or degrade to facts"]
+    PRODUCT -- search / more --> SEARCH["search_products\napply_domain_filters\nsuggest_products"]
+    SEARCH --> RENDER["render_suggestions\noptional next question"]
+    RENDER --> VALIDATE["validate_response"]
+    VALIDATE --> POLISH["Optional LLM polish\nthen re-validate"]
+    POLISH --> PRESENT["Update presented and shown product IDs"]
+
+    REFUSE --> RESPONSE["AgentResponse"]
+    SAFE --> RESPONSE
+    STOP --> RESPONSE
+    POLICY --> RESPONSE
+    MENU --> RESPONSE
+    CLARIFY --> RESPONSE
+    AVAIL --> RESPONSE
+    COMPARE --> RESPONSE
+    PRESENT --> RESPONSE
+```
+
+### Agent Topology (`backend/app`)
+
+There is one orchestration agent, not a multi-agent mesh. The optional LLM
+extractor and polisher are narrow capabilities behind the orchestrator; product
+selection, comparisons, and response grounding remain deterministic code.
+
+```mermaid
+flowchart LR
+    CLIENT["Client"] --> API["agent/api.py\nFastAPI agent app and router"]
+    API <--> STATE["AgentState\nprocess-local session map"]
+    API --> GRAPH["agent/graph.py\nrun_turn orchestrator"]
+
+    GRAPH --> GUARD["guardrails/input_rules.py\noptional NeMo rail"]
+    GRAPH --> UNDERSTANDING["conversation/understand.py\nextractor or fallback"]
+    GRAPH --> CONVERSATION["conversation/\nmemory, coldstart, domain rules"]
+    GRAPH --> POLICY["policies/\ncorpus and answer builder"]
+    GRAPH --> TOOLS["agent/tools/\nsearch, suggest, compare"]
+    GRAPH --> RESPONSE["respond.py + validate.py\nrender, validate, fact degradation"]
+
+    DEPS["AgentDependencies"] --> DATASET["catalog/dataset_adapter.py\nloaded product snapshot"]
+    DEPS --> REGISTRY["catalog/registry.py\ncategory metadata and scope markers"]
+    DEPS --> CORPUS["PolicyCorpus"]
+    DEPS --> LLM["llm/client.py\noptional extractor and polisher"]
+    DEPS --> GRAPH
+
+    CATALOG_API["api/main.py\nseparate read-only catalog API"]
+    POSTGRES[("PostgreSQL")]
+    CATALOG_API --> POSTGRES
+```
+
+The agent path currently reads its dependency-loaded catalog snapshot rather
+than calling the separate catalog API. Durable checkpoints, persistent agent
+state, and Langfuse tracing are not wired into this executable path yet; they
+remain product-target architecture rather than current agent-runtime behavior.
+
 ### Route map
 
 | Intent | Runtime route | Required result |

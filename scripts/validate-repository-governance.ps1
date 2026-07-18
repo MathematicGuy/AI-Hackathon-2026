@@ -116,6 +116,7 @@ function Test-IgnoredByGit([string]$RelativePath) {
 
 $expectedRootMarkdown = @(
     "AGENTS.md"
+    "ARCHITECTURES.md"
     "CLAUDE.md"
     "GEMINI.md"
     "PROJECT_MANAGEMENT.md"
