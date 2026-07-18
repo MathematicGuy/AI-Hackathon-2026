@@ -9,14 +9,16 @@ contracts and not substitutes for Harness proof.
 | Tracker alias | Member identity | Tracker | Assignment state |
 | --- | --- | --- | --- |
 | THANH | dinh-nhat-thanh | [`THANH-NOW.md`](THANH-NOW.md) | Assigned by a human |
-| USER1 | Unassigned | [`USER1-NOW.md`](USER1-NOW.md) | Blocked until a human maps the alias |
+| USER1 | luu-thien-viet-cuong | [`USER1-NOW.md`](USER1-NOW.md) | Assigned by Cường (Lưu Thiện Việt Cường) on 2026-07-18; direction recorded in the member session log |
 | USER2 | luu-thien-viet-cuong | [`USER2-NOW.md`](USER2-NOW.md) | Assigned by Cường (Lưu Thiện Việt Cường) on 2026-07-18; direction recorded in the member session log |
 
-`USER1` is an alias, not an identity. An agent must never infer its owner from
-Git configuration, operating-system usernames, earlier chat, or task content.
-A human must update this table explicitly before that workstream can be
-implemented. `USER2` was mapped to `luu-thien-viet-cuong` by Cường's explicit
-in-session direction on 2026-07-18.
+Aliases are not identities. An agent must never infer an alias owner from Git
+configuration, operating-system usernames, earlier chat, or task content. A
+human must update this table explicitly. Both `USER1` and `USER2` were mapped to
+`luu-thien-viet-cuong` by Cường's explicit in-session direction on 2026-07-18: a
+single member may own multiple aliases when solo-driving parallel lanes.
+Conflict avoidance is enforced by each tracker's file boundary and serialized
+merges, not by requiring one member per alias.
 
 ## Mandatory Use
 

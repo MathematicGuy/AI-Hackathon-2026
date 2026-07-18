@@ -6,8 +6,9 @@ candidates live in [`backlog.md`](backlog.md).
 
 ## Current Epics
 
-- `E01-air-conditioner-advisor-m1`: product contract and Milestone 1 delivery
-  stories.
+- `E01-air-conditioner-advisor-m1`: Milestone 1 delivery stories and product
+  contract. M1 is the air-conditioner (máy lạnh) slice of the general AI Product
+  Comparison Advisor; the epic name reflects that category scope (ADR-001).
 - `E04-ai-session-logging`: repository-native AI logging.
 - `E05-repository-governance`: documentation authority and repository
   governance.

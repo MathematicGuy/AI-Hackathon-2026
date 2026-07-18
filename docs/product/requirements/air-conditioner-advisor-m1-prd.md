@@ -1,9 +1,11 @@
-# WORKFLOW-MVP.md
+# Air Conditioner Advisor — Milestone 1 Product Requirements (PRD)
 
 > **Project:** AI Product Comparison Advisor — Điện Máy XANH  
-> **Milestone:** Milestone 1  
+> **Milestone:** Milestone 1 — the first vertical slice of the general
+> multi-category advisor; air conditioners (máy lạnh) are M1's example use case  
 > **Status:** Approved architecture baseline  
-> **Scope:** One product category only — máy lạnh  
+> **Scope:** One product category only — máy lạnh (ADR-001); later milestones
+> extend the same framework to the retailer's other categories  
 > **Primary language:** Vietnamese  
 > **Document role:** Source of truth for runtime workflow, agent state, tool contracts, guardrails, memory, tracing, and Definition of Success
 
