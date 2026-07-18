@@ -1,7 +1,7 @@
 # Bot Instructions for Lưu Tiến Duy
 
-This guide applies only after the current user has been explicitly identified
-as Lưu Tiến Duy.
+This guide applies only after the current-session identity has been resolved
+under the canonical policy as Lưu Tiến Duy.
 
 ## Member Record
 

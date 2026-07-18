@@ -1,6 +1,7 @@
 -- Harness v0 schema — migration 001
 -- Durable layer for operational harness data.
--- Policy docs (HARNESS.md, FEATURE_INTAKE.md, ARCHITECTURE.md) stay as
+-- Policy docs (docs/HARNESS.md, docs/FEATURE_INTAKE.md, and
+-- docs/ARCHITECTURE.md) stay as
 -- human-readable references. This database stores the operational records
 -- that agents produce and query during work.
 

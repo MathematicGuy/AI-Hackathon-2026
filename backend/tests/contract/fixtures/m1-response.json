@@ -1,0 +1,120 @@
+{
+  "session_id": "session_m1_001",
+  "request_id": "request_m1_001",
+  "trace_id": "trace_m1_001",
+  "data": {
+    "answer_type": "recommendation",
+    "intent": "new_search",
+    "customer_need": {
+      "category": "air_conditioner",
+      "budget_max_vnd": 20000000,
+      "room_size_m2": 18,
+      "room_type": null,
+      "sunlight_exposure": null,
+      "location": "HCM",
+      "priorities": [
+        {
+          "name": "energy_saving",
+          "importance": "primary",
+          "source": "explicit"
+        },
+        {
+          "name": "low_noise",
+          "importance": "secondary",
+          "source": "explicit"
+        }
+      ]
+    },
+    "assumption_summary": [],
+    "clarification_question": null,
+    "role_winners": {
+      "best_overall": {
+        "product_id": "AC-M1-002",
+        "role": "best_overall",
+        "score": 0.94,
+        "evidence": [
+          {
+            "path": "$.normalized_fixture.cspf",
+            "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+          }
+        ],
+        "reason_codes": ["primary_priority_fit", "room_fit"]
+      },
+      "best_value": {
+        "product_id": "AC-M1-003",
+        "role": "best_value",
+        "score": 0.91,
+        "evidence": [
+          {
+            "path": "$.normalized_fixture.sale_price_vnd",
+            "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+          }
+        ],
+        "reason_codes": ["customer_benefit_per_price"]
+      },
+      "cheapest_qualified": {
+        "product_id": "AC-M1-006",
+        "role": "cheapest_qualified",
+        "score": null,
+        "evidence": [
+          {
+            "path": "$.normalized_fixture.sale_price_vnd",
+            "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+          }
+        ],
+        "reason_codes": ["lowest_eligible_price"]
+      }
+    },
+    "product_cards": [
+      {
+        "product_id": "AC-M1-002",
+        "name": "Synthetic Air Conditioner AC-M1-002",
+        "badges": ["best_overall"],
+        "sale_price_vnd": 19500000,
+        "main_selling_point": "Synthetic energy-efficiency evidence",
+        "tradeoffs": ["Synthetic fixture trade-off"],
+        "evidence": [
+          {
+            "path": "$.normalized_fixture.cspf",
+            "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+          }
+        ]
+      },
+      {
+        "product_id": "AC-M1-003",
+        "name": "Synthetic Air Conditioner AC-M1-003",
+        "badges": ["best_value"],
+        "sale_price_vnd": 16900000,
+        "main_selling_point": "Synthetic value evidence",
+        "tradeoffs": ["Synthetic fixture trade-off"],
+        "evidence": [
+          {
+            "path": "$.normalized_fixture.sale_price_vnd",
+            "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+          }
+        ]
+      },
+      {
+        "product_id": "AC-M1-006",
+        "name": "Synthetic Air Conditioner AC-M1-006",
+        "badges": ["cheapest_qualified"],
+        "sale_price_vnd": 12800000,
+        "main_selling_point": "Synthetic qualified-price evidence",
+        "tradeoffs": ["Synthetic fixture trade-off"],
+        "evidence": [
+          {
+            "path": "$.normalized_fixture.sale_price_vnd",
+            "source_snapshot": "synthetic-aircon-m1-2026-07-17"
+          }
+        ]
+      }
+    ],
+    "price_premium_verdicts": [],
+    "next_question": "Bạn muốn tôi so sánh chi phí và độ ồn của ba mẫu này không?",
+    "citations": [],
+    "has_more_products": true,
+    "next_cursor": 3,
+    "warnings": ["synthetic_fixture_data"]
+  }
+}
+

@@ -1,5 +1,9 @@
 # AI Coding Session Logging Design
 
+> **Legacy provenance artifact:** Retained for historical context. It is not
+> current authority. Follow `docs/README.md` and do not add new files under
+> `docs/superpowers/`.
+
 **Date:** 2026-07-17
 
 **Status:** Approved

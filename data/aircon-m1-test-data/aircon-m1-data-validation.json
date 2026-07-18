@@ -1,0 +1,31 @@
+{
+  "status": "pass",
+  "catalog_snapshot": "synthetic-aircon-m1-2026-07-17",
+  "catalog_product_count": 14,
+  "eval_case_count": 26,
+  "intent_coverage": [
+    "change_constraints",
+    "check_availability",
+    "compare_products",
+    "more_recommendations",
+    "new_search",
+    "product_detail",
+    "stop",
+    "unsupported"
+  ],
+  "required_intent_coverage_complete": true,
+  "scenario_group_counts": {
+    "challenge": 5,
+    "regression": 4,
+    "representative": 14,
+    "security": 3
+  },
+  "synthetic_data_only": true,
+  "oversized_case_word_count": 360,
+  "main_example_expected_role_winners": {
+    "best_overall": "AC-M1-002",
+    "best_value": "AC-M1-003",
+    "cheapest_qualified": "AC-M1-006"
+  },
+  "errors": []
+}

@@ -1,7 +1,7 @@
 # Bot Instructions for Lại Trí Dũng
 
-This guide applies only after the current user has been explicitly identified
-as Lại Trí Dũng.
+This guide applies only after the current-session identity has been resolved
+under the canonical policy as Lại Trí Dũng.
 
 ## Member Record
 

@@ -1,9 +1,14 @@
 # Harness
 
-The project goal is to provide a reusable operating harness that lets humans and
-agents turn a future product spec into safe, validated work.
+The Harness lets humans and agents turn accepted product or repository intent
+into safe, bounded, validated work.
 
 The app is what users touch. The harness is what agents touch.
+
+The mandatory preflight in `AGENTS.md` precedes every Harness operation:
+complete AI logging, classify the request, read `docs/README.md`, and check
+`docs/team/now/README.md` plus the applicable mapped tracker. Harness cannot be
+used to bypass an unresolved identity or workstream conflict.
 
 ## Mental Model
 
@@ -59,7 +64,7 @@ A change request can have two outputs:
 Harness v0 includes:
 
 - Agent entrypoint.
-- Empty product documentation structure.
+- Purpose-specific product documentation structure.
 - Feature intake and risk lanes.
 - Story templates.
 - Decision log template.
@@ -240,7 +245,9 @@ Answer, explain, review, diagnose, plan, and status requests are read-only.
 2. Use read-only inspection commands when useful.
 3. Do not run bootstrap, initialize or migrate a database, record intake,
    update stories or backlog, or record a trace.
-4. Stop when the answer is supported by concrete repository evidence.
+4. Treat creation and finalization of the mandatory AI session log as the only
+   permitted repository write.
+5. Stop when the answer is supported by concrete repository evidence.
 
 For example, a request to diagnose why an installer test fails may inspect the
 test, installer, and captured output. It must not bootstrap a missing database
@@ -250,23 +257,26 @@ or create an intake row merely to explain the failure.
 
 Change, build, and fix requests authorize the normal Harness mutation loop:
 
-1. Bootstrap the local ignored runtime with `scripts/bootstrap-harness.sh` on
+1. Complete the `AGENTS.md` documentation and tracker read gate. Stop if
+   identity, assignment, dependency, branch/worktree, matrix state, or file
+   ownership is inconsistent.
+2. Bootstrap the local ignored runtime with `scripts/bootstrap-harness.sh` on
    macOS/Linux or `.\scripts\bootstrap-harness.ps1` on Windows.
-2. Classify the request with `docs/FEATURE_INTAKE.md` and record the
+3. Classify the request with `docs/FEATURE_INTAKE.md` and record the
    classification with `scripts/bin/harness-cli intake`.
-3. Check focused proof status with
+4. Check focused proof status with
    `scripts/bin/harness-cli query matrix --active --summary`, then use
    `scripts/bin/harness-cli query matrix --story <id>` if a story is selected.
-4. Retrieve only the affected product, story, decision, and implementation
+5. Retrieve only the affected product, story, decision, and implementation
    files required by the selected lane in `docs/CONTEXT_RULES.md`.
-5. Implement and validate inside that lane: tiny, normal, or high-risk.
-6. Before finishing, ask whether product truth, validation expectations,
+6. Implement and validate inside that lane: tiny, normal, or high-risk.
+7. Before finishing, ask whether product truth, validation expectations,
    architecture rules, repeated failure patterns, or next-agent instructions
    changed.
-7. Record a trace with `scripts/bin/harness-cli trace`, using
+8. Record a trace with `scripts/bin/harness-cli trace`, using
    `docs/TRACE_SPEC.md` for the expected trace tier and field depth, and review
    the printed score.
-8. If Harness friction was found, fix it in scope or record it with
+9. If Harness friction was found, fix it in scope or record it with
    `scripts/bin/harness-cli backlog add`.
 
 ## Story Verification
@@ -409,7 +419,7 @@ Agents should ask for human confirmation before:
 
 A read-only request is done when the response is supported by repository
 evidence, clearly separates facts from inference, and leaves repository and
-Harness state unchanged.
+Harness state unchanged except for its mandatory finalized AI session log.
 
 A change request is done only when:
 
