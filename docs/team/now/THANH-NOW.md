@@ -134,11 +134,17 @@ Keep `resources/` out of scope.
 
 ## Deferred / Follow-ups
 
-- Live-Postgres integration test `backend/tests/integration/api/test_catalog_endpoints.py`
-  is deferred: its fixtures require a running Postgres server the local env does
-  not host, so the full-suite pass excludes it via `--ignore`. Tackle later —
-  either stand up a test Postgres (or container) or add a skip-when-unreachable
-  guard. This is data-platform (US-206) territory, not observability.
+- **RESOLVED (2026-07-19):** Live-Postgres integration test
+  `backend/tests/integration/api/test_catalog_endpoints.py` now passes
+  (13/13). Stood up Postgres via
+  `docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up -d db`
+  (pgvector/pgvector:pg16 on loopback `127.0.0.1:55432`), ran
+  `python -m backend.app.db.migrate`, then
+  `python -m backend.app.ingestion.run --source data/dataset`
+  (8,746 products across 14 categories, 0 errors). Fix: `.env`
+  `POSTGRES_HOST` set to `127.0.0.1` (host `localhost` resolved to IPv6 `::1`,
+  which Docker's IPv4-only port publish does not serve, causing connect hangs).
+  This was data-platform (US-206) territory, not observability.
 
 ## Definition of Done
 
