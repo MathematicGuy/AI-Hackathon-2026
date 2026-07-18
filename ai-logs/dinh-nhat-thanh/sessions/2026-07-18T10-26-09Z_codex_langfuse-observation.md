@@ -55,30 +55,56 @@ agent and prepare its bounded implementation plan.
 - Validation result: Passed task-owned checks; story verification intentionally pending implementation.
 - Redactions or logging limitations: No credentials, authorization headers, or raw user/model payloads recorded.
 
+### Entry 4 — 2026-07-18T11-21-54Z
+
+- Human request summary: Begin US-207 implementation, then pause and create a compact implementation handoff for the next agent.
+- AI response or decision summary: Preserved the approved plan, verified the Task 1 RED test, documented exact worktree state, implementation constraints, environment issues, and immediate GREEN steps in the live handoff.
+- Sanitized terminal, CLI, and tool actions: Read required policies, tracker, story plan, current RED test, and applicable skills; checked branch/status; attempted worktree Harness bootstrap; queried the root Harness matrix; ran the focused test with isolated pytest plugins; created the handoff.
+- Command and tool exit status: RED test failed as intended because `backend.app.observability` does not exist. Worktree Harness bootstrap failed because its ignored CLI and database are absent; root matrix query succeeded and reports US-207 planned and runnable.
+- Outcome or important output summary: Task 1 remains at verified RED with no production code. Next agent can start at adapter GREEN from `.agents/handoffs/us-207-langfuse-observation-implementation.md`.
+- Files affected or inspected: Untracked Task 1 test, US-207 exec plan, THANH tracker, repository policies, this session log, and the new live handoff.
+- Validation performed: Focused Task 1 RED test, Git branch/status check, root Harness active-matrix query.
+- Validation result: Expected missing-module failure confirmed; branch is `observation` at `fd583ef`; root Harness lists US-207 `planned`, `runnable=yes`.
+- Redactions or logging limitations: No credentials, environment secret values, or raw customer/model payloads recorded.
+
+### Entry 5 — 2026-07-18T12-13-40Z
+
+- Human request summary: Hand off the in-progress US-207 Task 3 implementation to the next agent with current findings, completed work, constraints, and implementation patterns.
+- AI response or decision summary: Completed and reviewed US-207 Tasks 1 and 2; interrupted the Task 3 implementer at a safe boundary; wrote a compact next-agent handoff with the partial diff state and required continuation steps.
+- Sanitized terminal, CLI, and tool actions: Read the Task 3 brief/plan, inspected the partial graph and understanding diff and path tests, checked branch/status/log, interrupted the active Task 3 implementer, and wrote handoffs to `E:\tmp\us-207-task3-next-agent-handoff.md` and `.agents/handoffs/us-207-task3-next-agent.md`.
+- Command and tool exit status: Task 1 review approved at `7502739`; Task 2 review approved at `3e0d9ed`; Task 3 remains uncommitted and incomplete. No secret-bearing commands or payloads used.
+- Outcome or important output summary: The next agent can resume Task 3 without rereading the full conversation; lower policy/product retrieval, search, filter/rank, validation, and call-signature consistency remain open.
+- Files affected or inspected: Task 3 brief, graph/understanding partial diff, `test_observation_paths.py`, SDD progress ledger, story exec plan, and both handoff files.
+- Validation performed: Read-only status/log/diff inspection; no Task 3 GREEN claim made.
+- Validation result: Task 3 implementation is partial; focused tests and full backend verification remain pending.
+- Redactions or logging limitations: No credentials, authorization headers, environment secret values, or raw customer/model payloads recorded.
+
 ## Files Touched
 
 - Created: `docs/stories/epics/E01-air-conditioner-advisor-m1/US-116-langfuse-agent-observability/overview.md`, `design.md`, `validation.md`.
 - Changed: `docs/team/now/THANH-NOW.md`; US-116/US-207 story packet documents.
+- Created during implementation: `backend/app/observability/__init__.py`, `backend/app/observability/langfuse.py`, `backend/tests/unit/observability/test_langfuse.py`, `backend/tests/unit/agent/test_observation_api.py`, and `.agents/handoffs/us-207-task3-next-agent.md`.
+- Changed during implementation: `backend/app/agent/api.py`, `backend/app/agent/graph.py`, `backend/app/agent/demo.py`, `backend/app/agent/conversation/understand.py`, this session log, and partial `backend/tests/unit/agent/test_observation_paths.py`.
 - Deleted: None.
 - Materially inspected: Repository policy, tracker, Harness docs, product contract/architecture, backend agent graph/API/LLM code, Langfuse SDK documentation.
 
 ## Validation
 
-- Checks performed: Repository graph indexing and targeted source/document inspection.
-- Results: Successful; implementation validation remains pending.
+- Checks performed: Repository graph indexing, Langfuse v3 documentation/signature inspection, Task 1 focused RED/GREEN and review, Task 2 focused/regression tests and review, Task 3 partial diff inspection, branch/status checks, and root Harness active-matrix query.
+- Results: Task 1 and Task 2 are reviewed clean (`8` observer tests; `3` API/demo tests plus `107` regressions). Task 3 is incomplete and has no GREEN claim.
 
 ## Errors and Blockers
 
-- Errors: Initial `rtk grep` command unavailable; replaced with `rtk proxy rg`.
-- Blockers: None.
-- Disposition: Continue with spec self-review, commit, user review, and plan creation.
+- Errors: Initial `rtk grep` command unavailable; replaced with `rtk proxy rg`. Worktree Harness bootstrap cannot find its ignored CLI/database. `uv lock --check` hit a shared uv-cache permission error. A pre-existing Starlette/httpx deprecation warning appears in TestClient-based tests.
+- Blockers: Task 3 implementation was interrupted before lower graph boundaries and GREEN validation were complete. Harness evidence must currently be queried/recorded from repository root or resolved with the integration controller.
+- Disposition: Full Task 3 continuation is captured in `E:\tmp\us-207-task3-next-agent-handoff.md` and `.agents/handoffs/us-207-task3-next-agent.md`.
 
 ## Final Outcome
 
-- Status: Planning complete; implementation pending.
-- Outcome summary: Both E02 and M1 priority-observation specs/plans documented; Gantt added; observation worktree exists.
-- Unresolved work: Resolve M1 file ownership overlap, implement US-207 then US-116 tasks, run proof, and record traces.
-- Suggested next actions: Choose execution mode, clear USER1/USER2 ownership, then execute plans in `.worktrees/observation`.
+- Status: Partial implementation handed off; US-207 Tasks 1-2 complete and reviewed, Task 3 in progress.
+- Outcome summary: Shared adapter and API lifecycle are committed and verified; the next agent has a focused Task 3 handoff with current partial code and test state.
+- Unresolved work: Finish and review Task 3, then implement Task 4 raw model attempts and final verification/Harness proof. US-116 remains ownership-blocked.
+- Suggested next actions: Read `E:\tmp\us-207-task3-next-agent-handoff.md`, inspect the uncommitted Task 3 diff, restore RED-GREEN validation, complete lower graph boundaries, commit, and run the task review loop.
 
 ## Redaction Summary
 
