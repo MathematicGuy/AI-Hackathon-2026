@@ -1,8 +1,8 @@
-# US-115 Readable and Convenient Chatbot Frontend
+# US-115 Approved Mock-First Frontend
 
 ## Status
 
-in_progress
+planned
 
 ## Lane
 
@@ -10,61 +10,43 @@ normal
 
 ## Product Contract
 
-The existing Next.js storefront chatbot in `frontend/` is easy to notice, read,
-and operate on desktop and mobile. This mock-first slice is independent of
-backend delivery: it improves the current conversation and comparison surfaces
-without introducing a live API dependency. The UI renders supplied fields only;
-it performs no client-side ranking, price math, eligibility, badge computation,
-or evidence selection. Missing values stay visibly unknown and are never
-inferred.
+A testing-only Next.js frontend (`frontend-mvp/`) renders all 8
+`RecommendationOutput.answer_type` states from mock fixtures and is swappable to
+the real advisor backend by flipping one env var
+(`NEXT_PUBLIC_ADVISOR_MODE=mock|live`). The UI renders server-owned fields only:
+no client-side ranking, price math, eligibility, badge computation, or evidence
+selection. Missing fields render `"không có"` (text) or `"chưa rõ"`
+(numeric/price), never inferred.
 
 ## Relevant Product Docs
 
-- `docs/product/air-conditioner-advisor-m1-contract.md`
-- `docs/product/requirements/air-conditioner-advisor-m1-prd.md` (§§4.14–4.18,
-  16)
-- `docs/product/architecture/air-conditioner-advisor-m1.md` (§§5.1, 7.5,
-  8.2–8.4)
+- `ARCHITECTURE.md` (§5.5–5.6 API contract, §7–8 `RecommendationOutput` shape)
+- `WORKFLOW-MVP(4).md`
+- `docs/superpowers/specs/2026-07-17-frontend-mvp-design.md`
+- `docs/superpowers/plans/2026-07-17-frontend-mvp.md`
 
 ## Acceptance Criteria
 
-- The launcher is noticeable without obscuring primary storefront actions.
-- The chat panel fits common desktop and mobile viewports without horizontal
-  overflow or unreachable controls.
-- Header, conversation, comparison results, suggested prompts, and composer
-  have a clear visual hierarchy and readable contrast.
-- Customer and assistant messages are immediately distinguishable; timestamps
-  and secondary metadata do not compete with answer content.
-- The composer has an accessible name, visible focus, a clear send action, and
-  prevents empty submissions without hiding the reason.
-- Comparison results expose the recommendation, trade-offs, price, and next
-  action in a scan-friendly order without changing supplied product truth.
-- Existing storefront routes and behavior outside the chatbot remain unchanged.
+- All 8 `answer_type` states render from mock data, each reachable by a keyword
+  trigger, each wrapper carrying `data-testid="answer-${answer_type}"`.
+- Data flows exclusively through `sendMessage` in `lib/advisor-api.ts`; no
+  component imports mock fixtures directly.
+- Only the three formal roles (`best_overall`, `best_value`,
+  `cheapest_qualified`) exist; `best_for_primary_priority` is a display badge.
+- A product with multiple badges renders once, badges merged by `product_id`.
+- Switching to the live backend requires only env changes, no component or type
+  edits.
 
 ## Design Notes
 
-- Commands: `npm --prefix frontend run lint`, `typecheck`, and `build`.
-- Queries: none; the live advisor endpoint remains out of scope.
-- API: preserve the current mock-first component boundary.
+- Commands: n/a (read-only client).
+- Queries: `POST /api/v1/advisor/respond` (mirrored, not owned).
+- API: `sendMessage(req: AdvisorRequest): Promise<AdvisorResponse>` single swap
+  point on `NEXT_PUBLIC_ADVISOR_MODE`.
 - Tables: none (mock fixtures, no DB).
-- Domain rules: supplied-fields-only rendering; never recompute recommendation
-  truth.
-- UI surfaces: launcher, chat shell, messages, prompt chips, composer, and
-  comparison result.
-
-## File Boundary
-
-- `frontend/src/components/ChatbotAssistant.tsx`
-- `frontend/src/components/chat/ChatComparisonResult.tsx`
-- `frontend/src/app/globals.css`
-
-## Implementation Plan
-
-1. Capture desktop and mobile baselines and record concrete usability issues.
-2. Apply the smallest component and style changes that improve hierarchy,
-   readability, keyboard access, responsive fit, and action clarity.
-3. Run static checks and production build, then capture matching visual proof
-   for desktop and mobile.
+- Domain rules: server-owned-fields-only rendering; dedup by `product_id`.
+- UI surfaces: chat shell + `AnswerRenderer` dispatch over 8 answer-type
+  components.
 
 ## Validation
 
@@ -73,18 +55,17 @@ When updating durable proof status, use numeric booleans:
 
 | Layer | Expected proof |
 | --- | --- |
-| Unit | No unit harness exists for this bounded visual change. |
-| Integration | No backend integration; mock-first behavior only. |
-| E2E | Manual interaction and screenshot proof for desktop and mobile. |
-| Platform | Chromium desktop and mobile viewport checks. |
-| Release | `npm --prefix frontend run lint && npm --prefix frontend run typecheck && npm --prefix frontend run build`. |
+| Unit | Vitest over `lib/` pure utilities (ids, format, dedupe, scenario matcher). |
+| Integration | n/a (no backend in mock mode). |
+| E2E | Playwright drives all 8 answer_types; asserts dedup (one card, two badges). |
+| Platform | Browser only. |
+| Release | `npm run typecheck && npm run test && npm run build && npm run test:e2e`. |
 
 ## Harness Delta
 
-Normal-lane change request: existing user-visible behavior plus initially weak
-visual proof, with no auth, data, provider, or API-contract change. The story is
-registered independently from backend implementation and is owned by the
-`FRONTEND` tracker.
+Story created at intake for build-type work per `docs/FEATURE_INTAKE.md`
+(normal lane, 0–1 flags, no hard gates). Executes
+`docs/superpowers/plans/2026-07-17-frontend-mvp.md`.
 
 ## Evidence
 

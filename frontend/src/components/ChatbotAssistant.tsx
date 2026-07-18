@@ -108,19 +108,29 @@ export function ChatbotAssistant() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [failedQuery, setFailedQuery] = useState("");
   const sequence = useRef(1);
   const failedOnce = useRef(new Set<string>());
   const launcher = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLElement>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
   const replyTimer = useRef<number | null>(null);
-  const conversationEnd = useRef<HTMLDivElement>(null);
+  const conversationScroller = useRef<HTMLDivElement>(null);
   const latestComparison = useRef<HTMLDivElement>(null);
 
   const closeChat = useCallback(() => {
     setIsOpen(false);
     window.requestAnimationFrame(() => launcher.current?.focus());
+  }, []);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 768px)");
+    const updateViewportMode = () => setIsDesktop(desktopQuery.matches);
+    updateViewportMode();
+    desktopQuery.addEventListener("change", updateViewportMode);
+    return () => desktopQuery.removeEventListener("change", updateViewportMode);
   }, []);
 
   useEffect(() => {
@@ -132,17 +142,23 @@ export function ChatbotAssistant() {
       .matches
       ? "auto"
       : "smooth";
-    if (latestMessage?.kind === "comparison") {
-      latestComparison.current?.scrollIntoView({
-        behavior,
-        block: "start",
-      });
+    const scroller = conversationScroller.current;
+    if (!scroller) {
       return;
     }
-    conversationEnd.current?.scrollIntoView({
-      behavior,
-      block: "nearest",
-    });
+    if (messages.length === 0 && !isSending) {
+      scroller.scrollTo({ top: 0, behavior: "auto" });
+      return;
+    }
+    if (latestMessage?.kind === "comparison" && latestComparison.current) {
+      const comparisonTop =
+        latestComparison.current.getBoundingClientRect().top -
+        scroller.getBoundingClientRect().top +
+        scroller.scrollTop;
+      scroller.scrollTo({ top: Math.max(0, comparisonTop - 12), behavior });
+      return;
+    }
+    scroller.scrollTo({ top: scroller.scrollHeight, behavior });
   }, [isOpen, messages, isSending]);
 
   useEffect(() => {
@@ -150,15 +166,26 @@ export function ChatbotAssistant() {
       return;
     }
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.requestAnimationFrame(() => composer.current?.focus());
+    if (!isDesktop) {
+      document.body.style.overflow = "hidden";
+    }
+    window.requestAnimationFrame(() => {
+      if (isDesktop) {
+        composer.current?.focus();
+      } else {
+        closeButton.current?.focus();
+      }
+    });
 
     const handleDialogKeyboard = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (
+        event.key === "Escape" &&
+        (!isDesktop || dialog.current?.contains(document.activeElement))
+      ) {
         closeChat();
         return;
       }
-      if (event.key !== "Tab") {
+      if (isDesktop || event.key !== "Tab") {
         return;
       }
 
@@ -181,10 +208,12 @@ export function ChatbotAssistant() {
     };
     window.addEventListener("keydown", handleDialogKeyboard);
     return () => {
-      document.body.style.overflow = previousOverflow;
+      if (!isDesktop) {
+        document.body.style.overflow = previousOverflow;
+      }
       window.removeEventListener("keydown", handleDialogKeyboard);
     };
-  }, [closeChat, isOpen]);
+  }, [closeChat, isDesktop, isOpen]);
 
   useEffect(
     () => () => {
@@ -307,15 +336,17 @@ export function ChatbotAssistant() {
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-[79] bg-slate-950/25 backdrop-blur-[1px]"
-        aria-hidden="true"
-        onMouseDown={closeChat}
-      />
+      {!isDesktop ? (
+        <div
+          className="fixed inset-0 z-[79] bg-slate-950/25 backdrop-blur-[1px]"
+          aria-hidden="true"
+          onMouseDown={closeChat}
+        />
+      ) : null}
     <section
       ref={dialog}
       role="dialog"
-      aria-modal="true"
+      aria-modal={!isDesktop}
       aria-labelledby="chatbot-title"
       className="chatbot-panel fixed z-[80] flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_16px_48px_rgba(15,23,42,0.28)]"
     >
@@ -331,22 +362,22 @@ export function ChatbotAssistant() {
           <button type="button" onClick={resetChat} disabled={isSending || messages.length === 0} className="flex size-11 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20 focus-visible:outline-white active:scale-95 sm:size-9" aria-label="Làm mới hội thoại" title="Làm mới">
             <RefreshCw className="size-4" />
           </button>
-          <button type="button" onClick={closeChat} className="flex size-11 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20 focus-visible:outline-white active:scale-95 sm:size-9" aria-label="Đóng chatbot" title="Đóng">
+          <button ref={closeButton} type="button" onClick={closeChat} className="flex size-11 items-center justify-center rounded-xl bg-white/10 transition hover:bg-white/20 focus-visible:outline-white active:scale-95 sm:size-9" aria-label="Đóng chatbot" title="Đóng">
             <X className="size-5" />
           </button>
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overscroll-y-contain overflow-y-auto px-3 pb-5 sm:px-4">
+      <div ref={conversationScroller} className="min-h-0 flex-1 overscroll-y-contain overflow-y-auto px-3 pb-5 sm:px-4">
         {messages.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-5 text-center sm:py-6">
           <SafeImage src="/images/chatbot/chat-bot.png" alt="" className="size-16 rounded-full border border-blue-50 sm:size-20" fallbackLabel="AI" />
           <div>
             <h2 className="text-base font-bold text-slate-900">
-              Chọn máy lạnh dễ hơn cùng AI
+              Mình có thể giúp bạn chọn sản phẩm
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              Cho mình biết diện tích phòng, ngân sách và điều bạn ưu tiên.
+              Hỏi về nhu cầu, so sánh, khuyến mãi hoặc bảo hành.
             </p>
           </div>
           <div className="w-full max-w-xl">
@@ -374,7 +405,7 @@ export function ChatbotAssistant() {
         <div className="mt-3 flex items-end gap-1.5">
           <SafeImage src="/images/chatbot/mascot.png" alt="" className="size-9 shrink-0 rounded-full" fallbackLabel="AI" />
           <div className="max-w-[88%] rounded-[20px] rounded-ss-none bg-slate-100 px-4 py-3 text-sm leading-6 text-slate-800">
-            Bạn đang cần chọn máy lạnh cho phòng bao nhiêu m² và ngân sách khoảng bao nhiêu?
+            Bạn đang quan tâm sản phẩm nào? Mình có thể giúp lọc lựa chọn hoặc so sánh nhanh.
           </div>
         </div>
 
@@ -457,7 +488,6 @@ export function ChatbotAssistant() {
               </button>
             </div>
           ) : null}
-          <div ref={conversationEnd} />
         </div>
       </div>
 

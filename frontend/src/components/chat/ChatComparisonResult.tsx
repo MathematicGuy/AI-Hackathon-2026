@@ -144,9 +144,13 @@ export function ChatComparisonResult({
             So sánh nhanh theo giá và điểm mạnh nổi bật.
           </p>
         </div>
+        <span className="hidden shrink-0 items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 shadow-sm md:flex">
+          <MoveHorizontal className="size-3.5" aria-hidden="true" />
+          Cuộn bảng
+        </span>
       </div>
 
-      <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-medium text-slate-500 sm:hidden">
+      <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-medium text-slate-600 md:hidden">
         <MoveHorizontal className="size-4" aria-hidden="true" />
         Vuốt ngang để xem đủ bảng
       </div>
@@ -248,7 +252,7 @@ export function ChatComparisonResult({
                     aria-label={`Xem sản phẩm ${product.name}`}
                     className="inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-[#0754ad] transition hover:border-blue-300 hover:bg-blue-100"
                   >
-                    Xem sản phẩm
+                    Xem {product.name.split(" ")[0]}
                     <ArrowUpRight className="size-3.5" aria-hidden="true" />
                   </Link>
                 </td>
