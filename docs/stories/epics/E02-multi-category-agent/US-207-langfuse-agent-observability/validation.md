@@ -31,3 +31,13 @@ rtk git diff --check
 
 Attach focused/full test results, response-equivalence proof, lock validation,
 secret-scan result, and one sanitized exported trace-tree example.
+
+## Task 4 Evidence (2026-07-18)
+
+- Focused generation tests: `backend/tests/unit/agent/test_observation_llm.py` — 3 passed.
+- Task 1–3 observer/agent regressions plus Task 4 tests — 43 passed, 1 existing Starlette deprecation warning.
+- Full backend suite was attempted with the repository-safe pytest command but timed out after 124 seconds without completing; no failure traceback was emitted.
+- `uv lock --check` — passed (`Resolved 72 packages`).
+- `git diff --check` — passed.
+- Fake transports verified complete system/user prompts, raw outputs, candidate order/index, provider/model/role, temperatures, fallback error metadata, and that API keys never enter captured payloads. Tracing exceptions are fail-open in the LLM client.
+- No live Langfuse project or E2E trace was used; sanitized E2E evidence remains pending credentials and environment access.

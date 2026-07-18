@@ -10,12 +10,15 @@ the test suite.
 import json
 import os
 import re
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlparse
 
 from backend.app.agent.catalog.registry import CategoryRegistry
 from backend.app.agent.contracts import AgentUnderstanding
 from backend.app.agent.conversation.understand import ExtractorError
+from backend.app.observability import AgentObserver, noop_agent_observer
 
 DEFAULT_OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 DEFAULT_MISTRAL_BASE = "https://api.mistral.ai/v1"
@@ -120,6 +123,50 @@ def _extract_json(text: str) -> dict:
     return json.loads(cleaned[start : end + 1])
 
 
+def _provider_name(base_url: str) -> str:
+    host = urlparse(base_url).netloc.lower() or base_url.lower()
+    if "openrouter" in host:
+        return "openrouter"
+    if "mistral" in host:
+        return "mistral"
+    return host
+
+
+class _SilentObservation:
+    def update(self, **kwargs: object) -> None:
+        return None
+
+
+def _safe_update(handle: object, **kwargs: object) -> None:
+    try:
+        handle.update(**kwargs)  # type: ignore[attr-defined]
+    except Exception:
+        return None
+
+
+@contextmanager
+def _generation_span(observer: AgentObserver, name: str, **kwargs: object):
+    """Open an observation without allowing tracing failures to affect calls."""
+    try:
+        context = observer.span(name, **kwargs)
+        handle = context.__enter__()
+    except Exception:
+        yield _SilentObservation()
+        return
+
+    error_info: tuple[object, object, object] = (None, None, None)
+    try:
+        yield handle
+    except BaseException as exc:
+        error_info = (type(exc), exc, exc.__traceback__)
+        raise
+    finally:
+        try:
+            context.__exit__(*error_info)
+        except Exception:
+            pass
+
+
 class LLMUnderstandingExtractor:
     def __init__(
         self,
@@ -128,6 +175,7 @@ class LLMUnderstandingExtractor:
         registry: CategoryRegistry | None = None,
         transport=None,
         timeout: float = 25.0,
+        observer: AgentObserver | None = None,
     ) -> None:
         if not candidates:
             raise ValueError("no LLM candidates configured")
@@ -135,6 +183,7 @@ class LLMUnderstandingExtractor:
         self.registry = registry or CategoryRegistry()
         self.timeout = timeout
         self._transport = transport
+        self.observer = observer or noop_agent_observer()
 
     async def _call(self, candidate: LLMCandidate, system: str, user: str) -> str:
         if self._transport is not None:
@@ -164,20 +213,40 @@ class LLMUnderstandingExtractor:
             categories=_category_table(self.registry), state_summary=summary_note
         )
         last_error: Exception | None = None
-        for candidate in self.candidates:
+        for index, candidate in enumerate(self.candidates):
+            generation = _SilentObservation()
             try:
-                raw = await self._call(candidate, system, message)
+                with _generation_span(
+                    self.observer,
+                    "understanding_model_call",
+                    kind="generation",
+                    model=candidate.model,
+                    model_parameters={"temperature": 0},
+                    input={"system": system, "user": message},
+                    metadata={
+                        "candidate_index": index,
+                        "provider": _provider_name(candidate.base_url),
+                        "role": "understanding",
+                    },
+                ) as generation:
+                    raw = await self._call(candidate, system, message)
+                    _safe_update(generation, output=raw)
                 return AgentUnderstanding.model_validate(_extract_json(raw))
             except Exception as exc:  # provider, parse, or validation failure
                 last_error = exc
+                _safe_update(
+                    generation,
+                    error={"type": type(exc).__name__},
+                    output={"fallback": True},
+                )
         raise ExtractorError(str(last_error))
 
 
-def default_extractor() -> LLMUnderstandingExtractor | None:
+def default_extractor(*, observer: AgentObserver | None = None) -> LLMUnderstandingExtractor | None:
     candidates = resolve_llm_candidates()
     if not candidates:
         return None
-    return LLMUnderstandingExtractor(candidates)
+    return LLMUnderstandingExtractor(candidates, observer=observer)
 
 
 _POLISH_SYSTEM = """Bạn là nhân viên tư vấn bán hàng Điện Máy XANH (xưng em, gọi khách anh/chị, mở đầu Dạ, giọng gần gũi).
@@ -201,12 +270,14 @@ class LLMPolisher:
         *,
         transport=None,
         timeout: float = 25.0,
+        observer: AgentObserver | None = None,
     ) -> None:
         if not candidates:
             raise ValueError("no LLM candidates configured")
         self.candidates = candidates
         self.timeout = timeout
         self._transport = transport
+        self.observer = observer or noop_agent_observer()
 
     async def _call(self, candidate: LLMCandidate, system: str, user: str) -> str:
         if self._transport is not None:
@@ -229,20 +300,42 @@ class LLMPolisher:
         return response.choices[0].message.content or ""
 
     async def polish(self, text: str) -> str:
-        for candidate in self.candidates:
+        for index, candidate in enumerate(self.candidates):
+            generation = _SilentObservation()
             try:
-                polished = (await self._call(candidate, _POLISH_SYSTEM, text)).strip()
+                with _generation_span(
+                    self.observer,
+                    "response_polish_model_call",
+                    kind="generation",
+                    model=candidate.model,
+                    model_parameters={"temperature": 0.4},
+                    input={"system": _POLISH_SYSTEM, "user": text},
+                    metadata={
+                        "candidate_index": index,
+                        "provider": _provider_name(candidate.base_url),
+                        "role": "response_polish",
+                    },
+                ) as generation:
+                    raw = await self._call(candidate, _POLISH_SYSTEM, text)
+                    _safe_update(generation, output=raw)
+                polished = raw.strip()
                 if polished:
                     return polished
-            except Exception:
+                _safe_update(generation, output={"fallback": True, "reason": "empty"})
+            except Exception as exc:
+                _safe_update(
+                    generation,
+                    error={"type": type(exc).__name__},
+                    output={"fallback": True},
+                )
                 continue
         return text
 
 
-def default_polisher() -> LLMPolisher | None:
+def default_polisher(*, observer: AgentObserver | None = None) -> LLMPolisher | None:
     if os.environ.get("AGENT_LLM_POLISH", "").lower() not in ("1", "true", "yes"):
         return None
     candidates = resolve_llm_candidates()
     if not candidates:
         return None
-    return LLMPolisher(candidates)
+    return LLMPolisher(candidates, observer=observer)

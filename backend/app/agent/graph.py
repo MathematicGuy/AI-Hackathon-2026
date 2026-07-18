@@ -90,18 +90,19 @@ class AgentDependencies:
         from backend.app.agent.catalog.dataset_adapter import default_adapter
         from backend.app.observability import default_agent_observer
 
+        observer = default_agent_observer()
         extractor = None
         polisher = None
         if with_llm:
             from backend.app.agent.llm.client import default_extractor, default_polisher
 
-            extractor = default_extractor()
-            polisher = default_polisher()
+            extractor = default_extractor(observer=observer)
+            polisher = default_polisher(observer=observer)
         return cls(
             products=default_adapter().load(),
             extractor=extractor,
             polisher=polisher,
-            observer=default_agent_observer(),
+            observer=observer,
         )
 
 
