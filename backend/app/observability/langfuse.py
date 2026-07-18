@@ -45,6 +45,10 @@ def _is_secret_key(key: object) -> bool:
         or "credential" in normalised
         or normalised.endswith("apikey")
         or normalised.endswith("authorization")
+        or normalised.endswith("password")
+        or normalised.endswith("accesstoken")
+        or normalised.endswith("token")
+        or normalised.endswith("privatekey")
     )
 
 
@@ -77,8 +81,11 @@ def redact_payload(value: object) -> object:
             return tuple(scrub(child) for child in item)
         if isinstance(item, set):
             return {scrub(child) for child in item}
-        if isinstance(item, str) and item in secrets:
-            return _REDACTED
+        if isinstance(item, str):
+            scrubbed = item
+            for secret in sorted(secrets, key=len, reverse=True):
+                scrubbed = scrubbed.replace(secret, _REDACTED)
+            return scrubbed
         return item
 
     try:

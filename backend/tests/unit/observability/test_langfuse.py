@@ -76,10 +76,28 @@ class RaisingLangfuse:
 
 
 class RaisingLifecycleObservation(FakeObservation):
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        self.update_calls = 0
+        self.end_calls = 0
+
+    def start_observation(self, **kwargs):
+        child = RaisingLifecycleObservation(
+            name=kwargs["name"],
+            parent=self,
+            as_type=kwargs.get("as_type", "span"),
+            input=kwargs.get("input"),
+            metadata=kwargs.get("metadata"),
+        )
+        self.registry.append(child)
+        return child
+
     def update(self, **kwargs) -> None:
+        self.update_calls += 1
         raise RuntimeError("update unavailable")
 
     def end(self) -> None:
+        self.end_calls += 1
         raise RuntimeError("end unavailable")
 
 
@@ -152,6 +170,34 @@ def test_payload_scrubs_secret_keys_but_keeps_raw_message() -> None:
     }
 
 
+def test_payload_scrubs_credential_key_variants_and_embedded_env_secrets(monkeypatch) -> None:
+    monkeypatch.setenv("OBSERVATION_SECRET_TOKEN", "embedded-secret-value")
+    backend = FakeLangfuse()
+    observer = LangfuseAgentObserver(backend)
+
+    with observer.start_turn(
+        trace_id="g" * 32,
+        session_id="session-1",
+        request_id="request-1",
+        user_id=None,
+        input={
+            "db_password": "db-secret",
+            "oauth_access_token": "oauth-secret",
+            "service_private_key": "key-secret",
+            "message": "prefix embedded-secret-value suffix",
+        },
+        metadata={},
+    ):
+        pass
+
+    assert backend.observations[0].input == {
+        "db_password": "[REDACTED]",
+        "oauth_access_token": "[REDACTED]",
+        "service_private_key": "[REDACTED]",
+        "message": "prefix [REDACTED] suffix",
+    }
+
+
 def test_sdk_and_flush_failures_never_escape() -> None:
     observer = LangfuseAgentObserver(RaisingLangfuse())
 
@@ -185,6 +231,9 @@ def test_update_and_end_failures_are_contained() -> None:
             span.update(output={"blocked": False})
 
     assert turn.observability_degraded is True
+    child = observer._client.observations[1]
+    assert child.update_calls == 1
+    assert child.end_calls == 1
 
 
 def test_default_factory_is_noop_when_disabled_or_keys_missing(monkeypatch) -> None:
@@ -212,7 +261,7 @@ def test_async_contextvar_parentage_isolated() -> None:
             request_id=name,
             user_id=None,
             input={},
-            metadata={},
+            metadata={"task": name},
         ):
             await asyncio.sleep(0)
             with observer.span(name, input={}):
@@ -224,11 +273,12 @@ def test_async_contextvar_parentage_isolated() -> None:
     asyncio.run(gather())
     roots = [item for item in backend.observations if item.parent is None]
     assert len(roots) == 2
-    assert all(
-        child.parent in roots
-        for child in backend.observations
-        if child.parent is not None
-    )
+    roots_by_name = {root.metadata["task"]: root for root in roots}
+    children_by_name = {
+        item.name: item for item in backend.observations if item.parent is not None
+    }
+    assert children_by_name["first"].parent is roots_by_name["first"]
+    assert children_by_name["second"].parent is roots_by_name["second"]
 
 
 def test_noop_observer_preserves_trace_id() -> None:
