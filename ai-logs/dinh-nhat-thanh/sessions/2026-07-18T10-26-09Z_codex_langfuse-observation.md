@@ -43,6 +43,18 @@ agent and prepare its bounded implementation plan.
 - Validation result: Diff/placeholder checks passed. Audit found two intentionally unverified planned stories; governance reports unrelated root-doc/requirements drift and USER1/USER2 overlap.
 - Redactions or logging limitations: No credentials, authorization headers, or raw user/model payloads recorded.
 
+### Entry 3 — 2026-07-18T11-05-00Z
+
+- Human request summary: Add a Gantt view for parallel story tasks and narrow Langfuse scope to high-value diagnostic observations.
+- AI response or decision summary: Added Mermaid Gantt, revised both plans to priority boundaries, removed coarse helper/per-role spans, and documented M1 ownership conflict.
+- Sanitized terminal, CLI, and tool actions: Updated tracker/story packets; synced observation worktree with main; registered partial Harness traces; reran audit/propose and governance validation.
+- Command and tool exit status: Partial traces #25 and #26 recorded; audit entropy reduced to 10/100; governance validation still fails only on existing architecture/requirements drift.
+- Outcome or important output summary: Both plans now target useful debugging/model-improvement signals, not exhaustive tracing.
+- Files affected or inspected: `THANH-NOW.md`, US-116/US-207 story packets, observation worktree metadata.
+- Validation performed: Placeholder scan, whitespace check, worktree sync, Harness audit/propose, governance validation.
+- Validation result: Passed task-owned checks; story verification intentionally pending implementation.
+- Redactions or logging limitations: No credentials, authorization headers, or raw user/model payloads recorded.
+
 ## Files Touched
 
 - Created: `docs/stories/epics/E01-air-conditioner-advisor-m1/US-116-langfuse-agent-observability/overview.md`, `design.md`, `validation.md`.

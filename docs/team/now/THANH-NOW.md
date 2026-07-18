@@ -15,7 +15,7 @@ gantt
     US-116 Task 1: node observations      :m1, after a1, 2d
     US-116 Task 2: intent generations     :m2, after m1, 1d
     section Integration
-    Joint full verification               :v1, after a3, 1d
+    Joint full verification               :v1, 2026-07-23, 1d
 ```
 
 Parallel decision: after US-207 Task 1 stabilizes the shared adapter contract,
