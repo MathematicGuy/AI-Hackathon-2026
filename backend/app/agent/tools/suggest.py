@@ -85,6 +85,13 @@ def suggest_products(
                 )
             else:
                 skipped.append(role)
+        elif role == "most_expensive":
+            if priced:
+                winners[role] = max(
+                    priced, key=lambda p: (p.effective_price, p.productidweb)
+                )
+            else:
+                skipped.append(role)
         elif role == "best_performance":
             attribute = performance_attribute(category_code)
             scored = []

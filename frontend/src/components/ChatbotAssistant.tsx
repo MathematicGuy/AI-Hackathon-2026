@@ -6,6 +6,8 @@ import {
   RefreshCw,
   RotateCcw,
   Send,
+  ThumbsDown,
+  ThumbsUp,
   X,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -88,7 +90,7 @@ function suggestionForPath(pathname: string) {
   if (pathname === "/lich-su-mua-hang") {
     return "Hỗ trợ kiểm tra đơn hàng";
   }
-  return "Bạn cần tư vấn chọn sản phẩm?";
+  return "Anh/chị cần em tư vấn chọn sản phẩm?";
 }
 
 export function ChatbotAssistant() {
@@ -102,8 +104,11 @@ export function ChatbotAssistant() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [pendingStatus, setPendingStatus] = useState("");
   const [failedQuery, setFailedQuery] = useState("");
+  const [feedback, setFeedback] = useState<Record<number, "like" | "dislike">>({});
   const sequence = useRef(1);
   const sessionId = useRef<string | null>(null);
+  // User messages to silently re-send after an edit rebuilt the session.
+  const replayQueue = useRef<string[]>([]);
   const launcher = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLElement>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
@@ -231,6 +236,33 @@ export function ChatbotAssistant() {
     let started = false;
 
     try {
+      // After an edit, rebuild the server-side session by replaying the
+      // earlier user messages (the deterministic pipeline makes this cheap).
+      if (replayQueue.current.length > 0) {
+        const queue = [...replayQueue.current];
+        replayQueue.current = [];
+        setPendingStatus("Em đang cập nhật lại ngữ cảnh ạ…");
+        for (const past of queue) {
+          const replayResponse = await fetch(
+            `${AGENT_API_BASE}/api/v1/agent/respond`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                session_id: sessionId.current,
+                message: past,
+              }),
+            },
+          );
+          if (replayResponse.ok) {
+            const data = (await replayResponse.json()) as { session_id?: string };
+            if (data.session_id) {
+              sessionId.current = data.session_id;
+            }
+          }
+        }
+        setPendingStatus(statusForQuery(query));
+      }
       const response = await fetch(
         `${AGENT_API_BASE}/api/v1/agent/respond/stream`,
         {
@@ -299,7 +331,7 @@ export function ChatbotAssistant() {
         showToast({
           variant: "error",
           title: "Chưa nhận được phản hồi",
-          description: "Không kết nối được trợ lý AI. Bạn có thể thử lại ngay.",
+          description: "Không kết nối được trợ lý AI. Anh/chị có thể thử lại ngay.",
         });
       }
     } finally {
@@ -317,9 +349,43 @@ export function ChatbotAssistant() {
     }
   };
 
-  const editMessage = (text: string) => {
+  const editMessage = (id: number, text: string) => {
+    // Real edit semantics: cut the conversation back to before this message,
+    // queue the earlier user turns for a silent replay on a fresh session,
+    // and load the text into the composer for editing.
+    const index = messages.findIndex((message) => message.id === id);
+    if (index === -1) {
+      return;
+    }
+    const prefix = messages.slice(0, index);
+    setMessages(prefix);
+    replayQueue.current = prefix
+      .filter((message) => message.role === "user")
+      .map((message) => message.text);
+    sessionId.current = null;
     setInput(text);
     window.requestAnimationFrame(() => composer.current?.focus());
+  };
+
+  const rateMessage = (id: number, rating: "like" | "dislike") => {
+    setFeedback((current) => {
+      const next = { ...current };
+      if (next[id] === rating) {
+        delete next[id];
+      } else {
+        next[id] = rating;
+      }
+      return next;
+    });
+    void fetch(`${AGENT_API_BASE}/api/v1/agent/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        session_id: sessionId.current ?? "no-session",
+        message_index: id,
+        rating,
+      }),
+    }).catch(() => {});
   };
 
   const sendQuery = (rawQuery: string) => {
@@ -362,10 +428,12 @@ export function ChatbotAssistant() {
     setMessages([]);
     setInput("");
     setFailedQuery("");
+    setFeedback({});
     setIsSending(false);
     sessionId.current = null;
+    replayQueue.current = [];
     setOpenedAt(formatChatTime(new Date()));
-    showToast({ variant: "info", title: "Đã làm mới hội thoại", description: "Bạn có thể bắt đầu câu hỏi mới." });
+    showToast({ variant: "info", title: "Đã làm mới hội thoại", description: "Anh/chị có thể bắt đầu câu hỏi mới." });
     window.requestAnimationFrame(() => composer.current?.focus());
   };
 
@@ -431,7 +499,7 @@ export function ChatbotAssistant() {
           <SafeImage src="/images/chatbot/chat-bot.png" alt="" className="size-16 rounded-full border border-blue-50 sm:size-20" fallbackLabel="AI" />
           <div>
             <h2 className="text-base font-bold text-slate-900">
-              Mình có thể giúp bạn chọn sản phẩm
+              Em có thể giúp anh/chị chọn sản phẩm
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
               Hỏi về nhu cầu, so sánh, khuyến mãi hoặc bảo hành.
@@ -462,7 +530,7 @@ export function ChatbotAssistant() {
         <div className="mt-3 flex items-end gap-1.5">
           <SafeImage src="/images/chatbot/mascot.png" alt="" className="size-9 shrink-0 rounded-full" fallbackLabel="AI" />
           <div className="max-w-[88%] rounded-[20px] rounded-ss-none bg-slate-100 px-4 py-3 text-sm leading-6 text-slate-800">
-            Bạn đang quan tâm sản phẩm nào? Mình có thể giúp lọc lựa chọn hoặc so sánh nhanh.
+            Dạ anh/chị đang quan tâm sản phẩm nào ạ? Em có thể giúp lọc lựa chọn hoặc so sánh nhanh ạ.
           </div>
         </div>
 
@@ -524,22 +592,44 @@ export function ChatbotAssistant() {
                       {message.time}
                     </p>
                     {message.role === "assistant" ? (
-                      <button
-                        type="button"
-                        onClick={() => copyMessage(message.text)}
-                        className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-[#176fc9]"
-                        aria-label="Sao chép nội dung"
-                        title="Sao chép"
-                      >
-                        <Copy className="size-3.5" />
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => copyMessage(message.text)}
+                          className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-[#176fc9]"
+                          aria-label="Sao chép nội dung"
+                          title="Sao chép"
+                        >
+                          <Copy className="size-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => rateMessage(message.id, "like")}
+                          className={`rounded p-1 transition hover:bg-slate-100 ${feedback[message.id] === "like" ? "text-[#176fc9]" : "text-slate-400 hover:text-[#176fc9]"}`}
+                          aria-label="Hài lòng với câu trả lời"
+                          aria-pressed={feedback[message.id] === "like"}
+                          title="Hài lòng"
+                        >
+                          <ThumbsUp className="size-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => rateMessage(message.id, "dislike")}
+                          className={`rounded p-1 transition hover:bg-slate-100 ${feedback[message.id] === "dislike" ? "text-red-500" : "text-slate-400 hover:text-red-500"}`}
+                          aria-label="Chưa hài lòng với câu trả lời"
+                          aria-pressed={feedback[message.id] === "dislike"}
+                          title="Chưa hài lòng"
+                        >
+                          <ThumbsDown className="size-3.5" />
+                        </button>
+                      </>
                     ) : (
                       <button
                         type="button"
-                        onClick={() => editMessage(message.text)}
+                        onClick={() => editMessage(message.id, message.text)}
                         className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-[#176fc9]"
-                        aria-label="Chỉnh sửa và gửi lại"
-                        title="Chỉnh sửa"
+                        aria-label="Chỉnh sửa và gửi lại từ đây"
+                        title="Chỉnh sửa và gửi lại"
                       >
                         <Pencil className="size-3.5" />
                       </button>

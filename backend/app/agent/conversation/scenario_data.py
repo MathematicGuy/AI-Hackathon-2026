@@ -19,18 +19,19 @@ SCENARIOS: dict[str, dict] = {
     },
     "38": {  # Tủ Lạnh
         "questions": [
-            {"key": "household", "ask": "Dạ gia đình mình khoảng mấy người dùng tủ lạnh ạ (để em tư vấn dung tích phù hợp)?"},
-            {"key": "budget", "ask": "Anh/chị dự định ngân sách khoảng bao nhiêu cho tủ lạnh ạ?"},
-            {"key": "door_style", "ask": "Anh/chị thích kiểu ngăn đá trên, ngăn đá dưới hay side by side ạ?"},
+            {"key": "household", "ask": "Dạ gia đình mình khoảng mấy người dùng tủ lạnh ạ (để em tư vấn dung tích phù hợp)?", "example": "nhà 2 người hay 4-5 người"},
+            {"key": "budget", "ask": "Anh/chị dự định ngân sách khoảng bao nhiêu cho tủ lạnh ạ?", "example": "tầm 8-12 triệu"},
+            {"key": "door_style", "ask": "Anh/chị thích kiểu ngăn đá trên, ngăn đá dưới hay side by side ạ?", "example": "ngăn đá trên gọn giá tốt, side by side rộng cho nhà đông người"},
         ],
         "purpose_followups": {},
+        "purpose_example": "trữ đông thực phẩm nhiều hay chủ yếu để thức ăn dùng trong ngày",
         "performance_attribute": "Dung tích sử dụng",
     },
     "115": {  # Máy giặt
         "questions": [
-            {"key": "load", "ask": "Dạ nhà mình mấy người để em tư vấn khối lượng giặt phù hợp ạ?"},
-            {"key": "door", "ask": "Anh/chị thích máy giặt cửa trước (giặt êm, tiết kiệm nước) hay cửa trên (giá tốt, dễ dùng) ạ?"},
-            {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?"},
+            {"key": "load", "ask": "Dạ nhà mình mấy người để em tư vấn khối lượng giặt phù hợp ạ?", "example": "nhà 2 người tầm 8kg, 4-5 người tầm 9-10kg"},
+            {"key": "door", "ask": "Anh/chị thích máy giặt cửa trước (giặt êm, tiết kiệm nước) hay cửa trên (giá tốt, dễ dùng) ạ?", "example": "cửa trước giặt êm, cửa trên giá tốt"},
+            {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?", "example": "tầm 6-10 triệu"},
         ],
         "purpose_followups": {},
         # Real data: Máy giặt rows carry no spec columns (mirror + prices
@@ -103,11 +104,14 @@ SCENARIOS: dict[str, dict] = {
     },
     "72": {  # Máy tính để bàn
         "questions": [
-            {"key": "purpose", "ask": "Dạ anh/chị dùng máy tính chủ yếu cho văn phòng, gaming hay đồ họa ạ?"},
-            {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?"},
+            {"key": "purpose", "ask": "Dạ anh/chị dùng máy tính chủ yếu cho văn phòng, gaming hay đồ họa ạ?", "example": "văn phòng, chơi game hay dựng video"},
+            {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?", "example": "tầm 15-20 triệu"},
         ],
         "purpose_followups": {
-            "gaming": [
+            # "gam" matches BOTH "gaming" and "chơi game" ("game" is not a
+            # substring of "gaming") — the live transcript's "anh chơi game
+            # FPS" must trigger the gaming follow-ups.
+            "gam": [
                 {"key": "gaming_display", "ask": "Anh/chị đã có màn hình chưa, và có cần màn tần số quét cao để chơi game mượt không ạ?"},
                 {"key": "gaming_titles", "ask": "Anh/chị hay chơi tựa game nào để em cân card đồ họa phù hợp ạ?"},
             ],
@@ -115,6 +119,7 @@ SCENARIOS: dict[str, dict] = {
                 {"key": "graphics_apps", "ask": "Anh/chị dùng phần mềm đồ họa nào (Photoshop, Premiere, 3D...) để em tư vấn cấu hình ạ?"},
             ],
         },
+        "purpose_example": "văn phòng nhẹ nhàng, chơi game hay làm đồ họa",
         "performance_attribute": "RAM",
     },
     "73": {  # Màn hình máy tính

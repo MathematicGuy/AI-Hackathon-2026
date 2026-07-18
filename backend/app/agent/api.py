@@ -32,9 +32,16 @@ class AgentResponse(BaseModel):
     presented_ids: list[str] = []
 
 
+class FeedbackRequest(BaseModel):
+    session_id: str
+    message_index: int = Field(ge=0)
+    rating: str = Field(pattern="^(like|dislike)$")
+
+
 def create_agent_router(deps: AgentDependencies) -> APIRouter:
     router = APIRouter()
     sessions: dict[str, AgentState] = {}
+    feedback_log: list[dict] = []
 
     @router.post("/api/v1/agent/respond", response_model=AgentResponse)
     async def respond(request: AgentRequest) -> AgentResponse:
@@ -81,6 +88,15 @@ def create_agent_router(deps: AgentDependencies) -> APIRouter:
             ) + "\n"
 
         return StreamingResponse(generate(), media_type="application/x-ndjson")
+
+    @router.post("/api/v1/agent/feedback")
+    async def feedback(request: FeedbackRequest) -> dict:
+        """Like/dislike on an assistant message. In-memory for now; the
+        Langfuse hookup is deferred with the judge wiring."""
+        entry = request.model_dump()
+        feedback_log.append(entry)
+        print(f"[agent-feedback] {entry}", flush=True)
+        return {"status": "recorded", "count": len(feedback_log)}
 
     return router
 

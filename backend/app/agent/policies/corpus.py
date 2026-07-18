@@ -32,7 +32,15 @@ _STOPWORDS = {
     "vui", "long", "muon", "can", "hoi", "biet", "them", "giup", "minh",
     # Retail-generic words that appear in every document and carry no signal.
     "hang", "nhom", "san", "pham", "khach",
+    # Conversation-generic words: "mục đích sử dụng tủ lạnh á?" must not match
+    # the data-privacy heading "Chúng tôi sử dụng ... vì mục đích gì?" on these
+    # alone (Cường's live-test 2 misroute).
+    "muc", "dich", "su", "dung",
 }
+
+# A line that is only an enumeration marker ("b.", "a)", "2.1") — quoting a
+# section that ends on one of these reads as a broken chunk.
+_ORPHAN_ENUM = re.compile(r"^\s*(?:[a-zđ]|[0-9]+(?:\.[0-9]+)*)[\.\)]\s*$")
 
 
 def _is_heading(line: str) -> bool:
@@ -165,6 +173,9 @@ def _split_sections(document: PolicyDocument) -> list[PolicySection]:
         if not text.strip():
             return
         for chunk in _window(text):
+            chunk = _trim_orphan_tail(chunk)
+            if not chunk:
+                continue
             sections.append(
                 PolicySection(
                     doc_name=document.name,
@@ -182,6 +193,18 @@ def _split_sections(document: PolicyDocument) -> list[PolicySection]:
             buffer.append(line)
     flush()
     return sections
+
+
+def _trim_orphan_tail(chunk: str) -> str:
+    """Drop trailing lines that are bare enumeration markers so a windowed
+    chunk never ends on 'b.' with no content. Trimming whole trailing lines
+    keeps the chunk a verbatim substring of the source."""
+    lines = chunk.split("\n")
+    while lines and (
+        not lines[-1].strip() or _ORPHAN_ENUM.match(lines[-1])
+    ):
+        lines.pop()
+    return "\n".join(lines).strip("\n")
 
 
 def _window(text: str) -> list[str]:

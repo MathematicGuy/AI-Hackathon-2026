@@ -7,6 +7,7 @@ session persistence) is deferred to the persistence story and noted in the
 US-206 record — the in-memory `AgentState` carries the session today.
 """
 
+import re
 from dataclasses import dataclass, field
 
 from backend.app.agent.catalog.dataset_adapter import GenericProduct
@@ -65,6 +66,27 @@ EXPLOIT_REPLY = (
 
 # Explicit cues that the user really wants to change product category.
 _SWITCH_CUES = ("thôi", "chuyển", "đổi sang", "sang xem", "quay lại", "xem giúp")
+
+# Products people ask for that the catalog does not carry, with the closest
+# in-catalog alternatives. An honest "bên em chưa kinh doanh X" beats a menu
+# dump (Cường's live-test 2: "có laptop không?").
+_UNAVAILABLE_PRODUCTS: dict[str, tuple[str, ...]] = {
+    "laptop": ("Máy tính để bàn", "Máy tính bảng", "Màn hình máy tính"),
+    "máy tính xách tay": ("Máy tính để bàn", "Máy tính bảng"),
+    "điện thoại": ("Máy tính bảng", "Đồng hồ thông minh"),
+    "tivi": ("Màn hình máy tính",),
+    "ti vi": ("Màn hình máy tính",),
+    "tv": ("Màn hình máy tính",),
+    "loa": ("Micro karaoke",),
+    "tai nghe": ("Micro thu âm điện thoại",),
+    "quạt": ("Máy lạnh",),
+    "nồi chiên": ("Máy rửa chén",),
+    "lò vi sóng": ("Máy rửa chén",),
+}
+
+# The customer is asking ABOUT the bot's pending question, not answering it
+# ("mục đích sử dụng tủ lạnh á?").
+_ECHO_MARKERS = ("á?", "á ?", " hả", "là sao", "nghĩa là", "ý em", "ý là gì")
 
 GUARDRAIL_REPLY = (
     "Dạ em xin phép không xử lý nội dung này ạ. Em là trợ lý tư vấn sản phẩm "
@@ -125,6 +147,16 @@ def _category_menu(registry: CategoryRegistry) -> str:
 
 
 async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> AgentReply:
+    reply = await _run_turn_core(state, message, deps)
+    # Conversation context for the LLM extractor (trimmed, last 3 exchanges).
+    state.recent_turns.append((message[:200], reply.text[:200]))
+    del state.recent_turns[:-3]
+    return reply
+
+
+async def _run_turn_core(
+    state: AgentState, message: str, deps: AgentDependencies
+) -> AgentReply:
     # 1. Benefit-exploit guard first: the bot never grants or commits
     # promotions. The reply is a fixed refusal that processes no content, so
     # checking before the input guard is safe.
@@ -152,12 +184,26 @@ async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> 
         text = guard.message or GUARDRAIL_REPLY
         return AgentReply(text=text, intent="unsupported", flags=list(guard.flags))
 
+    # 2a-pre. The customer is asking ABOUT the bot's own question, not
+    # answering it ("mục đích sử dụng tủ lạnh á?") — explain with a concrete
+    # example instead of capturing the echo or routing anywhere else.
+    if _is_question_echo(state, low):
+        return _question_clarification_flow(state, low, deps)
+
+    # 2a-pre2. Honest no-stock answer for products the catalog does not carry
+    # ("có laptop không?") — never a bare menu dump.
+    if deps.registry.detect(message) is None:
+        unavailable = _unavailable_reply(low, deps.registry)
+        if unavailable is not None:
+            return AgentReply(text=unavailable, intent="unsupported", flags=[])
+
     # 2. Understand (LLM route when configured, deterministic fallback always).
     understanding, flags = await understand_turn(
         message,
         extractor=deps.extractor,
         state_summary=_state_summary(state),
         registry=deps.registry,
+        active_category=state.need.category_code,
     )
     state.guardrail_flags.extend(flags)
 
@@ -192,6 +238,9 @@ async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> 
     if intent == "smalltalk":
         return await _smalltalk_flow(state, message, deps, flags)
 
+    if intent == "question_clarification":
+        return _question_clarification_flow(state, low, deps)
+
     if intent == "catalog_overview":
         return _catalog_overview_flow(state, deps, flags)
 
@@ -209,16 +258,83 @@ async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> 
 
 def _state_summary(state: AgentState) -> str:
     need = state.need
-    if need.category_code is None:
-        return ""
-    parts = [f"ngành đang tư vấn: {need.category_code}"]
-    if need.usage_purpose:
-        parts.append(f"mục đích: {need.usage_purpose}")
-    if need.budget_max:
-        parts.append(f"ngân sách tối đa: {need.budget_max}")
-    if state.pending_question_key:
-        parts.append(f"đang chờ khách trả lời câu hỏi: {state.pending_question_key}")
+    parts: list[str] = []
+    if need.category_code is not None:
+        parts.append(f"ngành đang tư vấn: {need.category_code}")
+        if need.usage_purpose:
+            parts.append(f"mục đích: {need.usage_purpose}")
+        if need.budget_min:
+            parts.append(f"ngân sách tối thiểu: {need.budget_min}")
+        if need.budget_max:
+            parts.append(f"ngân sách tối đa: {need.budget_max}")
+        asked = state.asked_questions.get(need.category_code) or []
+        if asked:
+            parts.append(f"đã hỏi các câu: {', '.join(asked)}")
+    if state.pending_question_text:
+        parts.append(
+            f'bot vừa hỏi và đang chờ trả lời: "{state.pending_question_text}"'
+        )
+    if state.recent_turns:
+        history = " | ".join(
+            f"Khách: {user} → Bot: {bot}" for user, bot in state.recent_turns
+        )
+        parts.append(f"3 lượt gần nhất: {history}")
     return "; ".join(parts)
+
+
+def _is_question_echo(state: AgentState, low: str) -> bool:
+    if state.pending_question_key is None and state.need.category_code is None:
+        return False
+    if not any(marker in low for marker in _ECHO_MARKERS):
+        return False
+    if "mục đích" in low:
+        return True
+    pending = (state.pending_question_text or "").lower()
+    if not pending:
+        return False
+    pending_words = {w for w in re.findall(r"[\wÀ-ỹ]+", pending) if len(w) >= 3}
+    message_words = {w for w in re.findall(r"[\wÀ-ỹ]+", low) if len(w) >= 3}
+    return len(pending_words & message_words) >= 2
+
+
+def _question_clarification_flow(
+    state: AgentState, low: str, deps: AgentDependencies
+) -> AgentReply:
+    category = state.need.category_code
+    category_name = (
+        deps.registry.by_code(category).sheet_name if category else "sản phẩm"
+    )
+    if "mục đích" in low:
+        example = coldstart.purpose_example(category) or (
+            "dùng hằng ngày hay có nhu cầu đặc biệt"
+        )
+        text = (
+            f"Dạ ý em là anh/chị định dùng {category_name} cho nhu cầu nào ạ — "
+            f"ví dụ: {example}. Anh/chị cứ mô tả thoải mái, em sẽ lọc đúng mẫu "
+            "phù hợp ạ."
+        )
+        return AgentReply(text=text, intent="question_clarification", flags=[])
+    example = coldstart.question_example(category, state.pending_question_key)
+    question = state.pending_question_text or (
+        "anh/chị cho em xin thêm thông tin về nhu cầu của mình ạ"
+    )
+    lines = [f"Dạ em xin hỏi lại cho rõ ạ: {question}"]
+    if example:
+        lines.append(f"(Ví dụ: {example} ạ.)")
+    return AgentReply(
+        text="\n".join(lines), intent="question_clarification", flags=[]
+    )
+
+
+def _unavailable_reply(low: str, registry: CategoryRegistry) -> str | None:
+    for term, alternatives in _UNAVAILABLE_PRODUCTS.items():
+        if term in low:
+            alt = ", ".join(alternatives)
+            return (
+                f"Dạ bên em hiện chưa kinh doanh {term} ạ. Gần nhất bên em có "
+                f"{alt} — anh/chị có muốn em tư vấn thử không ạ?"
+            )
+    return None
 
 
 def _capture_pending_answer(state, message: str, understanding):
@@ -229,8 +345,12 @@ def _capture_pending_answer(state, message: str, understanding):
     switching = patch.category_code not in (None, state.need.category_code)
     if switching:
         state.pending_question_key = None
+        state.pending_question_text = None
         return understanding
-    explicit = patch.model_fields_set - {"requested_roles"}
+    # A redundant category_code equal to the active category is not new
+    # information — it must not suppress the pending-answer capture ("nhà 4
+    # người" while the household question is pending).
+    explicit = patch.model_fields_set - {"requested_roles", "category_code"}
     has_signal = any(
         getattr(patch, name) not in (None, [], {}) for name in explicit
     )
@@ -247,6 +367,7 @@ def _capture_pending_answer(state, message: str, understanding):
         if understanding.intent == "unsupported":
             understanding = understanding.model_copy(update={"intent": "new_search"})
     state.pending_question_key = None
+    state.pending_question_text = None
     return understanding
 
 
@@ -453,7 +574,14 @@ def _policy_flow(message: str, deps: AgentDependencies, flags: list[str]) -> Age
         text, allowed_products=[], policy_quotes=[answer.quotes[0]], corpus=deps.corpus
     )
     if not result.ok:
-        text = degradation_response(user_request=message, answer=answer)
+        # A failed quote check means WE could not ground the answer — that is
+        # a retrieval problem, never the customer violating policy, so the
+        # violation apology would be the wrong frame (live-test 2 finding).
+        text = (
+            "Dạ em chưa tìm thấy điều khoản phù hợp với câu hỏi này ạ. "
+            "Anh/chị có thể hỏi rõ hơn, hoặc gọi tổng đài 1900 232 461 để "
+            "được hỗ trợ chính xác nhất ạ."
+        )
     return AgentReply(text=text, intent="policy_question", flags=flags)
 
 
@@ -550,6 +678,7 @@ async def _product_flow(
     if follow_up is not None:
         coldstart.record_asked(state, follow_up)
         state.pending_question_key = follow_up.key
+        state.pending_question_text = follow_up.ask
         question_text = follow_up.ask
     response = render_suggestions(
         suggestions,
@@ -557,6 +686,7 @@ async def _product_flow(
         next_question=question_text,
         also_consider=also_consider,
         need=need,
+        purpose_example=coldstart.purpose_example(category),
     )
     validation = validate_response(
         response.text, allowed_products=response.allowed_products

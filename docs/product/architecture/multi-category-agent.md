@@ -18,9 +18,14 @@ front-and-center, answers policy questions with verbatim quotes, and always
 pushes toward a helpful sale — without ever inventing a price, spec, stock,
 promotion, or policy clause.
 
-Single-agent constrained graph (no multi-agent supervisor). LLM calls are
-routed via the environment-owned `main`/`extraction`/`fallback` routes;
-deterministic code owns filtering, comparison, validation, and quoting.
+Single-agent constrained graph (no multi-agent supervisor). The agent's
+reasoning core is **gpt-4o-mini via `OPENAI_API_KEY`** (Cường's direction,
+2026-07-19; override with `AGENT_MAIN_LLM_MODEL`), with OpenRouter deepseek
+and Mistral as automatic fallbacks and a deterministic keyword fallback when
+no LLM answers. The extractor sees the full session context: current need,
+asked questions, the pending question's text, and the last three exchanges.
+Deterministic code owns filtering, comparison, validation, and quoting.
+(M1 keeps its own deepseek rule — unchanged.)
 
 ## 2. Runtime flow
 
@@ -112,7 +117,12 @@ compliance check. Every policy answer quotes the source **verbatim**
 the literal “trích nguyên văn: "…"” frame is used only when the customer
 explicitly asks for a verbatim quote ("nguyên văn"/"trích"). Requests
 conflicting with policy get a sincere apology + the governing clause +
-legitimate alternatives. Policy always outranks sales behavior.
+legitimate alternatives; a failed quote validation, by contrast, is OUR
+retrieval problem and degrades to a graceful no-info answer, never the
+violation apology. Corpus hardening (round 2): conversation-generic folded
+words (mục/đích/sử/dụng) are stopwords so an echoed question cannot match the
+data-privacy headings, and windowed chunks never end on an orphan enumeration
+marker ("b."). Policy always outranks sales behavior.
 
 ## 7. Proactive salesman behavior
 
@@ -148,20 +158,35 @@ carry 2-3); a failed check strips the claim and degrades to verified facts.
 User-need amounts (budgets) render as "X triệu" so they are never mistaken
 for price claims.
 
-## 9. Intents (agent enum, 13 values)
+## 9. Intents (agent enum, 14 values)
 
 `new_search, change_constraints, more_recommendations, compare_products,
 product_detail, check_availability, policy_question, catalog_overview,
-price_range_query, promotion_inquiry, smalltalk, stop, unsupported`.
+price_range_query, promotion_inquiry, smalltalk, question_clarification,
+stop, unsupported`.
 
 Routing notes (2026-07-19 live-test round): price-range and running-promotion
 questions are catalog questions answered from the aggregate tool (never
 policy); catalog exploration ("bán cái gì", "có những loại hàng nào") returns
 the category menu or a per-category overview; small talk (thanks, weather,
 greetings, polite agreement) gets a friendly employee-style reply with a
-gentle sales pivot — never a refusal. A full ReAct loop was considered and
-deferred: the deterministic router over a finer-grained intent set stays
-testable and predictable; revisit if the intent space keeps growing.
+gentle sales pivot — never a refusal.
+
+Round-2 notes (2026-07-19): understanding is **state-aware** — the
+deterministic fallback receives the active category, so a mid-consultation
+follow-up that matches no marker ("máy đắt nhất đi em") continues the product
+flow instead of dumping the menu; "đắt nhất/xịn nhất" maps to the
+`most_expensive` suggestion role. An echo of the bot's own question ("mục
+đích sử dụng tủ lạnh á?") routes to `question_clarification`: the bot explains
+its question with a per-category example (never policy, never captured as the
+answer). Products the catalog does not carry (laptop, điện thoại, tivi…) get
+an honest "bên em hiện chưa kinh doanh X" plus the closest in-catalog
+alternatives. Money parsing tolerates live-chat typos (trịu/trieu/tr/củ).
+ReAct assessment: the round-2 misroutes all traced to a dead/weak extractor
+falling back to a stateless keyword router — fixed by the gpt-4o-mini-first
+extractor with full conversation context plus the state-aware fallback; a
+dynamic ReAct loop stays deferred until tools with side effects (stock,
+ordering) arrive.
 
 ## 10. Repository mapping
 
@@ -183,6 +208,12 @@ backend/app/agent/
 produces the full grounded text, which is then chunk-streamed as NDJSON
 (`{"type":"chunk"}`… then `{"type":"done"}` with intent/flags). Token-level
 streaming arrives when the sell step itself runs on a streaming LLM.
+`POST /api/v1/agent/feedback` records like/dislike per assistant message
+(in-memory + server log; Langfuse hookup deferred with the judge wiring).
+Frontend edit is replay-based: editing a user message cuts the conversation
+back to that point and silently replays the earlier user turns on a fresh
+session before sending the edited text — real edit semantics over the
+in-process session store. The bot self-addresses as "em" in every UI string.
 
 Stories: `docs/stories/epics/E02-multi-category-agent/` (US-201 catalog,
 US-202 tools, US-203 policy, US-204 conversation, US-205 salesman, US-206

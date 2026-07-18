@@ -23,13 +23,17 @@ AgentIntent = Literal[
     "price_range_query",
     "promotion_inquiry",
     "smalltalk",
+    "question_clarification",
     "stop",
     "unsupported",
 ]
 
 # Default suggestion roles (Cường 2026-07-18): best price, best value, best
-# performance — unless the user explicitly requests otherwise.
-SuggestionRole = Literal["best_price", "best_value", "best_performance"]
+# performance — unless the user explicitly requests otherwise ("rẻ nhất" →
+# best_price only, "đắt nhất/cao cấp nhất" → most_expensive).
+SuggestionRole = Literal[
+    "best_price", "best_value", "best_performance", "most_expensive"
+]
 DEFAULT_ROLES: tuple[str, ...] = ("best_price", "best_value", "best_performance")
 
 
@@ -71,8 +75,15 @@ class AgentState:
     # "cái thứ hai" or comparisons can resolve without a new search.
     last_presented_ids: list[str] = field(default_factory=list)
     # The cold-start question awaiting an answer; the next reply that carries
-    # no structured signal is captured as this question's answer.
+    # no structured signal is captured as this question's answer. The text is
+    # kept alongside the key so the extractor sees the actual question and an
+    # echo of it ("mục đích sử dụng tủ lạnh á?") can be told apart from an
+    # answer.
     pending_question_key: str | None = None
+    pending_question_text: str | None = None
+    # Last few (user, bot) exchanges, trimmed — conversation context for the
+    # LLM extractor.
+    recent_turns: list[tuple[str, str]] = field(default_factory=list)
     guardrail_flags: list[str] = field(default_factory=list)
 
     @property

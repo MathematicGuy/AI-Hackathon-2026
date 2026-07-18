@@ -38,6 +38,17 @@ filenames, literal-quote frame only on request, relevance floor), hid the
 internal skip-role line, bundled the cold-start opener (2-3 questions),
 introduced the +8% soft budget margin, added per-product/comparison
 reasoning, and shipped the NDJSON streaming endpoint + frontend
-copy/edit/status/streaming UX (golden cases AGENT-G-013…021). Deferred:
-policy retrieval over pgvector (the platform has no knowledge-base tables
-yet); Langfuse judge wiring (keys not configured).
+copy/edit/status/streaming UX (golden cases AGENT-G-013…021). Live-test
+round 2 (same day) made gpt-4o-mini the reasoning core (OPENAI_API_KEY
+first, deepseek/Mistral fallbacks, full-context extractor prompt), made the
+fallback state-aware (mid-flow follow-ups never dump the menu;
+most_expensive role), added `question_clarification` (echoed questions get
+an explained example, never policy), honest answers for uncarried products
+(laptop/tivi/điện thoại + nearest alternatives), typo-tolerant money
+parsing ("20-30 trịu"), fixed the asked-list reset that re-asked an
+answered budget, added the suggestion debate line, hardened policy chunking
+(generic-word stopwords, orphan-enum trim, no violation-apology on
+validation failure), and shipped like/dislike + feedback endpoint,
+replay-based edit, and consistent "em" self-address (golden AGENT-G-022…036).
+Deferred: policy retrieval over pgvector (the platform has no knowledge-base
+tables yet); Langfuse judge wiring (keys not configured).
