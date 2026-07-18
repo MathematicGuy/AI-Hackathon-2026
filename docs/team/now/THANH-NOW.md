@@ -80,8 +80,9 @@ US-116 must not duplicate or fork the shared Langfuse adapter.
 1. US-207
 2. US-116
 
-US-116 M1 implementation files currently overlap USER1/USER2 ownership and are
-not claimed here until the integration controller resolves the conflict:
+US-116 M1 implementation files were previously overlapping USER1/USER2. The
+integration controller has resolved the conflict and published Đinh Nhật Thành
+as sole owner; these files are now claimed under US-116:
 
 - backend/app/graph/nodes/input_guard.py
 - backend/app/graph/nodes/intent.py

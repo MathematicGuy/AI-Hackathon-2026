@@ -40,8 +40,8 @@ shared adapter comes from US-207. Tracing remains fail-open.
 
 ## Ownership Dependency
 
-The selected M1 node files are currently assigned to USER1/USER2 tracker
-boundaries. This packet is planning-ready but implementation must pause until
-the integration controller resolves that overlap and publishes one owner.
+The selected M1 node files previously overlapped USER1/USER2 tracker
+boundaries. The integration controller has resolved that overlap and published
+Đinh Nhật Thành as sole owner, so implementation may proceed under US-116.
 - Implementing missing M1 workflow nodes or a gateway solely to manufacture a
   complete trace tree.
