@@ -40,7 +40,9 @@ Module chính:
 | `dmx_crawler.db` | Run/task/error, dedupe, content/location version, incremental state, export |
 | `config/categories.yaml` | Danh mục và URL prefix |
 | `config/locations.yaml` | Province/ward/address đại diện và aliases |
-| `migrations/001_initial.sql` | Schema PostgreSQL production |
+| `migrations/001_initial.sql` | PostgreSQL baseline legacy trong `public` |
+| `migrations/002_rich_product_spec_values.sql` | Backfill cột/index specifications trước khi split |
+| `migrations/003_split_catalog_crawler_schemas.sql` | Chuyển in-place 18 bảng sang `catalog`/`crawler` |
 | `dmx_crawler/sqlite_schema.sql` | Schema SQLite cho local/sample |
 
 ## Mô hình dữ liệu
@@ -56,6 +58,8 @@ Module chính:
 
 Dữ liệu chung (tên, brand/model, mô tả, specs, ảnh) và dữ liệu theo location (giá, promotion, stock, delivery) có lịch refresh/hash riêng. `sitemap_lastmod` chỉ là tín hiệu để lên lịch, không thay thế lịch sử quan sát.
 
+Trên PostgreSQL, chín bảng dữ liệu sản phẩm nằm trong schema `catalog`; chín bảng run/task/attempt/error/incremental nằm trong `crawler`. Hai schema dùng chung một database và cùng một nguồn dữ liệu sản phẩm. SQLite không có PostgreSQL schema nên tiếp tục dùng đúng 18 tên bảng phẳng trong một file database.
+
 ## Cài đặt local
 
 Yêu cầu Python 3.11+.
@@ -69,13 +73,23 @@ set -a; source .env; set +a
 mkdir -p data
 ```
 
-SQLite là mặc định zero-dependency. PostgreSQL cần extra:
+SQLite là mặc định zero-dependency. PostgreSQL cần extra và migration phải được operator chạy tường minh, không được chạy trong lúc crawl:
 
 ```bash
 python -m pip install -e '.[postgres,dev]'
 export DMX_DATABASE_URL='postgresql://dmx:dmx@localhost:5432/dmx'
-psql "$DMX_DATABASE_URL" -f migrations/001_initial.sql
+
+# Database mới
+psql -v ON_ERROR_STOP=1 "$DMX_DATABASE_URL" -f migrations/001_initial.sql
+psql -v ON_ERROR_STOP=1 "$DMX_DATABASE_URL" -f migrations/002_rich_product_spec_values.sql
+psql -v ON_ERROR_STOP=1 "$DMX_DATABASE_URL" -f migrations/003_split_catalog_crawler_schemas.sql
+
+# Database legacy đã có 001/002: chỉ chạy migration 003
+psql -v ON_ERROR_STOP=1 "$DMX_DATABASE_URL" -f migrations/003_split_catalog_crawler_schemas.sql
+python -m dmx_crawler init-db
 ```
+
+Migration 003 chỉ xét allow-list 18 bảng ứng dụng; bảng khác trong `public` không ảnh hưởng. Nó chuyển in-place khi đủ 18 bảng legacy, xác minh/no-op khi đã split đầy đủ, và rollback với danh sách sai lệch khi schema thiếu hoặc split dở. Chạy lại migration 003 là idempotent. `Database.initialize()` trên PostgreSQL chỉ readiness-check và fail fast; nó không chạy lại 001/002/003. `ALTER TABLE ... SET SCHEMA` lấy `ACCESS EXCLUSIVE` lock, vì vậy production cần maintenance window ngắn và rollout migration/code phối hợp.
 
 Không commit `.env`, database, HTML raw hoặc cookie/session.
 
@@ -101,7 +115,7 @@ Province ID đã quan sát ngày 2026-07-17: HCM `1027`, Hà Nội `1000`, Đà 
 CLI đã được triển khai bằng `argparse`; mọi lệnh live tạo `crawl_runs`, task/attempt và lỗi retry tương ứng. `--limit` nên dùng cho smoke test; mặc định crawler chỉ lấy record đến `next_due_at`, còn `--force` bỏ qua lịch incremental. `--source category` là fallback khi sitemap không khả dụng.
 
 ```bash
-# Khởi tạo schema và seed category/location
+# SQLite: khởi tạo bảng và seed config; PostgreSQL: chỉ verify schema đã migrate rồi seed
 python -m dmx_crawler init-db
 
 # Khám phá URL, ưu tiên sitemap
@@ -148,20 +162,29 @@ docker compose run --rm crawler discover --categories laptop,tivi,tu-lanh --sour
 
 `./data` được mount để giữ SQLite/export, `./config` mount read-only. Compose không tự lên lịch hoặc tự live crawl; dùng cron/orchestrator bên ngoài và giữ concurrency thấp.
 
-Muốn dùng PostgreSQL local, bật profile và đổi DSN trong `.env` trước khi khởi tạo schema:
+Muốn dùng PostgreSQL local, bật profile, chạy migration explicit rồi để `init-db` chỉ verify/seed:
 
 ```bash
 docker compose --profile postgres up -d postgres
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U dmx -d dmx < migrations/001_initial.sql
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U dmx -d dmx < migrations/002_rich_product_spec_values.sql
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U dmx -d dmx < migrations/003_split_catalog_crawler_schemas.sql
 # .env: DMX_DATABASE_URL=postgresql://dmx:dmx-local-only@postgres:5432/dmx
 docker compose run --rm crawler init-db
 ```
 
-Mật khẩu Compose chỉ dành cho local development; thay credential và dùng secret manager trong production.
+Mật khẩu Compose chỉ dành cho local development; thay credential và dùng secret manager trong production. `ALTER TABLE ... SET SCHEMA` giữ ACL của table nhưng không tự cấp `USAGE` trên schema mới. Migration không hardcode role: deployment phải cấp frontend role `USAGE`/`SELECT` trên `catalog` mà không cấp `USAGE` trên `crawler`; crawler role cần quyền trên cả hai schema và các sequence tương ứng. `Database.export_current()` là read path catalog-only; các lệnh crawler/CLI vẫn dùng operator role để seed config và ghi operational state.
 
 ## Test
 
 ```bash
+python -m compileall -q dmx_crawler tests scripts
+python -m unittest discover -s tests -v
 pytest -q
+
+# Chỉ dùng PostgreSQL local/disposable; test tự tạo và xóa database riêng
+DMX_TEST_POSTGRES_ADMIN_URL=postgresql://<admin>/postgres \
+  python -m unittest tests.test_postgres_schema_split -v
 ```
 
 Test quan trọng cần bao phủ: parse giá (`11.990.000₫`, `12690000.0`), sold (`5,4k`, `48k`), specs theo group, canonical URL bỏ tracking, location ID/text comparison, dedupe product ID/URL hash, CAPTCHA detection và location mismatch no-write. Test parser phải dùng fixture HTML đã lưu có chủ đích; test mặc định không truy cập internet.
@@ -173,8 +196,8 @@ Query đầy đủ có tại [sql/compare_prices.sql](sql/compare_prices.sql). V
 ```sql
 WITH current_price AS (
     SELECT plv.product_id, l.code, plv.sale_price, plv.stock_status
-    FROM product_location_versions plv
-    JOIN locations l ON l.id = plv.location_id
+    FROM catalog.product_location_versions plv
+    JOIN catalog.locations l ON l.id = plv.location_id
     WHERE plv.valid_to IS NULL
       AND l.code IN ('hcm', 'hanoi', 'danang')
 )
@@ -185,8 +208,8 @@ SELECT p.id, pcv.name,
        MAX(cp.stock_status) FILTER (WHERE cp.code = 'hcm') AS stock_hcm,
        MAX(cp.stock_status) FILTER (WHERE cp.code = 'hanoi') AS stock_hanoi,
        MAX(cp.stock_status) FILTER (WHERE cp.code = 'danang') AS stock_danang
-FROM products p
-JOIN product_content_versions pcv ON pcv.product_id = p.id AND pcv.valid_to IS NULL
+FROM catalog.products p
+JOIN catalog.product_content_versions pcv ON pcv.product_id = p.id AND pcv.valid_to IS NULL
 JOIN current_price cp ON cp.product_id = p.id
 WHERE p.id = '<product uuid>'
 GROUP BY p.id, pcv.name;

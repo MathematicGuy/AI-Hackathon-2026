@@ -26,7 +26,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog='dmx', description='Respectful Điện Máy XANH product crawler')
     sub = parser.add_subparsers(dest='command', required=True)
 
-    sub.add_parser('init-db', help='create schema and seed category/location config')
+    sub.add_parser('init-db', help='initialize SQLite or verify migrated PostgreSQL, then seed config')
     sub.add_parser('doctor', help='validate local configuration and database')
 
     discover = sub.add_parser('discover', help='discover product URLs (sitemap first)')

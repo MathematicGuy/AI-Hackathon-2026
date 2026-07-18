@@ -17,6 +17,41 @@ from .utils import canonical_url, fingerprint, safe_json, slug_text, url_hash
 
 LOGGER = logging.getLogger(__name__)
 
+CATALOG_TABLES = frozenset(
+    {
+        "categories",
+        "locations",
+        "media_assets",
+        "product_content_versions",
+        "product_location_versions",
+        "product_spec_values",
+        "product_version_media",
+        "products",
+        "spec_definitions",
+    }
+)
+
+CRAWLER_TABLES = frozenset(
+    {
+        "crawl_attempts",
+        "crawl_errors",
+        "crawl_observations",
+        "crawl_runs",
+        "crawl_tasks",
+        "discovery_sources",
+        "product_crawl_state",
+        "product_location_crawl_state",
+        "product_urls",
+    }
+)
+
+POSTGRES_TABLE_SCHEMAS = {
+    **{table: "catalog" for table in CATALOG_TABLES},
+    **{table: "crawler" for table in CRAWLER_TABLES},
+}
+APPLICATION_TABLES = frozenset(POSTGRES_TABLE_SCHEMAS)
+ALLOWED_TASK_TYPES = frozenset({"discover", "common_product", "location_product"})
+
 
 def utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -228,13 +263,16 @@ class Database:
     """Persistence adapter for SQLite and optional PostgreSQL/psycopg.
 
     SQLite is useful for local samples and has no third-party dependency.  The
-    PostgreSQL path uses the same repository methods and the production
-    migration in ``migrations/001_initial.sql``.
+    PostgreSQL path uses the same repository methods after the operator applies
+    migrations 001, 002, and 003. Runtime initialization verifies the split
+    schema but never applies PostgreSQL migrations.
     """
 
     def __init__(self, url: str):
         self.url = url
         self.backend = "sqlite"
+        self._initialized = False
+        self._transaction_depth = 0
         if url.startswith(("postgresql://", "postgres://")):
             try:
                 import psycopg  # type: ignore
@@ -253,7 +291,15 @@ class Database:
             self.conn.execute("PRAGMA journal_mode = WAL")
 
     def _sql(self, query: str) -> str:
+        for table in APPLICATION_TABLES:
+            query = query.replace(f"{{{table}}}", self._relation(table))
         return query.replace("?", "%s") if self.backend == "postgres" else query
+
+    def _relation(self, table: str) -> str:
+        schema = POSTGRES_TABLE_SCHEMAS.get(table)
+        if schema is None:
+            raise ValueError(f"unsupported application table: {table}")
+        return f"{schema}.{table}" if self.backend == "postgres" else table
 
     def execute(self, query: str, params: Iterable[Any] = ()):
         cursor = self.conn.cursor()
@@ -269,38 +315,69 @@ class Database:
 
     @contextlib.contextmanager
     def transaction(self) -> Iterator[None]:
+        outermost = self._transaction_depth == 0
+        self._transaction_depth += 1
         try:
             yield
-            self.conn.commit()
+            if outermost:
+                self.conn.commit()
         except Exception:
-            self.conn.rollback()
+            if outermost:
+                self.conn.rollback()
             raise
+        finally:
+            self._transaction_depth -= 1
 
     def initialize(self) -> None:
-        root = Path(__file__).resolve().parent.parent
-        schema = root / ("migrations/001_initial.sql" if self.backend == "postgres" else "dmx_crawler/sqlite_schema.sql")
-        text = schema.read_text(encoding="utf-8")
-        with self.transaction():
-            if self.backend == "sqlite":
-                self.conn.executescript(text)
-            else:
-                # psycopg already owns the transaction; migration files are
-                # also runnable by psql, so strip their outer transaction here.
-                statements = text.replace("BEGIN;", "").replace("COMMIT;", "")
-                self.execute(statements)
+        if self._initialized:
+            return
+        if self.backend == "sqlite":
+            schema = Path(__file__).resolve().parent / "sqlite_schema.sql"
+            self.conn.executescript(schema.read_text(encoding="utf-8"))
+            self._initialized = True
+            return
+
+        names = sorted(APPLICATION_TABLES)
+        placeholders = ",".join("?" for _ in names)
+        rows = self.fetchall(
+            f"""SELECT namespace.nspname AS schema_name, relation.relname AS table_name
+                FROM pg_catalog.pg_class AS relation
+                JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid=relation.relnamespace
+                WHERE relation.relkind IN ('r','p')
+                  AND namespace.nspname IN ('public','catalog','crawler')
+                  AND relation.relname IN ({placeholders})""",
+            names,
+        )
+        placements: dict[str, list[str]] = {table: [] for table in names}
+        for row in rows:
+            placements[str(row["table_name"])].append(str(row["schema_name"]))
+        discrepancies = []
+        for table in names:
+            expected = POSTGRES_TABLE_SCHEMAS[table]
+            actual = sorted(placements[table])
+            if actual != [expected]:
+                found = ", ".join(f"{schema}.{table}" for schema in actual) or "missing"
+                discrepancies.append(f"{table}: expected {expected}.{table}; found {found}")
+        if discrepancies:
+            raise RuntimeError(
+                "PostgreSQL schema is not ready. Apply migrations 001, 002, and 003 "
+                "outside crawler runtime; partial or legacy layouts are rejected. "
+                + "; ".join(discrepancies)
+            )
+        self._initialized = True
 
     def seed_configs(self, categories: list[CategoryConfig], locations: list[LocationConfig]) -> None:
         with self.transaction():
             for category in categories:
                 self.execute(
-                    """INSERT INTO categories(code,name,active) VALUES(?,?,?)
+                    """INSERT INTO {categories}(code,name,active) VALUES(?,?,?)
                        ON CONFLICT(code) DO UPDATE SET name=excluded.name,active=excluded.active""",
                     (category.code, category.name, category.active),
                 )
             for location in locations:
                 config_hash = fingerprint(asdict(location))
                 self.execute(
-                    """INSERT INTO locations(code,name,province_id,province_name,ward_id,ward_name,address,config_hash,active)
+                    """INSERT INTO {locations}(code,name,province_id,province_name,ward_id,ward_name,address,config_hash,active)
                        VALUES(?,?,?,?,?,?,?,?,?)
                        ON CONFLICT(code) DO UPDATE SET name=excluded.name,province_id=excluded.province_id,
                        province_name=excluded.province_name,ward_id=excluded.ward_id,ward_name=excluded.ward_name,
@@ -310,13 +387,13 @@ class Database:
                 )
 
     def category_id(self, code: str) -> int:
-        row = self.fetchone("SELECT id FROM categories WHERE code=?", (code,))
+        row = self.fetchone("SELECT id FROM {categories} WHERE code=?", (code,))
         if not row:
             raise KeyError(f"unknown category: {code}")
         return int(row["id"])
 
     def location_id(self, code: str) -> int:
-        row = self.fetchone("SELECT id FROM locations WHERE code=?", (code,))
+        row = self.fetchone("SELECT id FROM {locations} WHERE code=?", (code,))
         if not row:
             raise KeyError(f"unknown location: {code}")
         return int(row["id"])
@@ -325,7 +402,7 @@ class Database:
         run_id = _uuid()
         with self.transaction():
             self.execute(
-                """INSERT INTO crawl_runs(id,parent_run_id,command,mode,status,arguments_json,config_hash,started_at)
+                """INSERT INTO {crawl_runs}(id,parent_run_id,command,mode,status,arguments_json,config_hash,started_at)
                    VALUES(?,?,?,?,?,?,?,?)""",
                 (run_id, parent_run_id, command, mode, "running", safe_json(arguments or {}), config_hash, utcnow()),
             )
@@ -334,7 +411,7 @@ class Database:
     def finish_run(self, run_id: str, status: str, counters: Mapping[str, Any] | None = None, blocked_reason: str | None = None) -> None:
         with self.transaction():
             self.execute(
-                "UPDATE crawl_runs SET status=?,counters_json=?,blocked_reason=?,finished_at=? WHERE id=?",
+                "UPDATE {crawl_runs} SET status=?,counters_json=?,blocked_reason=?,finished_at=? WHERE id=?",
                 (status, safe_json(counters or {}), blocked_reason, utcnow(), run_id),
             )
 
@@ -347,51 +424,56 @@ class Database:
             row = None
             if link.source_product_key:
                 row = self.fetchone(
-                    "SELECT id FROM products WHERE source='dienmayxanh' AND source_product_key=?",
+                    "SELECT id FROM {products} WHERE source='dienmayxanh' AND source_product_key=?",
                     (str(link.source_product_key),),
                 )
             if row is None:
-                row = self.fetchone("SELECT id FROM products WHERE source='dienmayxanh' AND canonical_url_hash=?", (hashed,))
+                row = self.fetchone("SELECT id FROM {products} WHERE source='dienmayxanh' AND canonical_url_hash=?", (hashed,))
             if row:
                 product_id = str(row["id"])
                 self.execute(
-                    """UPDATE products SET canonical_url=?,canonical_url_hash=?,category_id=?,last_seen_at=?,
+                    """UPDATE {products} SET canonical_url=?,canonical_url_hash=?,category_id=?,last_seen_at=?,
                        source_product_key=COALESCE(source_product_key,?),sitemap_lastmod=COALESCE(?,sitemap_lastmod) WHERE id=?""",
                     (url, hashed, category_id, now, link.source_product_key, link.lastmod, product_id),
                 )
             else:
                 product_id = _uuid()
                 self.execute(
-                    """INSERT INTO products(id,source,source_product_key,canonical_url,canonical_url_hash,category_id,status,
+                    """INSERT INTO {products}(id,source,source_product_key,canonical_url,canonical_url_hash,category_id,status,
                        first_seen_at,last_seen_at,sitemap_lastmod) VALUES(?,?,?,?,?,?,?,?,?,?)""",
                     (product_id, "dienmayxanh", link.source_product_key, url, hashed, category_id, "active", now, now, link.lastmod),
                 )
             self.execute(
-                """INSERT INTO product_urls(product_id,source,url,url_hash,kind,first_seen_at,last_seen_at)
+                """INSERT INTO {product_urls}(product_id,source,url,url_hash,kind,first_seen_at,last_seen_at)
                    VALUES(?,?,?,?,?,?,?) ON CONFLICT(source,url_hash) DO UPDATE SET last_seen_at=excluded.last_seen_at""",
                 (product_id, "dienmayxanh", url, hashed, "canonical", now, now),
             )
         return product_id
 
     def create_task(self, run_id: str, task_type: str, target_key: str, product_id: str | None = None, location_id: int | None = None, url: str | None = None, max_attempts: int = 3) -> str:
-        row = self.fetchone("SELECT id FROM crawl_tasks WHERE run_id=? AND task_type=? AND target_key=?", (run_id, task_type, target_key))
+        if task_type not in ALLOWED_TASK_TYPES:
+            raise ValueError(
+                f"unsupported crawl task type: {task_type}; expected one of "
+                + ", ".join(sorted(ALLOWED_TASK_TYPES))
+            )
+        row = self.fetchone("SELECT id FROM {crawl_tasks} WHERE run_id=? AND task_type=? AND target_key=?", (run_id, task_type, target_key))
         if row:
             return str(row["id"])
         task_id = _uuid()
         now = utcnow()
         with self.transaction():
             self.execute(
-                """INSERT INTO crawl_tasks(id,run_id,task_type,target_key,product_id,location_id,url,status,max_attempts,
+                """INSERT INTO {crawl_tasks}(id,run_id,task_type,target_key,product_id,location_id,url,status,max_attempts,
                    available_at,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
                 (task_id, run_id, task_type, target_key, product_id, location_id, url, "queued", max_attempts, now, now),
             )
         return task_id
 
     def mark_task(self, task_id: str, status: str) -> None:
-        finished = utcnow() if status in {"succeeded", "unchanged", "failed", "blocked", "location_mismatch"} else None
+        finished = utcnow() if status in {"succeeded", "unchanged", "failed", "blocked", "location_mismatch", "skipped_out_of_stock"} else None
         with self.transaction():
             self.execute(
-                "UPDATE crawl_tasks SET status=?,attempt_count=attempt_count+1,finished_at=COALESCE(?,finished_at) WHERE id=?",
+                "UPDATE {crawl_tasks} SET status=?,attempt_count=attempt_count+1,finished_at=COALESCE(?,finished_at) WHERE id=?",
                 (status, finished, task_id),
             )
 
@@ -400,22 +482,22 @@ class Database:
         next_due = (now + timedelta(minutes=15)).isoformat()
         with self.transaction():
             if location_id is None:
-                row = self.fetchone("SELECT failure_streak FROM product_crawl_state WHERE product_id=?", (product_id,))
+                row = self.fetchone("SELECT failure_streak FROM {product_crawl_state} WHERE product_id=?", (product_id,))
                 streak = int(row["failure_streak"] if row else 0) + 1
                 self.execute(
-                    """INSERT INTO product_crawl_state(product_id,last_attempt_at,next_due_at,consecutive_unchanged,failure_streak)
+                    """INSERT INTO {product_crawl_state} AS state(product_id,last_attempt_at,next_due_at,consecutive_unchanged,failure_streak)
                        VALUES(?,?,?,?,?) ON CONFLICT(product_id) DO UPDATE SET last_attempt_at=excluded.last_attempt_at,
                        next_due_at=excluded.next_due_at,failure_streak=excluded.failure_streak""",
                     (product_id, now.isoformat(), next_due, 0, streak),
                 )
             else:
                 row = self.fetchone(
-                    "SELECT failure_streak FROM product_location_crawl_state WHERE product_id=? AND location_id=?",
+                    "SELECT failure_streak FROM {product_location_crawl_state} WHERE product_id=? AND location_id=?",
                     (product_id, location_id),
                 )
                 streak = int(row["failure_streak"] if row else 0) + 1
                 self.execute(
-                    """INSERT INTO product_location_crawl_state(product_id,location_id,last_attempt_at,next_due_at,
+                    """INSERT INTO {product_location_crawl_state} AS state(product_id,location_id,last_attempt_at,next_due_at,
                        consecutive_unchanged,failure_streak) VALUES(?,?,?,?,?,?)
                        ON CONFLICT(product_id,location_id) DO UPDATE SET last_attempt_at=excluded.last_attempt_at,
                        next_due_at=excluded.next_due_at,failure_streak=excluded.failure_streak""",
@@ -423,7 +505,7 @@ class Database:
                 )
 
     def product_rows(self, category_codes: list[str] | None = None, limit: int | None = None, only_due: bool = False, location_id: int | None = None) -> list[Mapping[str, Any]]:
-        query = """SELECT p.*, c.code AS category_code FROM products p JOIN categories c ON c.id=p.category_id"""
+        query = """SELECT p.*, c.code AS category_code FROM {products} p JOIN {categories} c ON c.id=p.category_id"""
         params: list[Any] = []
         clauses = ["p.status <> 'retired'"]
         if category_codes:
@@ -431,10 +513,10 @@ class Database:
             params.extend(category_codes)
         if only_due:
             if location_id is None:
-                query += " LEFT JOIN product_crawl_state s ON s.product_id=p.id"
+                query += " LEFT JOIN {product_crawl_state} s ON s.product_id=p.id"
                 clauses.append("(s.next_due_at IS NULL OR s.next_due_at <= ?)")
             else:
-                query += " LEFT JOIN product_location_crawl_state s ON s.product_id=p.id AND s.location_id=?"
+                query += " LEFT JOIN {product_location_crawl_state} s ON s.product_id=p.id AND s.location_id=?"
                 params.insert(0, location_id)
                 clauses.append("(s.next_due_at IS NULL OR s.next_due_at <= ?)")
             params.append(utcnow())
@@ -446,7 +528,7 @@ class Database:
 
     def _record_observation(self, task_id: str | None, product_id: str, changed: bool, content_version_id: str | None = None, location_id: int | None = None, location_version_id: str | None = None, response_hash: str | None = None) -> None:
         self.execute(
-            """INSERT INTO crawl_observations(task_id,product_id,location_id,content_version_id,location_version_id,
+            """INSERT INTO {crawl_observations}(task_id,product_id,location_id,content_version_id,location_version_id,
                changed,observed_at,response_hash) VALUES(?,?,?,?,?,?,?,?)""",
             (task_id, product_id, location_id, content_version_id, location_version_id, changed, utcnow(), response_hash),
         )
@@ -482,15 +564,15 @@ class Database:
         }
         content_hash = fingerprint(payload)
         now = utcnow()
-        current = self.fetchone("SELECT id,content_hash FROM product_content_versions WHERE product_id=? AND valid_to IS NULL", (product_id,))
+        current = self.fetchone("SELECT id,content_hash FROM {product_content_versions} WHERE product_id=? AND valid_to IS NULL", (product_id,))
         changed = not current or current["content_hash"] != content_hash
         with self.transaction():
             if changed:
                 if current:
-                    self.execute("UPDATE product_content_versions SET valid_to=? WHERE id=?", (now, current["id"]))
+                    self.execute("UPDATE {product_content_versions} SET valid_to=? WHERE id=?", (now, current["id"]))
                 version_id = _uuid()
                 self.execute(
-                    """INSERT INTO product_content_versions(id,product_id,category_id,name,brand,model,product_code,description,
+                    """INSERT INTO {product_content_versions}(id,product_id,category_id,name,brand,model,product_code,description,
                        rating,rating_count,sold_count,stock_status,stock_raw,specs_raw_json,content_hash,valid_from,created_by_task_id)
                        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                     (
@@ -527,13 +609,13 @@ class Database:
                         normalized_key = slug_text(label).replace(" ", "_") or f"spec_{global_ordinal}"
                         data_type = "boolean" if isinstance(value_boolean, bool) else ("number" if value_number is not None else "text")
                         self.execute(
-                            """INSERT INTO spec_definitions(category_id,normalized_key,canonical_label,data_type,aliases_json)
+                            """INSERT INTO {spec_definitions}(category_id,normalized_key,canonical_label,data_type,aliases_json)
                                VALUES(?,?,?,?,?) ON CONFLICT(category_id,normalized_key) DO NOTHING""",
                             (category_id, normalized_key, label, data_type, "[]"),
                         )
-                        definition = self.fetchone("SELECT id FROM spec_definitions WHERE category_id=? AND normalized_key=?", (category_id, normalized_key))
+                        definition = self.fetchone("SELECT id FROM {spec_definitions} WHERE category_id=? AND normalized_key=?", (category_id, normalized_key))
                     self.execute(
-                        """INSERT INTO product_spec_values(content_version_id,definition_id,group_name,group_ordinal,
+                        """INSERT INTO {product_spec_values}(content_version_id,definition_id,group_name,group_ordinal,
                            raw_label,raw_value,value_text,value_number,value_boolean,value_json,unit,item_ordinal,source,
                            provenance_json,normalized_value_json,ordinal) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                         (
@@ -544,32 +626,32 @@ class Database:
                     )
                 for ordinal, image in enumerate(content.images):
                     media_hash = fingerprint({"url": image})
-                    media = self.fetchone("SELECT id FROM media_assets WHERE url_hash=?", (media_hash,))
+                    media = self.fetchone("SELECT id FROM {media_assets} WHERE url_hash=?", (media_hash,))
                     if media:
                         media_id = str(media["id"])
                     else:
                         media_id = _uuid()
-                        self.execute("INSERT INTO media_assets(id,url,url_hash,metadata_json) VALUES(?,?,?,?)", (media_id, image, media_hash, "{}"))
+                        self.execute("INSERT INTO {media_assets}(id,url,url_hash,metadata_json) VALUES(?,?,?,?)", (media_id, image, media_hash, "{}"))
                     self.execute(
-                        """INSERT INTO product_version_media(content_version_id,media_id,role,ordinal) VALUES(?,?,?,?)
+                        """INSERT INTO {product_version_media}(content_version_id,media_id,role,ordinal) VALUES(?,?,?,?)
                            ON CONFLICT(content_version_id,media_id) DO NOTHING""",
                         (version_id, media_id, "primary" if ordinal == 0 else "gallery", ordinal),
                     )
             else:
                 version_id = str(current["id"])
-            state = self.fetchone("SELECT consecutive_unchanged FROM product_crawl_state WHERE product_id=?", (product_id,))
+            state = self.fetchone("SELECT consecutive_unchanged FROM {product_crawl_state} WHERE product_id=?", (product_id,))
             unchanged = 0 if changed else int(state["consecutive_unchanged"] if state else 0) + 1
             next_due = (datetime.now(timezone.utc) + timedelta(hours=min(24 * 7, 12 * (2 ** min(unchanged, 4))))).isoformat()
             self.execute(
-                """INSERT INTO product_crawl_state(product_id,last_attempt_at,last_success_at,last_changed_at,next_due_at,last_response_hash,
+                """INSERT INTO {product_crawl_state} AS state(product_id,last_attempt_at,last_success_at,last_changed_at,next_due_at,last_response_hash,
                    consecutive_unchanged,failure_streak) VALUES(?,?,?,?,?,?,?,0)
                    ON CONFLICT(product_id) DO UPDATE SET last_attempt_at=excluded.last_attempt_at,last_success_at=excluded.last_success_at,
-                   last_changed_at=COALESCE(excluded.last_changed_at,product_crawl_state.last_changed_at),next_due_at=excluded.next_due_at,
+                   last_changed_at=COALESCE(excluded.last_changed_at,state.last_changed_at),next_due_at=excluded.next_due_at,
                    last_response_hash=excluded.last_response_hash,consecutive_unchanged=excluded.consecutive_unchanged,failure_streak=0""",
                 (product_id, now, now, now if changed else None, next_due, response_hash, unchanged),
             )
             self.execute(
-                "UPDATE products SET source_product_key=COALESCE(source_product_key,?),status=?,last_seen_at=? WHERE id=?",
+                "UPDATE {products} SET source_product_key=COALESCE(source_product_key,?),status=?,last_seen_at=? WHERE id=?",
                 (content.source_product_key, "unavailable" if content.stock_status == "out_of_stock" else "active", now, product_id),
             )
             self._record_observation(task_id, product_id, changed, content_version_id=version_id, response_hash=response_hash)
@@ -581,17 +663,17 @@ class Database:
         state_hash = fingerprint(payload)
         now = utcnow()
         current = self.fetchone(
-            "SELECT id,state_hash FROM product_location_versions WHERE product_id=? AND location_id=? AND valid_to IS NULL",
+            "SELECT id,state_hash FROM {product_location_versions} WHERE product_id=? AND location_id=? AND valid_to IS NULL",
             (product_id, location_id),
         )
         changed = not current or current["state_hash"] != state_hash
         with self.transaction():
             if changed:
                 if current:
-                    self.execute("UPDATE product_location_versions SET valid_to=? WHERE id=?", (now, current["id"]))
+                    self.execute("UPDATE {product_location_versions} SET valid_to=? WHERE id=?", (now, current["id"]))
                 version_id = _uuid()
                 self.execute(
-                    """INSERT INTO product_location_versions(id,product_id,location_id,sale_price,list_price,currency,promotion_json,
+                    """INSERT INTO {product_location_versions}(id,product_id,location_id,sale_price,list_price,currency,promotion_json,
                        stock_status,stock_raw,delivery_json,returned_location_json,state_hash,valid_from,created_by_task_id)
                        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                     (
@@ -603,16 +685,16 @@ class Database:
             else:
                 version_id = str(current["id"])
             state = self.fetchone(
-                "SELECT consecutive_unchanged FROM product_location_crawl_state WHERE product_id=? AND location_id=?",
+                "SELECT consecutive_unchanged FROM {product_location_crawl_state} WHERE product_id=? AND location_id=?",
                 (product_id, location_id),
             )
             unchanged = 0 if changed else int(state["consecutive_unchanged"] if state else 0) + 1
             next_due = (datetime.now(timezone.utc) + timedelta(hours=min(72, 6 * (2 ** min(unchanged, 3))))).isoformat()
             self.execute(
-                """INSERT INTO product_location_crawl_state(product_id,location_id,last_attempt_at,last_success_at,last_changed_at,
+                """INSERT INTO {product_location_crawl_state} AS state(product_id,location_id,last_attempt_at,last_success_at,last_changed_at,
                    next_due_at,last_response_hash,consecutive_unchanged,failure_streak) VALUES(?,?,?,?,?,?,?,?,0)
                    ON CONFLICT(product_id,location_id) DO UPDATE SET last_attempt_at=excluded.last_attempt_at,
-                   last_success_at=excluded.last_success_at,last_changed_at=COALESCE(excluded.last_changed_at,product_location_crawl_state.last_changed_at),
+                   last_success_at=excluded.last_success_at,last_changed_at=COALESCE(excluded.last_changed_at,state.last_changed_at),
                    next_due_at=excluded.next_due_at,last_response_hash=excluded.last_response_hash,
                    consecutive_unchanged=excluded.consecutive_unchanged,failure_streak=0""",
                 (product_id, location_id, now, now, now if changed else None, next_due, response_hash, unchanged),
@@ -638,11 +720,14 @@ class Database:
         error_kind: str | None = None,
         response_metadata: Mapping[str, Any] | None = None,
     ) -> int | None:
+        query = """INSERT INTO {crawl_attempts}(task_id,attempt_no,started_at,finished_at,http_status,latency_ms,request_url,
+                   response_url,requested_location,returned_location_json,location_matched,outcome,error_kind,
+                   response_metadata_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"""
+        if self.backend == "postgres":
+            query += " RETURNING id"
         with self.transaction():
             cursor = self.execute(
-                """INSERT INTO crawl_attempts(task_id,attempt_no,started_at,finished_at,http_status,latency_ms,request_url,
-                   response_url,requested_location,returned_location_json,location_matched,outcome,error_kind,
-                   response_metadata_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                query,
                 (
                     task_id, attempt_no, started_at, utcnow(), http_status, latency_ms, request_url, response_url,
                     requested_location, safe_json(returned_location or {}), location_matched, outcome, error_kind,
@@ -651,7 +736,8 @@ class Database:
             )
             if self.backend == "sqlite":
                 return int(cursor.lastrowid)
-        return None
+            row = cursor.fetchone()
+            return int(row["id"]) if row else None
 
     def record_error(
         self,
@@ -668,15 +754,15 @@ class Database:
     ) -> None:
         with self.transaction():
             self.execute(
-                """INSERT INTO crawl_errors(run_id,task_id,attempt_id,product_id,location_id,error_kind,message,http_status,
+                """INSERT INTO {crawl_errors}(run_id,task_id,attempt_id,product_id,location_id,error_kind,message,http_status,
                    retryable,context_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
                 (run_id, task_id, attempt_id, product_id, location_id, error_kind, message[:4000], http_status, retryable, safe_json(context or {}), utcnow()),
             )
 
     def retryable_errors(self, limit: int | None = None) -> list[Mapping[str, Any]]:
         query = """SELECT e.*,t.task_type,t.url,t.target_key,p.canonical_url,l.code AS location_code
-                   FROM crawl_errors e LEFT JOIN crawl_tasks t ON t.id=e.task_id
-                   LEFT JOIN products p ON p.id=e.product_id LEFT JOIN locations l ON l.id=e.location_id
+                   FROM {crawl_errors} e LEFT JOIN {crawl_tasks} t ON t.id=e.task_id
+                   LEFT JOIN {products} p ON p.id=e.product_id LEFT JOIN {locations} l ON l.id=e.location_id
                    WHERE e.retryable=? AND e.resolved_at IS NULL ORDER BY e.created_at"""
         params: list[Any] = [True]
         if limit:
@@ -687,7 +773,7 @@ class Database:
     def resolve_error(self, error_id: int, task_id: str | None = None) -> None:
         with self.transaction():
             self.execute(
-                "UPDATE crawl_errors SET resolved_at=?,resolved_by_task_id=? WHERE id=?",
+                "UPDATE {crawl_errors} SET resolved_at=?,resolved_by_task_id=? WHERE id=?",
                 (utcnow(), task_id, error_id),
             )
 
@@ -699,10 +785,10 @@ class Database:
                       pcv.stock_raw AS common_stock_raw,
                       l.code AS location,plv.sale_price,plv.list_price,plv.promotion_json,plv.stock_status,
                       plv.stock_raw,plv.delivery_json,plv.returned_location_json,plv.valid_from AS observed_at
-               FROM products p JOIN categories c ON c.id=p.category_id
-               JOIN product_content_versions pcv ON pcv.product_id=p.id AND pcv.valid_to IS NULL
-               LEFT JOIN product_location_versions plv ON plv.product_id=p.id AND plv.valid_to IS NULL
-               LEFT JOIN locations l ON l.id=plv.location_id
+               FROM {products} p JOIN {categories} c ON c.id=p.category_id
+               JOIN {product_content_versions} pcv ON pcv.product_id=p.id AND pcv.valid_to IS NULL
+               LEFT JOIN {product_location_versions} plv ON plv.product_id=p.id AND plv.valid_to IS NULL
+               LEFT JOIN {locations} l ON l.id=plv.location_id
                ORDER BY pcv.name,l.code LIMIT ?""",
             (limit,),
         )
@@ -721,8 +807,8 @@ class Database:
                     item[key.removesuffix("_json")] = {}
             if version_id:
                 media_rows = self.fetchall(
-                    """SELECT ma.url FROM product_version_media pvm
-                       JOIN media_assets ma ON ma.id=pvm.media_id
+                    """SELECT ma.url FROM {product_version_media} pvm
+                       JOIN {media_assets} ma ON ma.id=pvm.media_id
                        WHERE pvm.content_version_id=? ORDER BY pvm.ordinal""",
                     (version_id,),
                 )
@@ -733,12 +819,8 @@ class Database:
         return result
 
     def table_count(self, table: str) -> int:
-        if table not in {
-            "products", "product_content_versions", "product_location_versions",
-            "product_spec_values", "spec_definitions", "crawl_errors", "crawl_runs", "crawl_tasks",
-        }:
-            raise ValueError("unsupported table")
-        row = self.fetchone(f"SELECT COUNT(*) AS n FROM {table}")
+        relation = self._relation(table)
+        row = self.fetchone(f"SELECT COUNT(*) AS n FROM {relation}")
         return int(row["n"] if row else 0)
 
     def close(self) -> None:

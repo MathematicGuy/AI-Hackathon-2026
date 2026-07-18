@@ -6,7 +6,7 @@ import unittest
 from dataclasses import replace
 from pathlib import Path
 
-from dmx_crawler.db import Database
+from dmx_crawler.db import APPLICATION_TABLES, POSTGRES_TABLE_SCHEMAS, Database
 from dmx_crawler.models import (
     CategoryConfig,
     DeliveryInfo,
@@ -261,6 +261,67 @@ class DatabaseDedupAndScdTests(unittest.TestCase):
             hanoi_version,
             {row["id"] for row in self.db.fetchall("SELECT id FROM product_location_versions")},
         )
+
+
+class RelationRoutingTests(unittest.TestCase):
+
+    def postgres_stub(self, rows=None):
+        db = Database.__new__(Database)
+        db.backend = "postgres"
+        db._initialized = False
+        db.fetchall = lambda query, params=(): list(rows or [])
+        return db
+
+    def test_sqlite_relation_tokens_render_flat_names(self) -> None:
+        with tempfile.TemporaryDirectory() as tempdir:
+            db = Database(str(Path(tempdir) / "routing.db"))
+            try:
+                rendered = db._sql(
+                    "SELECT * FROM {products} p JOIN {crawl_tasks} t ON t.product_id=p.id WHERE p.id=?"
+                )
+                self.assertEqual(
+                    rendered,
+                    "SELECT * FROM products p JOIN crawl_tasks t ON t.product_id=p.id WHERE p.id=?",
+                )
+            finally:
+                db.close()
+
+    def test_postgres_relation_tokens_render_explicit_schemas(self) -> None:
+        db = self.postgres_stub()
+        rendered = db._sql(
+            "SELECT * FROM {products} p JOIN {crawl_tasks} t ON t.product_id=p.id WHERE p.id=?"
+        )
+        self.assertEqual(
+            rendered,
+            "SELECT * FROM catalog.products p JOIN crawler.crawl_tasks t ON t.product_id=p.id WHERE p.id=%s",
+        )
+
+    def test_relation_allow_list_rejects_unknown_identifier(self) -> None:
+        db = self.postgres_stub()
+        with self.assertRaisesRegex(ValueError, "unsupported application table"):
+            db._relation("not_an_application_table")
+        with self.assertRaisesRegex(ValueError, "unsupported application table"):
+            db.table_count("not_an_application_table")
+
+    def test_postgres_initialize_accepts_only_complete_split(self) -> None:
+        rows = [
+            {"schema_name": schema, "table_name": table}
+            for table, schema in POSTGRES_TABLE_SCHEMAS.items()
+        ]
+        db = self.postgres_stub(rows)
+        db.initialize()
+        self.assertTrue(db._initialized)
+
+    def test_postgres_initialize_fails_fast_for_legacy_or_partial_layout(self) -> None:
+        legacy = [
+            {"schema_name": "public", "table_name": table}
+            for table in APPLICATION_TABLES
+        ]
+        for rows in (legacy, legacy[:-1]):
+            db = self.postgres_stub(rows)
+            with self.assertRaisesRegex(RuntimeError, "Apply migrations 001, 002, and 003"):
+                db.initialize()
+            self.assertFalse(db._initialized)
 
 
 if __name__ == "__main__":
