@@ -1,0 +1,10 @@
+# Local development override. Publishes Postgres on the loopback interface only
+# so host tooling (psql, host-side pytest, running migrate/ingest with `uv run`)
+# can reach it. The base compose keeps the database in-network with no host port.
+# Do NOT use this override on a shared or server host.
+#
+#   docker compose -f infra/docker-compose.yml -f infra/docker-compose.dev.yml up -d db
+services:
+  db:
+    ports:
+      - "127.0.0.1:55432:5432"

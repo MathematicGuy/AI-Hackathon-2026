@@ -42,7 +42,9 @@ browser_recordings
 # **/.ai-log/
 
 # App Data
-/data/
+# /data/ is tracked on this branch so the provided dataset can be committed.
+# Intermediate/processed data (may contain masked PII) must never be committed.
+data/processed/
 *.db
 
 # Node / Frontend
