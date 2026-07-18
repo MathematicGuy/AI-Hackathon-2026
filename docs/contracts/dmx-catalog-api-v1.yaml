@@ -1,0 +1,440 @@
+openapi: 3.1.0
+info:
+  title: DMX Catalog API
+  version: 1.0.0
+  description: Read-only catalog contract over the temporary DMX SQLite database.
+servers:
+  - url: http://localhost:8000
+paths:
+  /api/v1/health:
+    get:
+      operationId: getHealth
+      responses:
+        "200":
+          description: API and SQLite are readable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/v1/locations:
+    get:
+      operationId: listLocations
+      responses:
+        "200":
+          description: Active supported locations.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationListResponse"
+  /api/v1/categories:
+    get:
+      operationId: listCategories
+      responses:
+        "200":
+          description: Active catalog categories.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryListResponse"
+  /api/v1/products:
+    get:
+      operationId: listProducts
+      parameters:
+        - $ref: "#/components/parameters/Category"
+        - $ref: "#/components/parameters/Location"
+        - $ref: "#/components/parameters/Search"
+        - $ref: "#/components/parameters/Collection"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: Paginated products, grouped to one object per product.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/v1/products/{slug}:
+    get:
+      operationId: getProduct
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - $ref: "#/components/parameters/Location"
+      responses:
+        "200":
+          description: Product detail.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/home:
+    get:
+      operationId: getHome
+      parameters:
+        - $ref: "#/components/parameters/Location"
+      responses:
+        "200":
+          description: Editorial homepage content and resolved product collections.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeResponse"
+components:
+  parameters:
+    Category:
+      name: category
+      in: query
+      schema:
+        type: string
+    Location:
+      name: location
+      in: query
+      schema:
+        type: string
+        default: hcm
+    Search:
+      name: q
+      in: query
+      schema:
+        type: string
+        maxLength: 200
+    Collection:
+      name: collection
+      in: query
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 24
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: Invalid request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    Meta:
+      type: object
+      required: [request_id]
+      properties:
+        request_id:
+          type: string
+        next_cursor:
+          type: [string, "null"]
+        total:
+          type: [integer, "null"]
+          minimum: 0
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    ErrorResponse:
+      type: object
+      required: [data, error, meta]
+      properties:
+        data:
+          type: "null"
+        error:
+          $ref: "#/components/schemas/Error"
+        meta:
+          $ref: "#/components/schemas/Meta"
+    Category:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        presentation:
+          type: object
+          additionalProperties: true
+    Location:
+      type: object
+      required: [code, name, province_name]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        province_name:
+          type: string
+    Money:
+      type: object
+      required: [currency]
+      properties:
+        sale_price:
+          type: [integer, "null"]
+          minimum: 0
+        list_price:
+          type: [integer, "null"]
+          minimum: 0
+        currency:
+          type: string
+          const: VND
+    ProductLocation:
+      type: object
+      required: [code, stock_status, price, promotion, delivery, observed_at]
+      properties:
+        code:
+          type: string
+        stock_status:
+          type: string
+        stock_raw:
+          type: [string, "null"]
+        price:
+          $ref: "#/components/schemas/Money"
+        promotion:
+          type: object
+          additionalProperties: true
+        delivery:
+          type: object
+          additionalProperties: true
+        observed_at:
+          type: [string, "null"]
+          format: date-time
+    ProductImage:
+      type: object
+      required: [url, role, ordinal]
+      properties:
+        url:
+          type: string
+          format: uri
+        role:
+          type: string
+        ordinal:
+          type: integer
+          minimum: 0
+    SpecItem:
+      type: object
+      required: [label, raw_value, ordinal]
+      properties:
+        label:
+          type: string
+        raw_value:
+          type: string
+        value_text:
+          type: [string, "null"]
+        value_number:
+          type: [number, "null"]
+        unit:
+          type: [string, "null"]
+        ordinal:
+          type: integer
+          minimum: 0
+    SpecGroup:
+      type: object
+      required: [name, ordinal, items]
+      properties:
+        name:
+          type: [string, "null"]
+        ordinal:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecItem"
+    Product:
+      type: object
+      required:
+        - id
+        - slug
+        - canonical_url
+        - category
+        - name
+        - images
+        - specs
+        - locations
+        - selected_location
+        - content_observed_at
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        canonical_url:
+          type: string
+          format: uri
+        category:
+          $ref: "#/components/schemas/Category"
+        name:
+          type: string
+        brand:
+          type: [string, "null"]
+        model:
+          type: [string, "null"]
+        product_code:
+          type: [string, "null"]
+        description:
+          type: [string, "null"]
+        rating:
+          type: [number, "null"]
+        rating_count:
+          type: [integer, "null"]
+        sold_count:
+          type: [integer, "null"]
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductImage"
+        specs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecGroup"
+        locations:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductLocation"
+        selected_location:
+          oneOf:
+            - $ref: "#/components/schemas/ProductLocation"
+            - type: "null"
+        content_observed_at:
+          type: string
+          format: date-time
+    ProductCollection:
+      type: object
+      required: [code, title, products]
+      properties:
+        code:
+          type: string
+        title:
+          type: string
+        presentation:
+          type: object
+          additionalProperties: true
+        products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+    ContentEntry:
+      type: object
+      required: [id, type, payload]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        payload:
+          type: object
+          additionalProperties: true
+    ProductResponse:
+      type: object
+      required: [data, error, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/Product"
+        error:
+          type: "null"
+        meta:
+          $ref: "#/components/schemas/Meta"
+    ProductListResponse:
+      type: object
+      required: [data, error, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
+        error:
+          type: "null"
+        meta:
+          $ref: "#/components/schemas/Meta"
+    CategoryListResponse:
+      type: object
+      required: [data, error, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+        error:
+          type: "null"
+        meta:
+          $ref: "#/components/schemas/Meta"
+    LocationListResponse:
+      type: object
+      required: [data, error, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Location"
+        error:
+          type: "null"
+        meta:
+          $ref: "#/components/schemas/Meta"
+    HomeData:
+      type: object
+      required: [content, collections]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContentEntry"
+        collections:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductCollection"
+    HomeResponse:
+      type: object
+      required: [data, error, meta]
+      properties:
+        data:
+          $ref: "#/components/schemas/HomeData"
+        error:
+          type: "null"
+        meta:
+          $ref: "#/components/schemas/Meta"
+    HealthResponse:
+      type: object
+      required: [data, error, meta]
+      properties:
+        data:
+          type: object
+          required: [status, database]
+          properties:
+            status:
+              type: string
+              const: ok
+            database:
+              type: string
+              const: sqlite
+        error:
+          type: "null"
+        meta:
+          $ref: "#/components/schemas/Meta"
+
