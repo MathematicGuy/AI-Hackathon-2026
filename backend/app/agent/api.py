@@ -4,9 +4,11 @@ Sessions are held in-process (demo-grade); durable checkpointer persistence is
 deferred and recorded on US-206. Separate from the M1 rig's advisor endpoint.
 """
 
+import os
 import uuid
 
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from backend.app.agent.contracts import AgentState
@@ -48,7 +50,28 @@ def create_agent_router(deps: AgentDependencies) -> APIRouter:
     return router
 
 
+DEFAULT_CORS_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000"
+
+
 def create_agent_app(deps: AgentDependencies | None = None) -> FastAPI:
     app = FastAPI(title="DMX Multi-Category Sales Agent")
+    origins = [
+        origin.strip()
+        for origin in os.environ.get(
+            "AGENT_CORS_ORIGINS", DEFAULT_CORS_ORIGINS
+        ).split(",")
+        if origin.strip()
+    ]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_methods=["POST"],
+        allow_headers=["Content-Type"],
+    )
+
+    @app.get("/health")
+    def health() -> dict:
+        return {"status": "ok"}
+
     app.include_router(create_agent_router(deps or AgentDependencies.from_default_paths()))
     return app

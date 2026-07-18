@@ -31,40 +31,10 @@ function formatChatTime(date: Date) {
   }).format(date);
 }
 
-function getAssistantReply(query: string) {
-  const normalized = query
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .toLocaleLowerCase("vi-VN");
-
-  if (/gia|khuyen mai|giam|flash|sale/.test(normalized)) {
-    return "Anh/chị có thể xem giá Flash Sale đang áp dụng theo từng nhóm sản phẩm. Giá cuối cùng và số suất còn lại được hiển thị ngay trên thẻ sản phẩm ạ.";
-  }
-  if (/bao hanh|sua chua|ve sinh/.test(normalized)) {
-    return "Em có thể hỗ trợ tra cứu bảo hành, vệ sinh máy lạnh hoặc máy giặt. Anh/chị mở mục Thông tin - Dịch vụ tiện ích trong Danh mục để chọn đúng dịch vụ nhé.";
-  }
-  if (/giao hang|van chuyen|bao lau|nhan hang/.test(normalized)) {
-    return "Thời gian giao hàng phụ thuộc khu vực và tình trạng tồn kho. Với TP. Hồ Chí Minh, sản phẩm có sẵn thường được xác nhận lịch giao trong ngày ạ.";
-  }
-  if (/cua hang|dia chi|sieu thi/.test(normalized)) {
-    return "Anh/chị có thể dùng mục Tìm địa chỉ cửa hàng trong Danh mục. Bản demo sẽ hiển thị cửa hàng gần khu vực TP. Hồ Chí Minh và thông tin liên hệ local.";
-  }
-  if (/tu lanh/.test(normalized)) {
-    return "Nếu gia đình 3-4 người, anh/chị có thể ưu tiên tủ lạnh 250-350 lít có Inverter. Em đề xuất xem nhóm Tủ lạnh để so sánh giá và dung tích ạ.";
-  }
-  if (/may lanh|dieu hoa/.test(normalized)) {
-    return "Phòng dưới 15m² thường phù hợp máy lạnh 1 HP; từ 15-20m² nên cân nhắc 1.5 HP. Anh/chị cho em biết diện tích phòng để tư vấn sát hơn nhé.";
-  }
-  if (/tivi|tv/.test(normalized)) {
-    return "Khoảng cách xem 2-3 mét phù hợp tivi 50-55 inch. Các mẫu 4K QLED đang có ưu đãi tốt trong Flash Sale ạ.";
-  }
-  if (/may giat/.test(normalized)) {
-    return "Gia đình 3-5 người thường phù hợp máy giặt 9-10 kg. Nếu cần tiết kiệm điện nước và bảo vệ quần áo, anh/chị nên chọn máy Inverter cửa trước.";
-  }
-
-  return "Dạ em có thể hỗ trợ anh/chị tư vấn sản phẩm, kiểm tra thông tin hàng hóa, khuyến mãi, bảo hành và hướng dẫn mua hàng. Anh/chị đang quan tâm sản phẩm nào ạ?";
-}
+// Live E02 sales agent (backend/app/agent). Falls back to the retry UI when
+// the API is unreachable.
+const AGENT_API_BASE =
+  process.env.NEXT_PUBLIC_AGENT_API_URL ?? "http://127.0.0.1:8000";
 
 function suggestionForPath(pathname: string) {
   if (pathname === "/flashsale") {
@@ -92,7 +62,7 @@ export function ChatbotAssistant() {
   const [isSending, setIsSending] = useState(false);
   const [failedQuery, setFailedQuery] = useState("");
   const sequence = useRef(1);
-  const failedOnce = useRef(new Set<string>());
+  const sessionId = useRef<string | null>(null);
   const conversationEnd = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -122,37 +92,40 @@ export function ChatbotAssistant() {
     setIsOpen(true);
   };
 
-  const requestReply = (query: string) => {
+  const requestReply = async (query: string) => {
     setIsSending(true);
     setFailedQuery("");
 
-    window.setTimeout(() => {
-      const normalized = query.trim().toLocaleLowerCase("vi-VN");
-      const shouldFail = normalized.includes("lỗi") && !failedOnce.current.has(normalized);
-
-      if (shouldFail) {
-        failedOnce.current.add(normalized);
-        setIsSending(false);
-        setFailedQuery(query);
-        showToast({
-          variant: "error",
-          title: "Chưa nhận được phản hồi",
-          description: "Kết nối mô phỏng bị gián đoạn. Bạn có thể thử lại ngay.",
-        });
-        return;
+    try {
+      const response = await fetch(`${AGENT_API_BASE}/api/v1/agent/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId.current, message: query }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
-
+      const data: { session_id: string; text: string } = await response.json();
+      sessionId.current = data.session_id;
       setMessages((current) => [
         ...current,
         {
           id: sequence.current++,
           role: "assistant",
-          text: getAssistantReply(query),
+          text: data.text,
           time: formatChatTime(new Date()),
         },
       ]);
+    } catch {
+      setFailedQuery(query);
+      showToast({
+        variant: "error",
+        title: "Chưa nhận được phản hồi",
+        description: "Không kết nối được trợ lý AI. Bạn có thể thử lại ngay.",
+      });
+    } finally {
       setIsSending(false);
-    }, 760);
+    }
   };
 
   const submitMessage = (event: React.FormEvent<HTMLFormElement>) => {
@@ -188,6 +161,7 @@ export function ChatbotAssistant() {
     setInput("");
     setFailedQuery("");
     setIsSending(false);
+    sessionId.current = null;
     setOpenedAt(formatChatTime(new Date()));
     showToast({ variant: "info", title: "Đã làm mới hội thoại", description: "Bạn có thể bắt đầu câu hỏi mới." });
   };
@@ -262,7 +236,7 @@ export function ChatbotAssistant() {
             <div key={message.id} className={`flex items-end gap-1.5 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
               {message.role === "assistant" ? <SafeImage src="/images/chatbot/mascot.png" alt="" className="size-9 shrink-0 rounded-full" fallbackLabel="AI" /> : null}
               <div className={`max-w-[84%] ${message.role === "user" ? "text-right" : "text-left"}`}>
-                <div className={`rounded-[20px] px-4 py-3 text-sm leading-[1.45] ${message.role === "user" ? "rounded-ee-none bg-[#2a83e9] text-white" : "rounded-ss-none bg-[#f2f5f9] text-[#333]"}`}>
+                <div className={`whitespace-pre-line rounded-[20px] px-4 py-3 text-sm leading-[1.45] ${message.role === "user" ? "rounded-ee-none bg-[#2a83e9] text-white" : "rounded-ss-none bg-[#f2f5f9] text-[#333]"}`}>
                   {message.text}
                 </div>
                 <p className="mt-1 px-1 text-[10px] text-slate-400">{message.time}</p>
