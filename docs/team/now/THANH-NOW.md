@@ -118,7 +118,12 @@ Keep `resources/` out of scope.
   fail-open tracing.
 - Scope refined: priority diagnostic observations, not exhaustive spans.
 - US-207 and US-116 specs and implementation plans complete.
-- Implementation not started.
+- US-207 and US-116 implemented; priority observation tree wired into input
+  guard, intent/extraction, model calls, and state merge (fail-open, no-op by
+  default).
+- Focused suite green (70 passed); full backend suite green (354 passed, 1
+  skipped) with `AGENT_DATA_BACKEND=excel`. Only the live-Postgres endpoint
+  integration test is excluded — it needs a running database server.
 
 ## Definition of Done
 
