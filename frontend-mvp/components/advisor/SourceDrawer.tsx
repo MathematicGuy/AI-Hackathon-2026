@@ -20,7 +20,7 @@ export function SourceDrawer({ citations }: { citations: ProductCitation[] }) {
           {citations.map((c, i) => (
             <li key={`${c.product_id}-${c.field}-${i}`} className="border-b pb-2">
               <span className="font-medium">{c.field}</span>
-              <a href={c.source_url} target="_blank" rel="noreferrer" className="ml-2 text-primary underline">
+              <a href={c.source_url} target="_blank" rel="noopener noreferrer" className="ml-2 text-primary underline">
                 {c.source_url}
               </a>
             </li>

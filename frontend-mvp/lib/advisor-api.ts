@@ -4,7 +4,7 @@ import { resolveAnswerType } from "@/lib/mock/scenarios";
 import { buildFixture } from "@/lib/mock/fixtures";
 
 const MODE = process.env.NEXT_PUBLIC_ADVISOR_MODE ?? "mock";
-const API_URL = process.env.NEXT_PUBLIC_ADVISOR_API_URL ?? "";
+const API_URL = (process.env.NEXT_PUBLIC_ADVISOR_API_URL ?? "").trim().replace(/\/+$/, "");
 
 // THE single swap point. Components import only this for data.
 export async function sendMessage(req: AdvisorRequest): Promise<AdvisorResponse> {
@@ -13,6 +13,7 @@ export async function sendMessage(req: AdvisorRequest): Promise<AdvisorResponse>
   const filled: AdvisorRequest = { ...req, session_id, request_id };
 
   if (MODE === "live") {
+    if (!API_URL) throw new Error("advisor_live_mode_missing_api_url");
     const res = await fetch(`${API_URL}/api/v1/advisor/respond`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
