@@ -48,3 +48,19 @@ def test_node_does_not_mutate_input_state(node_module):
     state = base_state(" ".join(["từ"] * 150))
     node_module.input_guard_node(state)
     assert state["guardrail_flags"] == []
+
+
+def test_input_guard_records_raw_message_and_result(node_module, recording_observer):
+    state = base_state("mua máy lạnh phòng 18m2")
+    result = node_module.input_guard_node(state, observer=recording_observer)
+    span = recording_observer.only("input_guardrail")
+    assert span.input["message"] == "mua máy lạnh phòng 18m2"
+    assert span.output["guardrail_flags"] == result["guardrail_flags"]
+    assert span.ended
+
+
+def test_input_guard_output_unchanged_without_observer(node_module):
+    state = base_state("mua máy lạnh phòng 18m2")
+    with_observer = node_module.input_guard_node(base_state("mua máy lạnh phòng 18m2"))
+    plain = node_module.input_guard_node(state)
+    assert plain == with_observer

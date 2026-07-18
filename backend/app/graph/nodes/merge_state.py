@@ -6,6 +6,7 @@ from backend.app.contracts.schemas import (
     NeedPriority,
 )
 from backend.app.graph.state import WorkflowState
+from backend.app.observability import AgentObserver, noop_agent_observer
 
 HARD_CONSTRAINT_FIELDS = ("budget_max_vnd", "room_size_m2", "location")
 
@@ -60,32 +61,38 @@ def merge_customer_need(
     return current.model_copy(update=updates)
 
 
-def merge_state(state: WorkflowState) -> WorkflowState:
-    intent_output = state["latest_intent_output"]
-    current_need = state["customer_need"]
-    merged_need = merge_customer_need(current_need, intent_output)
-    explicit = _explicit_fields(intent_output)
+def merge_state(
+    state: WorkflowState, *, observer: AgentObserver | None = None
+) -> WorkflowState:
+    with (observer or noop_agent_observer()).span(
+        "state_merge", input={"state": state}
+    ) as observation:
+        intent_output = state["latest_intent_output"]
+        current_need = state["customer_need"]
+        merged_need = merge_customer_need(current_need, intent_output)
+        explicit = _explicit_fields(intent_output)
 
-    result = dict(state)
-    result["customer_need"] = merged_need
-    result["current_intent"] = intent_output.intent
-    result["turn_number"] = state["turn_number"] + 1
-    result["requested_product_count"] = intent_output.requested_product_count
-    result["pending_assumptions"] = [
-        assumption
-        for assumption in state["pending_assumptions"]
-        if assumption.field not in explicit
-    ]
+        result = dict(state)
+        result["customer_need"] = merged_need
+        result["current_intent"] = intent_output.intent
+        result["turn_number"] = state["turn_number"] + 1
+        result["requested_product_count"] = intent_output.requested_product_count
+        result["pending_assumptions"] = [
+            assumption
+            for assumption in state["pending_assumptions"]
+            if assumption.field not in explicit
+        ]
 
-    if _hard_constraint_changed(current_need, merged_need):
-        result["retrieved_product_ids"] = []
-        result["eligible_product_ids"] = []
-        result["excluded_products"] = []
-        result["role_winners"] = None
-        result["display_product_ids"] = []
-        result["recommendation_output"] = None
+        if _hard_constraint_changed(current_need, merged_need):
+            result["retrieved_product_ids"] = []
+            result["eligible_product_ids"] = []
+            result["excluded_products"] = []
+            result["role_winners"] = None
+            result["display_product_ids"] = []
+            result["recommendation_output"] = None
 
-    if intent_output.intent == "new_search" and merged_need != current_need:
-        result["clarification_count"] = 0
+        if intent_output.intent == "new_search" and merged_need != current_need:
+            result["clarification_count"] = 0
 
-    return result
+        observation.update(output={"state": result})
+        return result

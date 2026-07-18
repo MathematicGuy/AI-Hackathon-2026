@@ -130,3 +130,31 @@ def test_fallback_output_is_valid_intent_output(node):
     assert isinstance(result, IntentOutput)
     assert 0.0 <= result.confidence <= 1.0
     assert 1 <= result.requested_product_count <= 10
+
+
+async def test_intent_records_classifier_span_on_success(node, recording_observer):
+    output, flags = await node.classify_and_extract(
+        "Em muốn mua máy lạnh dưới 20 triệu cho phòng 18m²",
+        extractor=FakeExtractor(golden_output()),
+        observer=recording_observer,
+    )
+    assert flags == []
+    span = recording_observer.only("intent_classifier")
+    assert span.input["message"] == "Em muốn mua máy lạnh dưới 20 triệu cho phòng 18m²"
+    assert span.output["intent"] == "new_search"
+    assert span.ended
+
+
+async def test_intent_records_fallback_without_changing_output(node, recording_observer):
+    from backend.app.models.openai_intent import ProviderError
+
+    output, flags = await node.classify_and_extract(
+        "máy lạnh giá bao nhiêu",
+        extractor=FakeExtractor(raise_exc=ProviderError("down")),
+        observer=recording_observer,
+    )
+    assert output.intent == "new_search"
+    assert flags == ["intent_model_degraded"]
+    assert recording_observer.names == ["intent_classifier", "deterministic_fallback"]
+    fallback = recording_observer.only("deterministic_fallback")
+    assert fallback.metadata["reason"] == "ProviderError"

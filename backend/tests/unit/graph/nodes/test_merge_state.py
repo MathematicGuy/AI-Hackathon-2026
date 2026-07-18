@@ -331,3 +331,28 @@ def test_workflow_state_covers_public_advisor_state(state_module):
     }
     assert transient_keys <= workflow_keys
     assert transient_keys <= set(state_module.WorkflowState.__optional_keys__)
+
+
+def test_state_merge_records_before_and_after(merge_module, recording_observer):
+    state = base_state()
+    state["latest_intent_output"] = intent_output(
+        AirConditionerNeed(budget_max_vnd=15_000_000)
+    )
+    result = merge_module.merge_state(state, observer=recording_observer)
+    span = recording_observer.only("state_merge")
+    assert span.input["state"] == state
+    assert span.output["state"] == result
+    assert span.ended
+
+
+def test_state_merge_output_unchanged_without_observer(merge_module):
+    def _state():
+        s = base_state()
+        s["latest_intent_output"] = intent_output(
+            AirConditionerNeed(budget_max_vnd=15_000_000)
+        )
+        return s
+
+    assert merge_module.merge_state(_state()) == merge_module.merge_state(
+        _state(), observer=None
+    )

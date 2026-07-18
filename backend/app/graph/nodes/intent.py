@@ -11,6 +11,7 @@ from pydantic import ValidationError
 
 from backend.app.contracts.schemas import AirConditionerNeed, IntentOutput
 from backend.app.models.openai_intent import IntentExtractor, ProviderError
+from backend.app.observability import AgentObserver, noop_agent_observer
 
 FALLBACK_CONFIDENCE = 0.3
 
@@ -55,9 +56,39 @@ def fallback_intent(message: str) -> IntentOutput:
 
 
 async def classify_and_extract(
-    message: str, *, extractor: IntentExtractor
+    message: str,
+    *,
+    extractor: IntentExtractor,
+    observer: AgentObserver | None = None,
 ) -> tuple[IntentOutput, list[str]]:
-    try:
-        return await extractor.extract(message), []
-    except (ProviderError, ValidationError):
-        return fallback_intent(message), ["intent_model_degraded"]
+    selected_observer = observer or noop_agent_observer()
+    with selected_observer.span(
+        "intent_classifier", input={"message": message}
+    ) as observation:
+        try:
+            output = await extractor.extract(message)
+            observation.update(
+                output={
+                    "intent": output.intent,
+                    "confidence": output.confidence,
+                    "degraded": False,
+                }
+            )
+            return output, []
+        except (ProviderError, ValidationError) as exc:
+            with selected_observer.span(
+                "deterministic_fallback",
+                input={"message": message},
+                metadata={"reason": type(exc).__name__},
+            ) as fallback:
+                output = fallback_intent(message)
+                fallback.update(
+                    output={
+                        "intent": output.intent,
+                        "flags": ["intent_model_degraded"],
+                    }
+                )
+            observation.update(
+                output={"intent": output.intent, "degraded": True}
+            )
+            return output, ["intent_model_degraded"]
