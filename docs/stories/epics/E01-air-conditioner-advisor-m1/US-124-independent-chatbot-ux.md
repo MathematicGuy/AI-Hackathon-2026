@@ -2,7 +2,7 @@
 
 ## Status
 
-in_progress
+implemented
 
 ## Lane
 
@@ -93,7 +93,8 @@ is independent of the original US-115 mock-first/API-swappable deliverable.
 
 ## Evidence
 
-- `harness-cli story complete US-124` passed on 2026-07-18. Its fresh
+- `harness-cli story complete US-124` passed on 2026-07-18 and passed again
+  after the header-clipping regression fix. Its fresh
   `npm --prefix frontend run check` completed ESLint, `tsc --noEmit`, and a
   production Next.js build of all 66 routes.
 - Production Chromium at 1442x788 rendered a 520px desktop panel with
@@ -109,6 +110,13 @@ is independent of the original US-115 mock-first/API-swappable deliverable.
 - Comparison interaction exposed the horizontal-scroll hint and the distinct
   `Xem Casper`, `Xem Midea`, and `Xem Nagakawa` actions after the comparison
   details. Onboarding collapsed after the first message.
+- A reported comparison screenshot showed `scrollIntoView` had scrolled the
+  outer clipped panel and moved its header out of view. Auto-scroll now targets
+  only the conversation container.
+- Production Chromium after the fix measured outer panel `scrollTop=0` and
+  conversation `scrollTop=180` on desktop and a 400px mobile viewport. The
+  header stayed aligned with the panel top, the footer remained visible, and
+  mobile modal/body-lock behavior was preserved.
 - Independent review found no remaining US-115/US-124 ownership blocker after
   the split. Its final desktop `Escape` isolation finding was fixed and
   rechecked in the production bundle.
