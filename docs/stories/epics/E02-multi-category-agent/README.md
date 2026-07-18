@@ -29,5 +29,36 @@ materially new searches, widened the suggestion pool, added unpriced
 disclosure and the long-conversation memory suite. The data-platform round
 added the Postgres adapter over Duy's `products` schema with Excel fallback,
 per-category domain filter rules, optional LLM polish, and the golden eval
-set. Deferred: policy retrieval over pgvector (the platform has no
-knowledge-base tables yet); Langfuse judge wiring (keys not configured).
+set. The live-test round (2026-07-19, from Cường's manual transcript) fixed
+guardrail overfire (refusal now only on deliberate abuse; small talk gets a
+friendly reply with a sales pivot), added four intents
+(catalog_overview/price_range_query/promotion_inquiry/smalltalk) with
+dedicated grounded flows, made policy answers natural (display names, no
+filenames, literal-quote frame only on request, relevance floor), hid the
+internal skip-role line, bundled the cold-start opener (2-3 questions),
+introduced the +8% soft budget margin, added per-product/comparison
+reasoning, and shipped the NDJSON streaming endpoint + frontend
+copy/edit/status/streaming UX (golden cases AGENT-G-013…021). Live-test
+round 2 (same day) made gpt-4o-mini the reasoning core (OPENAI_API_KEY
+first, deepseek/Mistral fallbacks, full-context extractor prompt), made the
+fallback state-aware (mid-flow follow-ups never dump the menu;
+most_expensive role), added `question_clarification` (echoed questions get
+an explained example, never policy), honest answers for uncarried products
+(laptop/tivi/điện thoại + nearest alternatives), typo-tolerant money
+parsing ("20-30 trịu"), fixed the asked-list reset that re-asked an
+answered budget, added the suggestion debate line, hardened policy chunking
+(generic-word stopwords, orphan-enum trim, no violation-apology on
+validation failure), and shipped like/dislike + feedback endpoint,
+replay-based edit, and consistent "em" self-address (golden AGENT-G-022…036).
+The dimension round (round 3, same day) profiled every field of all 14
+sheets and introduced the evidence-based dimension registry
+(`catalog/dimensions.py`): suggestion roles are now preference-driven with
+transparent evidence badges ("[Card mạnh nhất: 8 GB GDDR6]"), comparison and
+the new `product_qa` intent answer deep follow-ups dimension-by-dimension
+with thang-đo transparency, multi-part cold-start replies are captured in
+full (monitor size ranges filter the pool), washer specs are live again
+(stale "no spec columns" note retired), and all placeholder spec values are
+filtered before any claim (golden AGENT-G-037…042; suite 186 with the
+36-case baseline intact). Deferred: policy retrieval over pgvector (the
+platform has no knowledge-base tables yet); Langfuse judge wiring (keys not
+configured).

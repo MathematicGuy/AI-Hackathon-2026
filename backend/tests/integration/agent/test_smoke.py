@@ -46,10 +46,21 @@ async def test_policy_question_quotes_verbatim(run, deps):
     state = AgentState()
     reply = await run(state, "cho hỏi chính sách hoàn tiền tính phí thế nào")
     assert reply.intent == "policy_question"
+    # Natural presentation: display name, no filename, quote as normal text —
+    # the policy body must still be a verbatim chunk of the source corpus.
+    assert ".md" not in reply.text
+    assert "của bên em" in reply.text
     raw = "".join(document.raw_text for document in deps.corpus.documents)
-    quoted = reply.text.split('"')
-    assert len(quoted) >= 3, reply.text
-    assert quoted[1] in raw
+    body = reply.text.split("của bên em ạ:", 1)[-1].rsplit("Anh/chị cần em", 1)[0].strip()
+    assert len(body) > 60, reply.text
+    assert body in raw
+
+
+async def test_policy_literal_quote_on_request(run, deps):
+    state = AgentState()
+    reply = await run(state, "trích nguyên văn chính sách hoàn tiền giúp mình")
+    assert 'trích nguyên văn ạ:' in reply.text
+    assert reply.text.count('"') >= 2
 
 
 async def test_policy_violating_request_gets_sincere_apology(run):

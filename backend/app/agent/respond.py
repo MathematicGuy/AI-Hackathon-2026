@@ -11,17 +11,29 @@ import re
 from dataclasses import dataclass, field
 
 from backend.app.agent.catalog.dataset_adapter import GenericProduct
+from backend.app.agent.contracts import GenericNeed
 from backend.app.agent.tools.suggest import Suggestions
 
 ROLE_LABELS = {
     "best_price": "Giá tốt nhất",
     "best_value": "Đáng tiền nhất (khuyến mãi sâu)",
     "best_performance": "Hiệu năng/công suất tốt nhất",
+    "most_expensive": "Cao cấp nhất",
 }
 
 
 def format_vnd(amount: int) -> str:
     return f"{amount:,}".replace(",", ".") + "đ"
+
+
+def format_trieu(amount: int) -> str:
+    """User-need amounts render as '12 triệu' — natural Vietnamese, and never
+    mistaken for a product-price claim by the grounding validator."""
+    millions = amount / 1_000_000
+    if millions >= 1:
+        text = f"{millions:.1f}".rstrip("0").rstrip(".")
+        return f"{text} triệu"
+    return f"{amount // 1000}k"
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,8 +44,23 @@ class ProposedResponse:
     question: str | None = None
 
 
-def _product_line(product: GenericProduct, roles: list[str]) -> str:
-    badges = " + ".join(ROLE_LABELS.get(role, role) for role in roles)
+def _role_badge(role: str, evidence: dict[str, tuple[str, str]]) -> str:
+    if role in evidence:
+        label, value = evidence[role]
+        if value:
+            value_text = value if len(value) <= 40 else value[:37].rstrip() + "…"
+            return f"{label}: {value_text}"
+        return label
+    return ROLE_LABELS.get(role, role)
+
+
+def _product_line(
+    product: GenericProduct,
+    roles: list[str],
+    evidence: dict[str, tuple[str, str]] | None = None,
+) -> str:
+    evidence = evidence or {}
+    badges = " + ".join(_role_badge(role, evidence) for role in roles)
     parts = [f"• [{badges}] {product.name}"]
     discount = product.promotion.discount_percent
     # Real data contains rows where sale price equals list price — there is a
@@ -57,30 +84,165 @@ def _product_line(product: GenericProduct, roles: list[str]) -> str:
     return "\n".join(parts)
 
 
+def _need_summary(need: GenericNeed | None) -> str | None:
+    if need is None:
+        return None
+    parts: list[str] = []
+    if need.usage_purpose:
+        parts.append(f"mục đích {need.usage_purpose}")
+    if need.budget_min and need.budget_max:
+        parts.append(
+            f"tầm giá {format_trieu(need.budget_min)}–{format_trieu(need.budget_max)}"
+        )
+    elif need.budget_max:
+        parts.append(f"ngân sách khoảng {format_trieu(need.budget_max)}")
+    if need.brand_prefs:
+        parts.append(f"ưu tiên hãng {', '.join(need.brand_prefs)}")
+    if need.priorities:
+        parts.append(", ".join(need.priorities))
+    return " và ".join(parts) if parts else None
+
+
+def _fit_reason(
+    product: GenericProduct,
+    roles: list[str],
+    need: GenericNeed | None,
+    evidence: dict[str, tuple[str, str]] | None = None,
+) -> str:
+    evidence = evidence or {}
+    reasons: list[str] = []
+    if "best_price" in roles:
+        reasons.append("giá tốt nhất trong các mẫu phù hợp")
+    if "best_value" in roles and product.promotion.discount_percent:
+        reasons.append(
+            f"đang giảm sâu {product.promotion.discount_percent:.0f}% nên rất đáng tiền"
+        )
+    if "best_performance" in roles:
+        if "best_performance" in evidence and evidence["best_performance"][1]:
+            label, value = evidence["best_performance"]
+            reasons.append(f"{label.lower()} nhóm em lọc — {value}")
+        else:
+            reasons.append("thông số thuộc nhóm mạnh nhất trong tầm này")
+    for role in roles:
+        if role.startswith("dim:") and role in evidence:
+            label, value = evidence[role]
+            detail = f" ({value})" if value else ""
+            reasons.append(f"{label.lower()} trong nhóm em lọc{detail}")
+    if "most_expensive" in roles:
+        reasons.append("là mẫu cao cấp nhất bên em đang có theo yêu cầu của mình")
+    if product.gift_promotion and "best_value" not in roles:
+        reasons.append("có quà tặng kèm")
+    if need is not None and need.budget_max and product.effective_price:
+        if product.effective_price <= need.budget_max:
+            reasons.append("nằm gọn trong ngân sách của mình")
+        else:
+            reasons.append(
+                "nhỉnh hơn ngân sách một chút nhưng đáng cân nhắc vì ưu đãi"
+            )
+    return "  → Phù hợp vì " + ", ".join(reasons) + "." if reasons else ""
+
+
+def _missing_info_hint(
+    need: GenericNeed | None, *, purpose_example: str | None = None
+) -> str | None:
+    """Only fields the customer has NOT answered yet — re-mentioning an
+    answered one reads as not listening (Cường's live-test 2). Abstract asks
+    carry a concrete example."""
+    if need is None:
+        return None
+    missing: list[str] = []
+    if not need.usage_purpose:
+        ask = "mục đích sử dụng"
+        if purpose_example:
+            ask += f" (ví dụ: {purpose_example})"
+        missing.append(ask)
+    if not need.budget_max and not need.budget_min:
+        missing.append("khoảng giá mong muốn")
+    if not need.priorities:
+        missing.append("điều anh/chị ưu tiên nhất")
+    if not missing:
+        return None
+    return (
+        "Em có thể chọn chính xác hơn nữa nếu anh/chị cho em biết thêm về "
+        + ", ".join(missing[:2])
+        + " ạ."
+    )
+
+
+def _debate_line(suggestions: Suggestions) -> str | None:
+    priced = [
+        p for p in suggestions.distinct_products if p.effective_price is not None
+    ]
+    if len(priced) < 2:
+        return None
+    cheapest = min(priced, key=lambda p: p.effective_price)
+    priciest = max(priced, key=lambda p: p.effective_price)
+    if cheapest.productidweb == priciest.productidweb:
+        return None
+    delta = priciest.effective_price - cheapest.effective_price
+    if delta <= 0:
+        return None
+    pricier_roles = suggestions.roles_for(priciest.productidweb)
+    # The pricier model's winning dimension IS its counter-argument — cite
+    # the real value instead of a generic "mạnh hơn" (live-test 3 finding).
+    perk = None
+    for role in pricier_roles:
+        if role in suggestions.role_evidence:
+            label, value = suggestions.role_evidence[role]
+            perk = f"{label.lower()}" + (f" ({value})" if value else "")
+            break
+    if perk is None:
+        if "best_performance" in pricier_roles:
+            perk = "mạnh hơn hẳn về thông số"
+        elif (priciest.promotion.discount_percent or 0) > (
+            cheapest.promotion.discount_percent or 0
+        ):
+            perk = "đang được giảm sâu hơn"
+        elif priciest.gift_promotion and not cheapest.gift_promotion:
+            perk = "kèm quà tặng mà mẫu kia không có"
+        else:
+            perk = "thuộc phân khúc cao cấp hơn"
+    return (
+        f"So nhanh: {cheapest.name} rẻ hơn {priciest.name} "
+        f"{format_vnd(delta)}; đổi lại {priciest.name} {perk} ạ."
+    )
+
+
 def render_suggestions(
     suggestions: Suggestions,
     *,
     category_name: str,
     next_question: str | None = None,
     also_consider: list[GenericProduct] | None = None,
+    need: GenericNeed | None = None,
+    purpose_example: str | None = None,
 ) -> ProposedResponse:
     # The three ranked roles always lead the answer; extra worthwhile options
-    # follow in a "tham khảo thêm" section (Cường 2026-07-18).
-    lines = [
-        f"Dạ em gợi ý anh/chị mấy mẫu {category_name} đang có ưu đãi tốt ạ:",
-        "",
-    ]
+    # follow in a "tham khảo thêm" section. Reasoning is context-driven
+    # (Cường: focus on intention/context, explain WHY each pick fits).
+    summary = _need_summary(need)
+    opener = (
+        f"Dạ dựa trên yêu cầu của anh/chị về {summary}, em gợi ý mấy mẫu "
+        f"{category_name} phù hợp nhất ạ:"
+        if summary
+        else f"Dạ em gợi ý anh/chị mấy mẫu {category_name} đang có ưu đãi tốt ạ:"
+    )
+    lines = [opener, ""]
     for product in suggestions.distinct_products:
         roles = suggestions.roles_for(product.productidweb)
-        lines.append(_product_line(product, roles))
+        lines.append(_product_line(product, roles, suggestions.role_evidence))
+        reason = _fit_reason(product, roles, need, suggestions.role_evidence)
+        if reason:
+            lines.append(reason)
         lines.append("")
-    if suggestions.skipped_roles:
-        lines.append(
-            "(Em chưa đủ dữ liệu để chấm mục: "
-            + ", ".join(ROLE_LABELS.get(r, r) for r in suggestions.skipped_roles)
-            + " ạ.)"
-        )
+    # Quick debate between the picks: benefit vs drawback, deterministic from
+    # the records (price delta is validator-allowed).
+    debate = _debate_line(suggestions)
+    if debate:
+        lines.append(debate)
         lines.append("")
+    # Roles the data cannot support are skipped silently — never shown to the
+    # end user (Cường's live-test finding).
     extras = list(also_consider or [])
     if extras:
         lines.append("Ngoài ra anh/chị có thể tham khảo thêm:")
@@ -97,6 +259,9 @@ def render_suggestions(
                 note += ", có quà tặng"
             lines.append(f"• {product.name} — {price}{note}")
         lines.append("")
+    hint = _missing_info_hint(need, purpose_example=purpose_example)
+    if hint and next_question is None:
+        lines.append(hint)
     question = next_question or (
         "Anh/chị muốn em so sánh chi tiết hai mẫu nào, hay xem thêm lựa chọn khác ạ?"
     )

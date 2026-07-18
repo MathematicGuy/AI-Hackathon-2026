@@ -271,6 +271,11 @@ When the user corrects your approach, append a one-line rule here before ending 
 - Always use `deepseek/deepseek-v4-flash` through OpenRouter for M1 grounded explanations; never use GPT-5.4 Mini for that role.
 - When using subagent-driven development, request `gpt-5.6-luna-high` for context investigation and `gpt-5.6-terra-high` for code implementation; if the runtime cannot select a model, state that limitation and never claim enforcement.
 - Track product-work progress only in the explicitly mapped file under `docs/team/now/`; do not create root `*-NOW.md`, `PROGRESS.md`, or a separate SDD progress ledger.
+- The E02 agent always self-addresses as "em" (khách = "anh/chị") in every user-visible string, backend and frontend alike; never "mình/tôi/bạn" as self-reference.
+- The E02 agent's main reasoning core is gpt-4o-mini via OPENAI_API_KEY (override AGENT_MAIN_LLM_MODEL); deepseek/Mistral are fallbacks only. The deepseek rule above applies to M1 grounded explanations, not the E02 agent.
+- Always live-test an E02 fix round against the running API (8010) with the exact transcript that failed before declaring it done; suite-green alone is not enough.
+- E02 suggestion/comparison must be dimension-driven per category (catalog/dimensions.py) according to the user's preference — never a fixed generic trio; every spec claim must filter placeholder values ("Hãng không công bố", "Đang cập nhật") first.
+- Updates must never break parts of the system that already work: additive changes behind the existing behavior, full suite green BEFORE and AFTER as proof.
 
 ---
 

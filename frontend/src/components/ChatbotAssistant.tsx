@@ -1,9 +1,13 @@
 "use client";
 
 import {
+  Copy,
+  Pencil,
   RefreshCw,
   RotateCcw,
   Send,
+  ThumbsDown,
+  ThumbsUp,
   X,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -55,6 +59,24 @@ function formatChatTime(date: Date) {
 const AGENT_API_BASE =
   process.env.NEXT_PUBLIC_AGENT_API_URL ?? "http://127.0.0.1:8000";
 
+// Natural progress line while waiting, picked from the query (replaces "...").
+function statusForQuery(query: string) {
+  const normalized = normalizeChatQuery(query);
+  if (/chinh sach|bao hanh|doi tra|hoan tien|dieu khoan/.test(normalized)) {
+    return "Em đang xem chính sách của bên em ạ…";
+  }
+  if (/con hang|kho|ton kho|co san/.test(normalized)) {
+    return "Để em kiểm tra kho hàng ạ…";
+  }
+  if (/so sanh/.test(normalized)) {
+    return "Em đang so sánh các mẫu giúp mình ạ…";
+  }
+  if (/khuyen mai|uu dai|giam gia/.test(normalized)) {
+    return "Em đang tổng hợp ưu đãi đang chạy ạ…";
+  }
+  return "Em đang lọc sản phẩm phù hợp cho mình ạ…";
+}
+
 function suggestionForPath(pathname: string) {
   if (pathname === "/flashsale") {
     return "Săn deal World Cup hôm nay";
@@ -68,7 +90,7 @@ function suggestionForPath(pathname: string) {
   if (pathname === "/lich-su-mua-hang") {
     return "Hỗ trợ kiểm tra đơn hàng";
   }
-  return "Bạn cần tư vấn chọn sản phẩm?";
+  return "Anh/chị cần em tư vấn chọn sản phẩm?";
 }
 
 export function ChatbotAssistant() {
@@ -80,9 +102,13 @@ export function ChatbotAssistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState("");
   const [failedQuery, setFailedQuery] = useState("");
+  const [feedback, setFeedback] = useState<Record<number, "like" | "dislike">>({});
   const sequence = useRef(1);
   const sessionId = useRef<string | null>(null);
+  // User messages to silently re-send after an edit rebuilt the session.
+  const replayQueue = useRef<string[]>([]);
   const launcher = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLElement>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
@@ -205,38 +231,161 @@ export function ChatbotAssistant() {
   const requestReply = async (query: string) => {
     setIsSending(true);
     setFailedQuery("");
+    setPendingStatus(statusForQuery(query));
+    const assistantId = sequence.current++;
+    let started = false;
 
     try {
-      const response = await fetch(`${AGENT_API_BASE}/api/v1/agent/respond`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId.current, message: query }),
-      });
-      if (!response.ok) {
+      // After an edit, rebuild the server-side session by replaying the
+      // earlier user messages (the deterministic pipeline makes this cheap).
+      if (replayQueue.current.length > 0) {
+        const queue = [...replayQueue.current];
+        replayQueue.current = [];
+        setPendingStatus("Em đang cập nhật lại ngữ cảnh ạ…");
+        for (const past of queue) {
+          const replayResponse = await fetch(
+            `${AGENT_API_BASE}/api/v1/agent/respond`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                session_id: sessionId.current,
+                message: past,
+              }),
+            },
+          );
+          if (replayResponse.ok) {
+            const data = (await replayResponse.json()) as { session_id?: string };
+            if (data.session_id) {
+              sessionId.current = data.session_id;
+            }
+          }
+        }
+        setPendingStatus(statusForQuery(query));
+      }
+      const response = await fetch(
+        `${AGENT_API_BASE}/api/v1/agent/respond/stream`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId.current, message: query }),
+        },
+      );
+      if (!response.ok || !response.body) {
         throw new Error(`HTTP ${response.status}`);
       }
-      const data: { session_id: string; text: string } = await response.json();
-      sessionId.current = data.session_id;
-      setMessages((current) => [
-        ...current,
-        {
-          id: sequence.current++,
-          role: "assistant",
-          text: data.text,
-          time: formatChatTime(new Date()),
-          kind: isComparisonQuery(query) ? "comparison" : undefined,
-        },
-      ]);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.trim()) {
+            continue;
+          }
+          const event = JSON.parse(line) as {
+            type: string;
+            text?: string;
+            session_id?: string;
+          };
+          if (event.type === "chunk" && event.text !== undefined) {
+            if (!started) {
+              started = true;
+              setPendingStatus("");
+              setMessages((current) => [
+                ...current,
+                {
+                  id: assistantId,
+                  role: "assistant",
+                  text: event.text ?? "",
+                  time: formatChatTime(new Date()),
+                  kind: isComparisonQuery(query) ? "comparison" : undefined,
+                },
+              ]);
+            } else {
+              setMessages((current) =>
+                current.map((message) =>
+                  message.id === assistantId
+                    ? { ...message, text: message.text + (event.text ?? "") }
+                    : message,
+                ),
+              );
+            }
+          } else if (event.type === "done" && event.session_id) {
+            sessionId.current = event.session_id;
+          }
+        }
+      }
+      if (!started) {
+        throw new Error("empty stream");
+      }
     } catch {
-      setFailedQuery(query);
-      showToast({
-        variant: "error",
-        title: "Chưa nhận được phản hồi",
-        description: "Không kết nối được trợ lý AI. Bạn có thể thử lại ngay.",
-      });
+      if (!started) {
+        setFailedQuery(query);
+        showToast({
+          variant: "error",
+          title: "Chưa nhận được phản hồi",
+          description: "Không kết nối được trợ lý AI. Anh/chị có thể thử lại ngay.",
+        });
+      }
     } finally {
       setIsSending(false);
+      setPendingStatus("");
     }
+  };
+
+  const copyMessage = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast({ variant: "success", title: "Đã sao chép", description: "Nội dung đã vào bộ nhớ tạm." });
+    } catch {
+      showToast({ variant: "error", title: "Không sao chép được", description: "Trình duyệt chặn quyền clipboard." });
+    }
+  };
+
+  const editMessage = (id: number, text: string) => {
+    // Real edit semantics: cut the conversation back to before this message,
+    // queue the earlier user turns for a silent replay on a fresh session,
+    // and load the text into the composer for editing.
+    const index = messages.findIndex((message) => message.id === id);
+    if (index === -1) {
+      return;
+    }
+    const prefix = messages.slice(0, index);
+    setMessages(prefix);
+    replayQueue.current = prefix
+      .filter((message) => message.role === "user")
+      .map((message) => message.text);
+    sessionId.current = null;
+    setInput(text);
+    window.requestAnimationFrame(() => composer.current?.focus());
+  };
+
+  const rateMessage = (id: number, rating: "like" | "dislike") => {
+    setFeedback((current) => {
+      const next = { ...current };
+      if (next[id] === rating) {
+        delete next[id];
+      } else {
+        next[id] = rating;
+      }
+      return next;
+    });
+    void fetch(`${AGENT_API_BASE}/api/v1/agent/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        session_id: sessionId.current ?? "no-session",
+        message_index: id,
+        rating,
+      }),
+    }).catch(() => {});
   };
 
   const sendQuery = (rawQuery: string) => {
@@ -279,10 +428,12 @@ export function ChatbotAssistant() {
     setMessages([]);
     setInput("");
     setFailedQuery("");
+    setFeedback({});
     setIsSending(false);
     sessionId.current = null;
+    replayQueue.current = [];
     setOpenedAt(formatChatTime(new Date()));
-    showToast({ variant: "info", title: "Đã làm mới hội thoại", description: "Bạn có thể bắt đầu câu hỏi mới." });
+    showToast({ variant: "info", title: "Đã làm mới hội thoại", description: "Anh/chị có thể bắt đầu câu hỏi mới." });
     window.requestAnimationFrame(() => composer.current?.focus());
   };
 
@@ -348,7 +499,7 @@ export function ChatbotAssistant() {
           <SafeImage src="/images/chatbot/chat-bot.png" alt="" className="size-16 rounded-full border border-blue-50 sm:size-20" fallbackLabel="AI" />
           <div>
             <h2 className="text-base font-bold text-slate-900">
-              Mình có thể giúp bạn chọn sản phẩm
+              Em có thể giúp anh/chị chọn sản phẩm
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">
               Hỏi về nhu cầu, so sánh, khuyến mãi hoặc bảo hành.
@@ -379,7 +530,7 @@ export function ChatbotAssistant() {
         <div className="mt-3 flex items-end gap-1.5">
           <SafeImage src="/images/chatbot/mascot.png" alt="" className="size-9 shrink-0 rounded-full" fallbackLabel="AI" />
           <div className="max-w-[88%] rounded-[20px] rounded-ss-none bg-slate-100 px-4 py-3 text-sm leading-6 text-slate-800">
-            Bạn đang quan tâm sản phẩm nào? Mình có thể giúp lọc lựa chọn hoặc so sánh nhanh.
+            Dạ anh/chị đang quan tâm sản phẩm nào ạ? Em có thể giúp lọc lựa chọn hoặc so sánh nhanh ạ.
           </div>
         </div>
 
@@ -434,22 +585,71 @@ export function ChatbotAssistant() {
                       />
                     </div>
                   ) : null}
-                  <p className="mt-1 px-1 text-xs font-medium text-slate-500">
-                    {message.time}
-                  </p>
+                  <div
+                    className={`mt-1 flex items-center gap-1 px-1 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <p className="text-xs font-medium text-slate-500">
+                      {message.time}
+                    </p>
+                    {message.role === "assistant" ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => copyMessage(message.text)}
+                          className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-[#176fc9]"
+                          aria-label="Sao chép nội dung"
+                          title="Sao chép"
+                        >
+                          <Copy className="size-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => rateMessage(message.id, "like")}
+                          className={`rounded p-1 transition hover:bg-slate-100 ${feedback[message.id] === "like" ? "text-[#176fc9]" : "text-slate-400 hover:text-[#176fc9]"}`}
+                          aria-label="Hài lòng với câu trả lời"
+                          aria-pressed={feedback[message.id] === "like"}
+                          title="Hài lòng"
+                        >
+                          <ThumbsUp className="size-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => rateMessage(message.id, "dislike")}
+                          className={`rounded p-1 transition hover:bg-slate-100 ${feedback[message.id] === "dislike" ? "text-red-500" : "text-slate-400 hover:text-red-500"}`}
+                          aria-label="Chưa hài lòng với câu trả lời"
+                          aria-pressed={feedback[message.id] === "dislike"}
+                          title="Chưa hài lòng"
+                        >
+                          <ThumbsDown className="size-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => editMessage(message.id, message.text)}
+                        className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-[#176fc9]"
+                        aria-label="Chỉnh sửa và gửi lại từ đây"
+                        title="Chỉnh sửa và gửi lại"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
 
-          {isSending ? (
+          {isSending && pendingStatus ? (
             <div className="flex items-end gap-1.5">
               <SafeImage src="/images/chatbot/mascot.png" alt="" className="size-9 shrink-0 rounded-full" fallbackLabel="AI" />
-              <div className="flex h-10 items-center gap-1 rounded-[20px] rounded-ss-none bg-[#f2f5f9] px-4" role="status" aria-label="Trợ lý đang trả lời">
-                <span className="sr-only">Trợ lý đang trả lời</span>
-                <span className="size-1.5 animate-bounce rounded-full bg-slate-400" />
-                <span className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:120ms]" />
-                <span className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:240ms]" />
+              <div className="flex min-h-10 items-center gap-2 rounded-[20px] rounded-ss-none bg-[#f2f5f9] px-4 py-2 text-sm text-slate-600" role="status" aria-label="Trợ lý đang trả lời">
+                <span>{pendingStatus}</span>
+                <span className="flex gap-1">
+                  <span className="size-1.5 animate-bounce rounded-full bg-slate-400" />
+                  <span className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:120ms]" />
+                  <span className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:240ms]" />
+                </span>
               </div>
             </div>
           ) : null}

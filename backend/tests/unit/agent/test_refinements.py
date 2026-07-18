@@ -119,6 +119,8 @@ async def test_explicit_cue_still_switches(deps):
 # --- tolerant LLM client ---
 
 def test_resolve_candidates_from_minimal_env():
+    # DEFAULT_MODEL belongs to M1 and must not steer the agent; the agent's
+    # reasoning core is gpt-4o-mini (live-test round 2 direction).
     candidates = resolve_llm_candidates(
         {
             "OPENROUTER_API_KEY": "sk-test",
@@ -128,7 +130,7 @@ def test_resolve_candidates_from_minimal_env():
         }
     )
     assert [c.model for c in candidates] == [
-        "deepseek/deepseek-v4-flash",
+        "openai/gpt-4o-mini",
         "mistral-medium-latest",
     ]
     assert candidates[0].base_url.startswith("https://openrouter.ai")

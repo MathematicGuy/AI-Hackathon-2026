@@ -20,14 +20,16 @@ class SearchResult:
 
 
 def _matches(product: GenericProduct, *, budget_min, budget_max, brands,
-             keywords, attribute_contains) -> bool:
+             keywords, attribute_contains, budget_slack: float = 0.0) -> bool:
     price = product.effective_price
     if budget_min is not None or budget_max is not None:
         if price is None:
             return False
         if budget_min is not None and price < budget_min:
             return False
-        if budget_max is not None and price > budget_max:
+        # Soft margin: an item slightly over budget (e.g. 31tr for a 30tr
+        # ceiling) stays eligible and is labeled as such by the renderer.
+        if budget_max is not None and price > budget_max * (1.0 + budget_slack):
             return False
     if brands:
         brand = (product.brand or "").lower()
@@ -60,6 +62,7 @@ def search_products(
     limit: int = 5,
     cursor: int = 0,
     exclude_ids: tuple[str, ...] = (),
+    budget_slack: float = 0.0,
 ) -> SearchResult:
     if not (isinstance(limit, int) and 1 <= limit <= 20) or cursor < 0:
         raise ValueError("invalid page request")
@@ -75,6 +78,7 @@ def search_products(
             brands=brands,
             keywords=keywords,
             attribute_contains=attribute_contains,
+            budget_slack=budget_slack,
         )
     ]
     candidates.sort(

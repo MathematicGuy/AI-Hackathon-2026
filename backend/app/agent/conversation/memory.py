@@ -3,6 +3,7 @@ incremental patch-merge, rewrite on correction, and archive+reset on a
 category switch — with restore when the user returns to a previous category."""
 
 from backend.app.agent.contracts import AgentState, AgentUnderstanding, GenericNeed
+from backend.app.agent.conversation.coldstart import MAX_QUESTIONS_PER_CYCLE
 
 _SESSION_FIELDS = ("brand_prefs", "location")
 
@@ -65,14 +66,19 @@ def apply_turn(state: AgentState, understanding: AgentUnderstanding) -> AgentSta
     state.turn_number += 1
 
     # A materially new search reopens the clarification cycle for the current
-    # category: the question budget and asked-list reset, while answered
-    # questions stay answered through the need itself (audit finding: without
-    # this, a category could never be asked anything again after one cycle).
+    # category, but only once the previous cycle is actually spent — resetting
+    # an ACTIVE cycle would clear the asked-list and make the bot repeat a
+    # question the customer just answered (Cường's live-test 2: budget asked
+    # twice in a row). Answered questions stay answered through the need.
     materially_new = understanding.intent == "new_search" and bool(
         patch.model_fields_set - {"requested_roles"}
     )
     category = state.need.category_code
-    if materially_new and category is not None:
+    if (
+        materially_new
+        and category is not None
+        and state.clarification_count.get(category, 0) >= MAX_QUESTIONS_PER_CYCLE
+    ):
         state.clarification_count[category] = 0
         state.asked_questions[category] = []
     return state

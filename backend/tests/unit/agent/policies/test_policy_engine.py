@@ -112,7 +112,9 @@ def test_degradation_response_apologizes_and_quotes(answer_module, corpus):
     )
     assert "xin lỗi" in response.lower()
     assert answer.quotes[0] in response
-    assert answer.sources[0] in response
+    # Filenames never reach the end user — the display name does.
+    assert answer.sources[0] not in response
+    assert "Chính sách bảo hành & đổi trả" in response
 
 
 def test_degradation_never_promises_exception(answer_module, corpus):

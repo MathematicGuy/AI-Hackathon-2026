@@ -44,6 +44,66 @@ def performance_attribute(category_code: str | None) -> str | None:
     return scenario.get("performance_attribute") if scenario else None
 
 
+def question_example(category_code: str | None, key: str | None) -> str | None:
+    """Concrete example for an abstract cold-start question, used when the
+    customer asks what the question means and in the missing-info hint."""
+    scenario = SCENARIOS.get(category_code or "")
+    if not scenario or key is None:
+        return None
+    for question in scenario.get("questions", []):
+        if question["key"] == key:
+            return question.get("example")
+    for followups in scenario.get("purpose_followups", {}).values():
+        for question in followups:
+            if question["key"] == key:
+                return question.get("example")
+    return None
+
+
+def purpose_example(category_code: str | None) -> str | None:
+    scenario = SCENARIOS.get(category_code or "")
+    return scenario.get("purpose_example") if scenario else None
+
+
+def opening_questions(state: AgentState, *, limit: int = 3) -> list[Question]:
+    """First contact with a category: bundle the top 2-3 unanswered questions
+    into ONE message (Cường's cold-start direction). The bundle counts as a
+    single clarification turn; all bundled keys are marked asked and the
+    pending key is the first one."""
+    category = state.need.category_code
+    if category is None:
+        return []
+    asked = state.asked_for(category)
+    questions: list[Question] = []
+    for question in _script_for(state.need):
+        if len(questions) >= limit:
+            break
+        if question.key in asked or _question_answered(question.key, state.need):
+            continue
+        asked.append(question.key)
+        questions.append(question)
+    if questions:
+        state.clarification_count[category] = (
+            state.clarification_count.get(category, 0) + 1
+        )
+        state.pending_question_key = questions[0].key
+        state.pending_question_text = questions[0].ask
+    return questions
+
+
+def render_opening(questions: list[Question], category_name: str) -> str:
+    if len(questions) == 1:
+        return questions[0].ask
+    marks = ["①", "②", "③"]
+    lines = [
+        f"Dạ để tư vấn {category_name} chuẩn nhất, anh/chị cho em xin vài "
+        "thông tin ạ:",
+    ]
+    for index, question in enumerate(questions):
+        lines.append(f"{marks[index]} {question.ask}")
+    return "\n".join(lines)
+
+
 def next_question(state: AgentState) -> Question | None:
     """Pick the highest-importance unanswered, un-asked question for the
     current category, or None when the cycle budget is spent / nothing is

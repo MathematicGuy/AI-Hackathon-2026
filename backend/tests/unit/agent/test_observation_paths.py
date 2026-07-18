@@ -147,7 +147,11 @@ async def test_policy_path_records_retrieval_and_validation(tmp_path: Path) -> N
 
     reply = await run_turn(AgentState(), "chính sách bảo hành sản phẩm", deps)
 
-    assert "warranty.md" in reply.text
+    # Main renders the customer-facing source name via display_source
+    # ("warranty.md" -> "Warranty"); the raw doc name stays in the retrieval span.
+    assert "Warranty" in reply.text
+    retrieval = _latest_update(observer.records_for("policy_retrieval")[0])
+    assert "warranty.md" in retrieval["output"]["sources"]
     assert observer.names == [
         "input_guardrail",
         "understanding",

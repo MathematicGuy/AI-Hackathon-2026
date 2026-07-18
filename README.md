@@ -26,7 +26,7 @@ Human navigation:
 - [Documentation authority registry](docs/README.md)
 - [Milestone overview](PROJECT_MANAGEMENT.md)
 - [Accepted product contract](docs/product/air-conditioner-advisor-m1-contract.md)
-- [Product requirements](docs/product/requirements/air-conditioner-advisor-m1-prd.md)
+- [Product requirements (Stale)](docs/product/stale-requirements/business-viability-pilot-pathway-m1.md)
 - [Product architecture](docs/product/architecture/air-conditioner-advisor-m1.md)
 - [Story index](docs/stories/README.md)
 - [Active workstream trackers](docs/team/now/README.md)
@@ -40,18 +40,27 @@ Harness workflow before implementation.
 ```text
 ai-logs/                     AI session policy, member guides, and logs
 backend/                     Python application contracts and tests
+  backend/app/agent/         Constrained single-agent pipeline (LangGraph)
+  backend/app/api/           FastAPI routes, schemas, and error handlers
+  backend/app/services/      Application service layer (catalog, advisor)
+  backend/app/guardrails/    Input/output guardrails and intent extraction
+  backend/app/graph/         LangGraph graph definitions
+  backend/app/tools/         Agent tool implementations
 data/aircon-m1-test-data/    Synthetic Milestone 1 fixtures
+data/dataset/                Provided product catalog (Spec_cate_gia.xlsx) and policies
+frontend/                    Next.js decision UI (M1.8)
 docs/
-  product/                   Product contract, requirements, architecture, discovery
+  product/                   Product contract, stale-requirements, architecture, discovery
   stories/                   Bounded story packets and evidence
   team/now/                  Parallel workstream ownership and coordination
   decisions/                 Accepted durable decisions
   references/                Partner-provided source material
+infra/                       Docker Compose files and backend Dockerfile
 scripts/                     Harness and repository validation tools
 ```
 
-Only `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `README.md`, and
-`PROJECT_MANAGEMENT.md` are allowed as root Markdown files. The placement and
+Only `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `README.md`,
+`PROJECT_MANAGEMENT.md`, and `ARCHITECTURE_v2.md` are allowed as root Markdown files. The placement and
 conflict rules for every other document are defined in
 [docs/README.md](docs/README.md).
 
@@ -61,7 +70,8 @@ Copy `.env.example` to `.env` and fill only the values needed by your local
 task. `.env` files are ignored; example templates remain trackable. Never
 commit, print, or copy credentials into AI logs.
 
-The environment template documents planned provider and frontend interfaces.
+The environment template documents backend provider credentials and frontend
+interface variables (`NEXT_PUBLIC_ADVISOR_MODE`, `NEXT_PUBLIC_ADVISOR_API_URL`).
 It does not imply that every variable is already consumed by application code,
 and this repository does not automatically load `.env` during validation.
 Provider variable conventions follow the official
@@ -87,9 +97,12 @@ Start the database, then apply migrations and ingest the catalog:
 # 1. Start Postgres (internal to the compose network)
 docker compose -f infra/docker-compose.yml up -d db
 
-# 2. Migrate + ingest via the ingestion container (in-network)
-docker compose -f infra/docker-compose.yml run --rm ingestion \
-  sh -c "python -m backend.app.db.migrate && python -m backend.app.ingestion.run --source /app/data/dataset"
+# 2. Apply schema migrations
+docker compose -f infra/docker-compose.yml run --rm --no-deps backend \
+  python -m backend.app.db.migrate
+
+# 3. Ingest the catalog (ingestion service requires --profile tools)
+docker compose -f infra/docker-compose.yml --profile tools run --rm ingestion
 ```
 
 Ingestion is idempotent (upsert keyed by `sku`); running it again reports every
