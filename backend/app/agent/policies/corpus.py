@@ -121,6 +121,9 @@ class PolicyCorpus:
 
         scored: list[tuple[float, int, PolicySection]] = []
         for index, section in enumerate(self.sections):
+            # Heading-only stubs carry nothing quotable.
+            if len(section.text.strip()) < 80:
+                continue
             body_counts, heading_words = self._section_index()[index]
             matched = {word for word in query_words if body_counts.get(word)}
             if not matched:
