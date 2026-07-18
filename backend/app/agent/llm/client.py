@@ -178,3 +178,71 @@ def default_extractor() -> LLMUnderstandingExtractor | None:
     if not candidates:
         return None
     return LLMUnderstandingExtractor(candidates)
+
+
+_POLISH_SYSTEM = """Bạn là nhân viên tư vấn bán hàng Điện Máy XANH (xưng em, gọi khách anh/chị, mở đầu Dạ, giọng gần gũi).
+Viết lại đoạn tư vấn dưới đây cho tự nhiên, ấm áp và chủ động bán hàng hơn.
+
+QUY TẮC BẮT BUỘC:
+- GIỮ NGUYÊN 100% mọi con số (giá, %, dung tích...), tên sản phẩm, quà tặng — không thêm, không bớt, không làm tròn.
+- Không thêm bất kỳ khuyến mãi/cam kết/thông tin nào không có trong bản gốc.
+- Giữ đúng MỘT câu hỏi ở cuối.
+- Trả về DUY NHẤT phần văn bản đã viết lại."""
+
+
+class LLMPolisher:
+    """Optional rephrasing pass. The grounding validator re-checks the
+    polished text against the same records; any violation falls back to the
+    deterministic version."""
+
+    def __init__(
+        self,
+        candidates: list[LLMCandidate],
+        *,
+        transport=None,
+        timeout: float = 25.0,
+    ) -> None:
+        if not candidates:
+            raise ValueError("no LLM candidates configured")
+        self.candidates = candidates
+        self.timeout = timeout
+        self._transport = transport
+
+    async def _call(self, candidate: LLMCandidate, system: str, user: str) -> str:
+        if self._transport is not None:
+            return await self._transport(candidate, system, user)
+        from openai import AsyncOpenAI
+
+        client = AsyncOpenAI(
+            base_url=candidate.base_url,
+            api_key=candidate.api_key,
+            timeout=self.timeout,
+        )
+        response = await client.chat.completions.create(
+            model=candidate.model,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            temperature=0.4,
+        )
+        return response.choices[0].message.content or ""
+
+    async def polish(self, text: str) -> str:
+        for candidate in self.candidates:
+            try:
+                polished = (await self._call(candidate, _POLISH_SYSTEM, text)).strip()
+                if polished:
+                    return polished
+            except Exception:
+                continue
+        return text
+
+
+def default_polisher() -> LLMPolisher | None:
+    if os.environ.get("AGENT_LLM_POLISH", "").lower() not in ("1", "true", "yes"):
+        return None
+    candidates = resolve_llm_candidates()
+    if not candidates:
+        return None
+    return LLMPolisher(candidates)

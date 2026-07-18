@@ -9,10 +9,11 @@ US-206 record — the in-memory `AgentState` carries the session today.
 
 from dataclasses import dataclass, field
 
-from backend.app.agent.catalog.dataset_adapter import ExcelDatasetAdapter, GenericProduct
+from backend.app.agent.catalog.dataset_adapter import GenericProduct
 from backend.app.agent.catalog.registry import CategoryRegistry
 from backend.app.agent.contracts import AgentState, DEFAULT_ROLES
 from backend.app.agent.conversation import coldstart, memory
+from backend.app.agent.conversation.domain_rules import apply_domain_filters
 from backend.app.agent.conversation.understand import (
     UnderstandingExtractor,
     understand_turn,
@@ -80,15 +81,24 @@ class AgentDependencies:
     registry: CategoryRegistry = field(default_factory=CategoryRegistry)
     corpus: PolicyCorpus = field(default_factory=PolicyCorpus)
     extractor: UnderstandingExtractor | None = None
+    polisher: object | None = None  # LLMPolisher; optional rephrasing pass
 
     @classmethod
     def from_default_paths(cls, *, with_llm: bool = True) -> "AgentDependencies":
+        from backend.app.agent.catalog.dataset_adapter import default_adapter
+
         extractor = None
+        polisher = None
         if with_llm:
-            from backend.app.agent.llm.client import default_extractor
+            from backend.app.agent.llm.client import default_extractor, default_polisher
 
             extractor = default_extractor()
-        return cls(products=ExcelDatasetAdapter().load(), extractor=extractor)
+            polisher = default_polisher()
+        return cls(
+            products=default_adapter().load(),
+            extractor=extractor,
+            polisher=polisher,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -182,7 +192,7 @@ async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> 
     if intent == "unsupported":
         return AgentReply(text=_category_menu(deps.registry), intent=intent, flags=flags)
 
-    return _product_flow(state, deps, intent, flags)
+    return await _product_flow(state, deps, intent, flags)
 
 
 def _state_summary(state: AgentState) -> str:
@@ -259,7 +269,7 @@ def _policy_flow(message: str, deps: AgentDependencies, flags: list[str]) -> Age
     return AgentReply(text=text, intent="policy_question", flags=flags)
 
 
-def _product_flow(
+async def _product_flow(
     state: AgentState, deps: AgentDependencies, intent: str, flags: list[str]
 ) -> AgentReply:
     need = state.need
@@ -335,13 +345,14 @@ def _product_flow(
             flags=flags,
         )
 
+    # Per-category domain rules narrow the pool from captured answers
+    # (household → capacity band, room area → coverage, screen size → inches).
+    pool = apply_domain_filters(result.items, need)
     roles = tuple(need.requested_roles) or DEFAULT_ROLES
-    suggestions = suggest_products(
-        result.items, category_code=category, roles=roles
-    )
+    suggestions = suggest_products(pool, category_code=category, roles=roles)
     winner_ids = {p.productidweb for p in suggestions.distinct_products}
     also_consider = [
-        p for p in result.items if p.productidweb not in winner_ids
+        p for p in pool if p.productidweb not in winner_ids
     ][:3]
     follow_up = coldstart.next_question(state)
     question_text = None
@@ -359,6 +370,19 @@ def _product_flow(
         response.text, allowed_products=response.allowed_products
     )
     text = response.text if validation.ok else degrade_to_facts(response.allowed_products)
+
+    # Optional LLM polish: rephrase, then re-validate against the same
+    # records; any violation keeps the deterministic text.
+    if validation.ok and deps.polisher is not None:
+        polished = await deps.polisher.polish(text)
+        if polished and polished != text:
+            recheck = validate_response(
+                polished, allowed_products=response.allowed_products
+            )
+            if recheck.ok:
+                text = polished
+            else:
+                flags = flags + ["polish_rejected"]
 
     presented = [p.productidweb for p in response.allowed_products]
     state.last_presented_ids = presented

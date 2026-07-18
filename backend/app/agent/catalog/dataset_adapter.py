@@ -28,6 +28,27 @@ MIRROR_KEYS = (
 )
 
 
+def default_adapter():
+    """Prefer Duy's Postgres data platform; fall back to Excel when the
+    database is unreachable or unconfigured. `AGENT_DATA_BACKEND` forces a
+    backend ("postgres" | "excel")."""
+    forced = os.environ.get("AGENT_DATA_BACKEND", "").lower()
+    if forced == "excel":
+        return ExcelDatasetAdapter()
+    if forced == "postgres":
+        from backend.app.agent.catalog.pg_adapter import PostgresDatasetAdapter
+
+        return PostgresDatasetAdapter()
+    from backend.app.agent.catalog.pg_adapter import (
+        PostgresDatasetAdapter,
+        postgres_available,
+    )
+
+    if postgres_available():
+        return PostgresDatasetAdapter()
+    return ExcelDatasetAdapter()
+
+
 @dataclass(frozen=True, slots=True)
 class GenericProduct:
     productidweb: str

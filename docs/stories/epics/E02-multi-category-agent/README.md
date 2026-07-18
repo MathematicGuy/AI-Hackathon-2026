@@ -19,3 +19,15 @@ pipeline stays untouched as the mock/evaluation rig.
 
 Dependency chain: US-201 → US-202 → (US-203, US-204) → US-205 → US-206.
 Owner: Lưu Thiện Việt Cường (agent lane). Status/proof: Harness matrix.
+
+Post-delivery rounds (all stories implemented, then re-completed with fresh
+proof): the review round wired the real LLM extractor (tolerant env routes),
+the also-consider section, pending-answer capture, the promotion-exploit
+guard, and switch-cue protection; the atomic-layer audit round data-verified
+every per-category performance attribute, reopened clarification cycles on
+materially new searches, widened the suggestion pool, added unpriced
+disclosure and the long-conversation memory suite. The data-platform round
+added the Postgres adapter over Duy's `products` schema with Excel fallback,
+per-category domain filter rules, optional LLM polish, and the golden eval
+set. Deferred: policy retrieval over pgvector (the platform has no
+knowledge-base tables yet); Langfuse judge wiring (keys not configured).

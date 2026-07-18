@@ -35,19 +35,27 @@ guard → understand → merge_need → route
 → respond (+ session state persist)
 ```
 
-## 3. Data layer (swap-ready for Duy's database)
+## 3. Data layer (dual-backend: Duy's Postgres + Excel fallback)
 
-- `ExcelDatasetAdapter` reads `AGENT_DATASET_PATH` (default
-  `data/dataset/Spec_cate_gia.xlsx`) once and caches records.
-- Record shape mirrors the committed logical format and the future
-  `products` table: mirror keys (`model_code`, `sku`, `productidweb`,
-  `category_code`, `brand_id`, `brand`) + `attributes` dict preserving the
-  ORIGINAL Vietnamese column names/values + parsed `list_price`, `sale_price`,
-  `gift_promotion`.
-- Swapping to Postgres later = new adapter + path/config change only. Tools
-  and conversation code never read Excel directly.
+- **Backend selection** (`default_adapter()`): the agent prefers the Postgres
+  data platform (`products` table from `backend/migrations/0002_catalog.sql`,
+  connected through `backend.app.db.connection`) and falls back to
+  `ExcelDatasetAdapter` (`AGENT_DATASET_PATH`, default
+  `data/dataset/Spec_cate_gia.xlsx`) when the database is unreachable or not
+  configured. `AGENT_DATA_BACKEND=excel|postgres` forces a backend.
+- Record shape is identical from both backends: mirror keys (`model_code`,
+  `sku`, `productidweb`, `category_code`, `brand_id`, `brand`) + `attributes`
+  dict preserving the ORIGINAL Vietnamese column names/values + parsed
+  `list_price`, `sale_price`, `gift_promotion`. Note from the platform schema:
+  `sku` is the unique business key; `productidweb` may be shared by variants.
 - `CategoryRegistry`: 14 categories — sheet name, `category_code`, Vietnamese
   detection markers, attribute keys per category.
+- **Measured data gaps** (2026-07-18, flagged to the data owner): Máy giặt
+  rows carry no spec columns (mirror + prices only); parsable price coverage
+  is 14–72% per category; there is no stock column (the agent answers
+  availability honestly). Per-category `performance_attribute` values are
+  data-verified — three categories are honestly `None` (role skipped with
+  disclosure).
 
 ## 4. Preference memory (fixed format, in-session)
 
@@ -70,11 +78,19 @@ Three update modes:
 ## 5. Cold-start clarification
 
 Per-category question scripts live in versioned data
-(`conversation/scenarios.yaml`), ordered by material impact (e.g. laptop:
-purpose → budget; tủ lạnh: household size → budget → door style; máy lạnh:
-room size → budget → priority). Rules: one question per turn, at most three per
-cycle, never re-ask an answered question, proceed with tools as soon as the
-material minimum (category + one narrowing fact + budget) is known.
+(`conversation/scenario_data.py`), ordered by material impact — budget is
+never the first question (e.g. PC: purpose → budget; tủ lạnh: household size →
+budget → door style; máy lạnh: room size → budget → priority) — with
+purpose-aware follow-ups once the usage purpose is known (gaming →
+display/GPU). Rules: one question per turn, at most three per cycle, never
+re-ask an answered or already-asked question, and proceed with tools as soon
+as the material minimum (category + one narrowing fact) is known. A plain
+reply to the pending question is captured verbatim into the fixed-format need
+(`attribute_constraints[question_key]`) as per-category filter memory, and a
+materially new search reopens the clarification cycle. Per-category domain
+rules (`conversation/domain_rules.py`) turn captured answers into concrete
+deterministic filters where the data supports it (household size → capacity
+band, room area → coverage range, screen size → inches).
 
 ## 6. Policy engine (ADR-0016)
 
@@ -89,13 +105,21 @@ behavior.
 ## 7. Proactive salesman behavior
 
 Tone: polite retail Vietnamese ("Dạ… ạ") learned from the sample chats, but
-proactive rather than passive: every useful answer suggests a concrete next
-step, surfaces `giá khuyến mãi`/% giảm/`khuyến mãi quà`, frames benefits in the
-customer's terms, and ends with at most one consultative question. Comparison
-output always includes the promotion delta, not just specs. Prohibited (kept
-from M1): invented scarcity/urgency, pushing an expensive product without a
-customer benefit, repeating an answered question, continuing after stop, and
-any claim not present in retrieved records.
+proactive rather than passive. Every suggestion answer leads with the ranked
+roles (best price / best value / best performance — overridable by the user's
+stated preference such as "rẻ nhất"), then a grounded "Ngoài ra anh/chị có thể
+tham khảo thêm" section (≤3 extra models with price/promotion), surfaces
+`giá khuyến mãi`/% giảm/`khuyến mãi quà`, and ends with at most one
+consultative question. Comparison output always includes the promotion delta,
+not just specs. An optional LLM polish pass (env `AGENT_LLM_POLISH=1`) may
+rephrase the deterministic text; the grounding validator re-checks the
+polished text and falls back to the deterministic version on any violation.
+Prohibited (kept from M1): invented scarcity/urgency, pushing an expensive
+product without a customer benefit, repeating an answered question, continuing
+after stop, and any claim not present in retrieved records. The bot never
+creates, commits, or acknowledges promotions beyond the data — benefit-exploit
+attempts ("giảm thêm cho mình", "bạn đã hứa…") get a fixed polite refusal
+before any content processing (`promotion_exploit_blocked`).
 
 ## 8. Guardrails
 
