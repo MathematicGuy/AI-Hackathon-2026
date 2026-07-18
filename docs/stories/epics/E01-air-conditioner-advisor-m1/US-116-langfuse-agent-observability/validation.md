@@ -47,10 +47,20 @@ Focused suite (`backend/tests/unit/observability backend/tests/unit/graph
 backend/tests/unit/models backend/tests/contract/test_m1_contracts.py`):
 **70 passed**.
 
-Full backend suite: **350 passed, 1 skipped**. Two ingestion/API modules
-(`test_catalog_endpoints.py`, `unit/ingestion/test_catalog.py`) were excluded
-because the local environment lacks the optional `psycopg` dependency; this is
-unrelated to observability and pre-dates this story.
+Full backend suite (`AGENT_DATA_BACKEND=excel`): **354 passed, 1 skipped** in
+33.6s. The `psycopg[binary]` + `psycopg-pool` drivers are now installed, so the
+ingestion unit tests run and pass. Only `integration/api/test_catalog_endpoints.py`
+is excluded: its fixtures open a live connection to a running Postgres server,
+which the local environment does not host (the driver alone cannot substitute).
+The 1 skip is the pre-existing empty-parameter-set golden eval, unrelated to
+this story.
+
+Note: installing `psycopg` makes `agent/catalog/pg_adapter.postgres_available()`
+attempt a real TCP connect on the Excel-vs-Postgres probe, which blocks until
+timeout when no server is running. Setting `AGENT_DATA_BACKEND=excel` (the
+adapter's documented override) forces the Excel fallback and keeps the suite
+hermetic; this is an environment concern owned by the data-platform story, not
+an observability regression.
 
 Dependencies unchanged — no `pyproject.toml`/lock edits — so lock validation is
 a no-op for this story. `git diff --check` reports no whitespace errors.
