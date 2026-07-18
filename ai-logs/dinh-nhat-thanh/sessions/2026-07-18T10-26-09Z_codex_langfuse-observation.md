@@ -31,10 +31,22 @@ agent and prepare its bounded implementation plan.
 - Validation result: Not applicable before implementation.
 - Redactions or logging limitations: No credentials or raw customer/model payloads recorded.
 
+### Entry 2 — 2026-07-18T11-00-08Z
+
+- Human request summary: Expand scope to both E02 and M1 surfaces, then narrow tracing to high-value diagnostic observations and add a Gantt diagram to the tracker.
+- AI response or decision summary: Created separate US-207 (E02) and US-116 (M1) plans; reduced spans to priority boundaries; preserved full raw model I/O; added Gantt parallelism and recorded M1 ownership overlap.
+- Sanitized terminal, CLI, and tool actions: Updated story packets and tracker; registered Harness intakes/stories; removed coarse story dependency; ran audit/propose and governance validation.
+- Command and tool exit status: Story/intake registration succeeded; audit/propose succeeded; governance validation still reports pre-existing architecture/requirements drift plus duplicate M1 ownership.
+- Outcome or important output summary: Two implementation plans are complete; implementation remains pending ownership clearance and execution choice.
+- Files affected or inspected: US-207 and US-116 story packets, `docs/team/now/THANH-NOW.md`, Harness matrix.
+- Validation performed: Placeholder scan, `git diff --check`, Harness audit/propose, repository governance validation.
+- Validation result: Diff/placeholder checks passed. Audit found two intentionally unverified planned stories; governance reports unrelated root-doc/requirements drift and USER1/USER2 overlap.
+- Redactions or logging limitations: No credentials, authorization headers, or raw user/model payloads recorded.
+
 ## Files Touched
 
 - Created: `docs/stories/epics/E01-air-conditioner-advisor-m1/US-116-langfuse-agent-observability/overview.md`, `design.md`, `validation.md`.
-- Changed: None yet.
+- Changed: `docs/team/now/THANH-NOW.md`; US-116/US-207 story packet documents.
 - Deleted: None.
 - Materially inspected: Repository policy, tracker, Harness docs, product contract/architecture, backend agent graph/API/LLM code, Langfuse SDK documentation.
 
@@ -51,10 +63,10 @@ agent and prepare its bounded implementation plan.
 
 ## Final Outcome
 
-- Status: In progress.
-- Outcome summary: Approved Langfuse observation direction documented; worktree ready.
-- Unresolved work: User review of written spec; implementation plan; tracker replacement; Harness story/trace updates as required by implementation.
-- Suggested next actions: Review spec packet, then create task-by-task implementation plan.
+- Status: Planning complete; implementation pending.
+- Outcome summary: Both E02 and M1 priority-observation specs/plans documented; Gantt added; observation worktree exists.
+- Unresolved work: Resolve M1 file ownership overlap, implement US-207 then US-116 tasks, run proof, and record traces.
+- Suggested next actions: Choose execution mode, clear USER1/USER2 ownership, then execute plans in `.worktrees/observation`.
 
 ## Redaction Summary
 
