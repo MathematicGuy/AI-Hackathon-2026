@@ -38,6 +38,7 @@ guard → understand → merge_need → route
          | price_range_flow  (aggregate price_min/max for the category)
          | promotion_flow    (grounded promo overview or graceful degradation)
          | smalltalk         (friendly employee reply + gentle sales pivot)
+         | product_qa        (deep Q&A over presented products / metric transparency)
          | stop | scope_safe
 → sell (proactive salesman prose over verified records + promotions)
 → validate (grounding: claims ⊆ records; quotes ⊆ corpus; question cap)
@@ -59,12 +60,19 @@ guard → understand → merge_need → route
   `sku` is the unique business key; `productidweb` may be shared by variants.
 - `CategoryRegistry`: 14 categories — sheet name, `category_code`, Vietnamese
   detection markers, attribute keys per category.
-- **Measured data gaps** (2026-07-18, flagged to the data owner): Máy giặt
-  rows carry no spec columns (mirror + prices only); parsable price coverage
-  is 14–72% per category; there is no stock column (the agent answers
-  availability honestly). Per-category `performance_attribute` values are
-  data-verified — three categories are honestly `None` (role skipped with
-  disclosure).
+- **Measured data notes** (re-audited 2026-07-18 evening): the Máy giặt sheet
+  NOW carries specs (Khối lượng tải ~70%, kiểu cửa 77%, tốc độ vắt 53% —
+  the earlier "no spec columns" note is stale and retired); parsable price
+  coverage is 14–72% per category; there is no stock column (the agent
+  answers availability honestly). Placeholder values ("Hãng không công bố",
+  "Đang cập nhật", "Không"...) are filtered everywhere a spec is parsed —
+  the bot never claims a spec the maker did not publish.
+- **Dimension registry** (`catalog/dimensions.py`, evidence-based per the
+  field-profile audit): each category declares its important dimensions —
+  key, kind (numeric higher/lower, ordinal like Độ phân giải FHD<QHD<UHD,
+  enum-info, feature), unit, a thang-đo explanation, and the preference
+  keywords that point at it. Semi-independent per ngành: a category's
+  dimension list evolves without touching the graph.
 
 ## 4. Preference memory (fixed format, in-session)
 
@@ -94,7 +102,11 @@ purpose-aware follow-ups once the usage purpose is known (gaming →
 display/GPU). Rules: when a category cycle starts, the opener bundles the top
 2-3 script questions into one message (① ② ③) so the customer answers in one
 go — the whole bundle is marked asked and the first question stays pending
-for plain-reply capture; later follow-ups ask one question per turn. Never
+for plain-reply capture; later follow-ups ask one question per turn. A single
+multi-part reply answering several bundled questions at once ("24-27 inch,
+làm việc, xem phim, tầm 3-5 triệu") is captured in full: the extractor fills
+size/purpose/budget in one patch, and the deterministic fallback extracts
+inch sizes for screen categories plus budget/purpose from the whole message. Never
 re-ask an answered or already-asked question, and proceed with tools as soon
 as the material minimum (category + one narrowing fact) is known. A plain
 reply to the pending question is captured verbatim into the fixed-format need
@@ -127,10 +139,19 @@ marker ("b."). Policy always outranks sales behavior.
 ## 7. Proactive salesman behavior
 
 Tone: polite retail Vietnamese ("Dạ… ạ") learned from the sample chats, but
-proactive rather than passive. Every suggestion answer leads with the ranked
-roles (best price / best value / best performance — overridable by the user's
-stated preference such as "rẻ nhất"), then a grounded "Ngoài ra anh/chị có thể
-tham khảo thêm" section (≤3 extra models with price/promotion), surfaces
+proactive rather than passive. Suggestion roles are **preference-driven over
+the dimension registry** (2026-07-19 round 3): with no preference signal the
+classic trio holds (best price / best value / headline-dimension pick); when
+the captured need names dimensions ("chơi game" → Thời gian đáp ứng, "êm" →
+Độ ồn), up to two dimension roles replace the generic performance pick — and
+every role badge carries its evidence value ("[Sắc nét nhất: QHD (2560 x
+1440)]", "[Card mạnh nhất: 8 GB GDDR6]") so the metric is transparent. A
+dimension role is skipped when under 30% of the pool has real data for it.
+Explicit customer roles ("rẻ nhất" → best_price, "đắt nhất" →
+most_expensive) always win, and answer over the whole pool (a role ask may
+re-show a model already presented). Answers then add a grounded "Ngoài ra
+anh/chị có thể tham khảo thêm" section (≤3 extra models with
+price/promotion), surface
 `giá khuyến mãi`/% giảm/`khuyến mãi quà`, and ends with at most one
 consultative question. Comparison output always includes the promotion delta,
 not just specs. An optional LLM polish pass (env `AGENT_LLM_POLISH=1`) may
@@ -158,12 +179,21 @@ carry 2-3); a failed check strips the claim and degrades to verified facts.
 User-need amounts (budgets) render as "X triệu" so they are never mistaken
 for price claims.
 
-## 9. Intents (agent enum, 14 values)
+## 9. Intents (agent enum, 15 values)
 
 `new_search, change_constraints, more_recommendations, compare_products,
 product_detail, check_availability, policy_question, catalog_overview,
 price_range_query, promotion_inquiry, smalltalk, question_clarification,
-stop, unsupported`.
+product_qa, stop, unsupported`.
+
+Round-3 note (2026-07-19): `product_qa` answers deep questions about the
+products just presented and about the bot's own measures ("cái nào tốt hơn
+về mặt hiệu năng?", "thang đo là gì?", "màn nào nét hơn?") — it explains the
+category's thang đo transparently and compares the presented models
+dimension-by-dimension with real record values, honestly disclosing "hãng
+không công bố" where data is missing. It takes precedence over
+question_clarification. Comparison (`_compare_flow`) gained the same
+dimension table with per-axis verdicts.
 
 Routing notes (2026-07-19 live-test round): price-range and running-promotion
 questions are catalog questions answered from the aggregate tool (never
@@ -193,7 +223,7 @@ ordering) arrive.
 ```text
 backend/app/agent/
 ├── contracts.py                # AgentIntent, GenericNeed, AgentState, AgentResponse
-├── catalog/{dataset_adapter,registry,promotions}.py
+├── catalog/{dataset_adapter,registry,promotions,dimensions}.py
 ├── tools/{search,aggregate,compare,detail}.py
 ├── policies/{corpus,answer}.py
 ├── conversation/{coldstart,memory}.py + scenarios.yaml

@@ -96,7 +96,7 @@ Nhiệm vụ: đọc tin nhắn khách và trả về DUY NHẤT một JSON obje
 
 Schema:
 {{
-  "intent": một trong ["new_search","change_constraints","more_recommendations","compare_products","product_detail","check_availability","policy_question","catalog_overview","price_range_query","promotion_inquiry","smalltalk","question_clarification","stop","unsupported"],
+  "intent": một trong ["new_search","change_constraints","more_recommendations","compare_products","product_detail","check_availability","policy_question","catalog_overview","price_range_query","promotion_inquiry","smalltalk","question_clarification","product_qa","stop","unsupported"],
   "confidence": số 0..1,
   "need_patch": {{
     "category_code": mã ngành trong bảng dưới hoặc null,
@@ -127,6 +127,13 @@ QUY TẮC:
 - Chào hỏi, cảm ơn, than thời tiết, đồng ý xã giao -> "smalltalk".
 - Khách HỎI LẠI ý nghĩa câu hỏi bot vừa đặt ("mục đích sử dụng tủ lạnh á?",
   "ý em là sao?") -> "question_clarification", TUYỆT ĐỐI KHÔNG phải policy_question.
+- Khách hỏi SÂU về các mẫu bot vừa gợi ý hoặc thang đo của bot ("cái nào tốt
+  hơn về mặt hiệu năng?", "thang đo là gì?", "màn nào nét hơn?", "cái nào êm
+  hơn?") -> "product_qa".
+- Một tin nhắn nhiều dòng/nhiều vế trả lời NHIỀU câu hỏi bot vừa đặt cùng lúc
+  (vd "24-27 inch\\nlàm việc, xem phim\\ntầm 3-5 triệu") -> điền HẾT vào một
+  need_patch: attribute_constraints {{"size": "24-27 inch"}}, usage_purpose
+  "làm việc, xem phim", budget_min 3000000, budget_max 5000000.
 - "trong range/tầm tiền anh vừa nói" -> giữ nguyên budget đã có trong bối cảnh,
   intent "new_search"; KHÔNG hỏi lại ngân sách đã trả lời.
 - Khách muốn mẫu đắt nhất/cao cấp nhất -> requested_roles ["most_expensive"],

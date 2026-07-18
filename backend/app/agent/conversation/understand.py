@@ -51,6 +51,17 @@ _BUDGET = re.compile(
 
 # "đắt nhất/mắc nhất/xịn nhất" — the customer wants the top-priced model.
 _MOST_EXPENSIVE = ("đắt nhất", "mắc nhất", "xịn nhất", "cao cấp nhất")
+
+# Screen-size mention ("24-27 inch", "27 inch", '24"') — captured as a size
+# constraint for screen categories (monitor 73, tablet 30).
+_SIZE_INCH = re.compile(
+    r"(\d{1,2}(?:[.,]\d)?)\s*(?:-|–|đến\s*)?\s*(\d{1,2}(?:[.,]\d)?)?\s*(?:inch|in\b|\")",
+    re.IGNORECASE,
+)
+_SCREEN_CATEGORIES = ("73", "30")
+
+# Room area ("phòng 18m2", "20 m²") — feeds the air-conditioner coverage rule.
+_ROOM_AREA = re.compile(r"(\d{1,3})\s*m(?:²|2)\b", re.IGNORECASE)
 # Generic product references that mean "continue this consultation".
 _CONTINUATION_HINTS = ("máy", "mẫu", "cái", "con", "em nó", "sản phẩm", "loại")
 
@@ -124,6 +135,19 @@ def fallback_understanding(
         if purpose in low:
             need_kwargs["usage_purpose"] = purpose
             break
+    effective_category = (
+        category.code if category is not None else active_category
+    )
+    if effective_category in _SCREEN_CATEGORIES:
+        size_match = _SIZE_INCH.search(low)
+        if size_match:
+            need_kwargs["attribute_constraints"] = {"size": size_match.group(0)}
+    elif effective_category == "36":
+        area_match = _ROOM_AREA.search(low)
+        if area_match:
+            need_kwargs["attribute_constraints"] = {
+                "room_area": area_match.group(0)
+            }
 
     # Price/promotion questions are catalog questions, never policy — even if
     # the LLM route is down (Cường's live-test finding).
@@ -174,6 +198,43 @@ def fallback_understanding(
     )
 
 
+def _augment_understanding(
+    message: str,
+    understanding: AgentUnderstanding,
+    *,
+    active_category: str | None,
+) -> AgentUnderstanding:
+    """Fill fields the LLM missed using the deterministic extractors — never
+    override what the model DID return (live finding: the model skipped
+    'phòng 18m2' and the room got re-asked)."""
+    patch = understanding.need_patch
+    low = message.lower()
+    updates: dict = {}
+    if patch.budget_min is None and patch.budget_max is None:
+        budget_min, budget_max = _parse_budget_vnd(message)
+        if budget_min is not None:
+            updates["budget_min"] = budget_min
+        if budget_max is not None:
+            updates["budget_max"] = budget_max
+    category = patch.category_code or active_category
+    constraints = dict(patch.attribute_constraints)
+    if category in _SCREEN_CATEGORIES and "size" not in constraints:
+        size_match = _SIZE_INCH.search(low)
+        if size_match:
+            constraints["size"] = size_match.group(0)
+    elif category == "36" and "room_area" not in constraints:
+        area_match = _ROOM_AREA.search(low)
+        if area_match:
+            constraints["room_area"] = area_match.group(0)
+    if constraints != dict(patch.attribute_constraints):
+        updates["attribute_constraints"] = constraints
+    if not updates:
+        return understanding
+    return understanding.model_copy(
+        update={"need_patch": patch.model_copy(update=updates)}
+    )
+
+
 async def understand_turn(
     message: str,
     *,
@@ -184,7 +245,13 @@ async def understand_turn(
 ) -> tuple[AgentUnderstanding, list[str]]:
     if extractor is not None:
         try:
-            return await extractor.extract(message, state_summary=state_summary), []
+            extracted = await extractor.extract(message, state_summary=state_summary)
+            return (
+                _augment_understanding(
+                    message, extracted, active_category=active_category
+                ),
+                [],
+            )
         except (ExtractorError, ValidationError):
             pass
     flags = ["understanding_degraded"] if extractor is not None else []

@@ -34,9 +34,10 @@ SCENARIOS: dict[str, dict] = {
             {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?", "example": "tầm 6-10 triệu"},
         ],
         "purpose_followups": {},
-        # Real data: Máy giặt rows carry no spec columns (mirror + prices
-        # only) — performance role is skipped with disclosure.
-        "performance_attribute": None,
+        # Data re-audited 2026-07-18: the Máy giặt sheet NOW carries specs
+        # (Khối lượng tải chính ~70% fill) — the earlier "no spec columns"
+        # note is stale.
+        "performance_attribute": "Khối lượng tải chính",
     },
     "116": {  # Máy sấy quần áo
         "questions": [

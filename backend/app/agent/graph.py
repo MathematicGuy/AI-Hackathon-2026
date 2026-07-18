@@ -11,8 +11,16 @@ import re
 from dataclasses import dataclass, field
 
 from backend.app.agent.catalog.dataset_adapter import GenericProduct
+from backend.app.agent.catalog.dimensions import (
+    better_of,
+    dimension_display,
+    dimension_value,
+    dimensions_for,
+    metric_explanation,
+    rankable,
+)
 from backend.app.agent.catalog.registry import CategoryRegistry
-from backend.app.agent.contracts import AgentState, DEFAULT_ROLES
+from backend.app.agent.contracts import AgentState
 from backend.app.agent.conversation import coldstart, memory
 from backend.app.agent.conversation.domain_rules import apply_domain_filters
 from backend.app.agent.conversation.understand import (
@@ -87,6 +95,16 @@ _UNAVAILABLE_PRODUCTS: dict[str, tuple[str, ...]] = {
 # The customer is asking ABOUT the bot's pending question, not answering it
 # ("mục đích sử dụng tủ lạnh á?").
 _ECHO_MARKERS = ("á?", "á ?", " hả", "là sao", "nghĩa là", "ý em", "ý là gì")
+
+# Deep questions about the products/metrics just presented ("cái nào tốt hơn
+# về mặt hiệu năng?", "thang đo là gì?", "màn nào nét hơn?").
+_PRODUCT_QA_MARKERS = (
+    "thang đo", "tốt hơn về", "hơn về mặt", "nào tốt hơn", "nào nét hơn",
+    "nào êm hơn", "nào mạnh hơn", "nào bền hơn", "nào tiết kiệm",
+    "khác nhau chỗ nào", "khác gì nhau", "hiệu năng ở đây", "đo bằng gì",
+    "dựa vào đâu", "chấm theo",
+)
+_QA_COMPARATIVE = re.compile(r"nào\s+\w+\s+hơn|cái nào .{0,24}hơn")
 
 GUARDRAIL_REPLY = (
     "Dạ em xin phép không xử lý nội dung này ạ. Em là trợ lý tư vấn sản phẩm "
@@ -184,6 +202,13 @@ async def _run_turn_core(
         text = guard.message or GUARDRAIL_REPLY
         return AgentReply(text=text, intent="unsupported", flags=list(guard.flags))
 
+    # 2a-pre0. Deep question about the products/metrics just presented takes
+    # precedence over everything conversational — the echo flow must never
+    # swallow "cái nào tốt hơn về mặt hiệu năng? thang đo là gì?" (live-test
+    # 3 failure).
+    if _is_product_qa(state, low):
+        return await _product_qa_flow(state, low, deps, [])
+
     # 2a-pre. The customer is asking ABOUT the bot's own question, not
     # answering it ("mục đích sử dụng tủ lạnh á?") — explain with a concrete
     # example instead of capturing the echo or routing anywhere else.
@@ -240,6 +265,9 @@ async def _run_turn_core(
 
     if intent == "question_clarification":
         return _question_clarification_flow(state, low, deps)
+
+    if intent == "product_qa":
+        return await _product_qa_flow(state, low, deps, flags)
 
     if intent == "catalog_overview":
         return _catalog_overview_flow(state, deps, flags)
@@ -324,6 +352,102 @@ def _question_clarification_flow(
     return AgentReply(
         text="\n".join(lines), intent="question_clarification", flags=[]
     )
+
+
+def _is_product_qa(state: AgentState, low: str) -> bool:
+    if not state.last_presented_ids:
+        return False
+    if any(marker in low for marker in _PRODUCT_QA_MARKERS):
+        return True
+    if _QA_COMPARATIVE.search(low):
+        return True
+    # A dimension the category knows, asked with a comparative/question form.
+    dims = dimensions_for(state.need.category_code)
+    mentions_dim = any(
+        marker in low for dim in dims for marker in dim.pref_markers
+    )
+    return mentions_dim and ("hơn" in low or "là gì" in low or "bao nhiêu" in low)
+
+
+def _question_dimensions(state: AgentState, low: str) -> list:
+    dims = dimensions_for(state.need.category_code)
+    matched = [
+        dim
+        for dim in dims
+        if dim.label.lower() in low
+        or any(marker in low for marker in dim.pref_markers)
+    ]
+    if matched:
+        return matched
+    # Generic "hiệu năng/tốt hơn" → the rankable dimensions, strongest first.
+    return [dim for dim in dims if rankable(dim)][:3]
+
+
+async def _product_qa_flow(
+    state: AgentState, low: str, deps: AgentDependencies, flags: list[str]
+) -> AgentReply:
+    category = state.need.category_code
+    presented = [
+        p
+        for pid in state.last_presented_ids[:3]
+        for p in deps.products
+        if p.productidweb == pid
+    ]
+    if not presented or not dimensions_for(category):
+        return AgentReply(
+            text=(
+                "Dạ anh/chị hỏi về mẫu nào ạ? Em gợi ý vài mẫu trước rồi mình "
+                "đi sâu từng thông số nhé ạ?"
+            ),
+            intent="product_qa",
+            flags=flags,
+        )
+    lines: list[str] = []
+    wants_metric = any(
+        marker in low
+        for marker in ("là gì", "thang đo", "đo bằng", "dựa vào đâu", "chấm theo")
+    )
+    category_name = deps.registry.by_code(category).sheet_name if category else ""
+    if wants_metric:
+        explanation = metric_explanation(category)
+        if explanation:
+            lines.append(
+                f"Dạ với {category_name}, em đánh giá dựa trên các thang đo: "
+                f"{explanation} ạ."
+            )
+        lines.append("")
+    dims = _question_dimensions(state, low)
+    lines.append("Em so trực tiếp các mẫu vừa gợi ý theo dữ liệu hãng công bố ạ:")
+    for dim in dims[:4]:
+        values: list[str] = []
+        for product in presented:
+            shown = dimension_display(product, dim)
+            values.append(
+                f"{product.name}: {shown if shown else 'hãng không công bố'}"
+            )
+        lines.append(f"• {dim.label} — " + " | ".join(values))
+        if rankable(dim) and len(presented) >= 2:
+            first_value = dimension_value(presented[0], dim)
+            second_value = dimension_value(presented[1], dim)
+            verdict = better_of(first_value, second_value, dim)
+            if verdict != 0:
+                winner = presented[0] if verdict == -1 else presented[1]
+                lines.append(f"  → {winner.name} nhỉnh hơn ở mục này ạ.")
+    lines.append("")
+    lines.append(
+        "Anh/chị nghiêng về tiêu chí nào nhất để em chốt mẫu phù hợp ạ?"
+    )
+    text = "\n".join(lines)
+    validation = validate_response(text, allowed_products=presented)
+    if not validation.ok:
+        text = degrade_to_facts(presented)
+    if deps.polisher is not None:
+        polished = await deps.polisher.polish(text)
+        if polished and polished != text:
+            recheck = validate_response(polished, allowed_products=presented)
+            if recheck.ok:
+                text = polished
+    return AgentReply(text=text, intent="product_qa", flags=flags)
 
 
 def _unavailable_reply(low: str, registry: CategoryRegistry) -> str | None:
@@ -622,7 +746,14 @@ async def _product_flow(
 
     # Enough to act: search, suggest by roles, sell.
     shown = state.shown_for(category)
-    exclude = tuple(shown) if intent == "more_recommendations" else ()
+    # "Show more" excludes what the customer already saw — but an explicit
+    # role ask ("máy đắt nhất") is a selection over the WHOLE pool: the
+    # answer may legitimately be a model already shown.
+    exclude = (
+        tuple(shown)
+        if intent == "more_recommendations" and not need.requested_roles
+        else ()
+    )
     # Pool of 20 (search maximum) so the value/performance roles see more than
     # the cheapest page (audit finding: a pool of 10 price-sorted items biased
     # every role toward cheap products).
@@ -667,8 +798,13 @@ async def _product_flow(
     # Per-category domain rules narrow the pool from captured answers
     # (household → capacity band, room area → coverage, screen size → inches).
     pool = apply_domain_filters(result.items, need)
-    roles = tuple(need.requested_roles) or DEFAULT_ROLES
-    suggestions = suggest_products(pool, category_code=category, roles=roles)
+    # Explicit customer roles win; otherwise suggest_products derives
+    # preference-driven dimension roles from the need (classic trio when the
+    # need carries no dimension signal — additive, never regressive).
+    roles = tuple(need.requested_roles) or None
+    suggestions = suggest_products(
+        pool, category_code=category, roles=roles, need=need
+    )
     winner_ids = {p.productidweb for p in suggestions.distinct_products}
     also_consider = [
         p for p in pool if p.productidweb not in winner_ids
@@ -737,10 +873,38 @@ def _compare_flow(
         if item.gift:
             line += " — có quà tặng kèm"
         lines.append(line)
-    shared_preview = list(comparison.shared_attributes.items())[:3]
-    for key, values in shared_preview:
-        rendered = " / ".join(values[pid] for pid in ids if pid in values)
-        lines.append(f"• {key}: {rendered}")
+
+    # Dimension table: the category's registered dimensions with real data on
+    # both sides, each with a verdict where rankable — the comparison explains
+    # itself on the axes that matter for this product type (live-test 3).
+    selected = [p for pid in ids for p in deps.products if p.productidweb == pid]
+    dim_lines: list[str] = []
+    if len(selected) == 2:
+        first, second = selected
+        for dim in dimensions_for(state.need.category_code):
+            shown_a = dimension_display(first, dim)
+            shown_b = dimension_display(second, dim)
+            if shown_a is None or shown_b is None or shown_a == shown_b:
+                continue
+            line = f"• {dim.label}: {shown_a} vs {shown_b}"
+            if rankable(dim):
+                verdict = better_of(
+                    dimension_value(first, dim), dimension_value(second, dim), dim
+                )
+                if verdict == -1:
+                    line += f" → {first.name} nhỉnh hơn"
+                elif verdict == 1:
+                    line += f" → {second.name} nhỉnh hơn"
+            dim_lines.append(line)
+    if dim_lines:
+        lines.append("")
+        lines.append("Về thông số:")
+        lines.extend(dim_lines[:5])
+    else:
+        shared_preview = list(comparison.shared_attributes.items())[:3]
+        for key, values in shared_preview:
+            rendered = " / ".join(values[pid] for pid in ids if pid in values)
+            lines.append(f"• {key}: {rendered}")
     lines.append("")
 
     # Reasoning: benefit/drawback per model plus a context-based lean

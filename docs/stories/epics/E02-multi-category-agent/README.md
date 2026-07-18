@@ -50,5 +50,15 @@ answered budget, added the suggestion debate line, hardened policy chunking
 (generic-word stopwords, orphan-enum trim, no violation-apology on
 validation failure), and shipped like/dislike + feedback endpoint,
 replay-based edit, and consistent "em" self-address (golden AGENT-G-022…036).
-Deferred: policy retrieval over pgvector (the platform has no knowledge-base
-tables yet); Langfuse judge wiring (keys not configured).
+The dimension round (round 3, same day) profiled every field of all 14
+sheets and introduced the evidence-based dimension registry
+(`catalog/dimensions.py`): suggestion roles are now preference-driven with
+transparent evidence badges ("[Card mạnh nhất: 8 GB GDDR6]"), comparison and
+the new `product_qa` intent answer deep follow-ups dimension-by-dimension
+with thang-đo transparency, multi-part cold-start replies are captured in
+full (monitor size ranges filter the pool), washer specs are live again
+(stale "no spec columns" note retired), and all placeholder spec values are
+filtered before any claim (golden AGENT-G-037…042; suite 186 with the
+36-case baseline intact). Deferred: policy retrieval over pgvector (the
+platform has no knowledge-base tables yet); Langfuse judge wiring (keys not
+configured).

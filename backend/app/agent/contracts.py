@@ -24,6 +24,7 @@ AgentIntent = Literal[
     "promotion_inquiry",
     "smalltalk",
     "question_clarification",
+    "product_qa",
     "stop",
     "unsupported",
 ]

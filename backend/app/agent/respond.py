@@ -44,8 +44,23 @@ class ProposedResponse:
     question: str | None = None
 
 
-def _product_line(product: GenericProduct, roles: list[str]) -> str:
-    badges = " + ".join(ROLE_LABELS.get(role, role) for role in roles)
+def _role_badge(role: str, evidence: dict[str, tuple[str, str]]) -> str:
+    if role in evidence:
+        label, value = evidence[role]
+        if value:
+            value_text = value if len(value) <= 40 else value[:37].rstrip() + "…"
+            return f"{label}: {value_text}"
+        return label
+    return ROLE_LABELS.get(role, role)
+
+
+def _product_line(
+    product: GenericProduct,
+    roles: list[str],
+    evidence: dict[str, tuple[str, str]] | None = None,
+) -> str:
+    evidence = evidence or {}
+    badges = " + ".join(_role_badge(role, evidence) for role in roles)
     parts = [f"• [{badges}] {product.name}"]
     discount = product.promotion.discount_percent
     # Real data contains rows where sale price equals list price — there is a
@@ -89,8 +104,12 @@ def _need_summary(need: GenericNeed | None) -> str | None:
 
 
 def _fit_reason(
-    product: GenericProduct, roles: list[str], need: GenericNeed | None
+    product: GenericProduct,
+    roles: list[str],
+    need: GenericNeed | None,
+    evidence: dict[str, tuple[str, str]] | None = None,
 ) -> str:
+    evidence = evidence or {}
     reasons: list[str] = []
     if "best_price" in roles:
         reasons.append("giá tốt nhất trong các mẫu phù hợp")
@@ -99,7 +118,16 @@ def _fit_reason(
             f"đang giảm sâu {product.promotion.discount_percent:.0f}% nên rất đáng tiền"
         )
     if "best_performance" in roles:
-        reasons.append("thông số thuộc nhóm mạnh nhất trong tầm này")
+        if "best_performance" in evidence and evidence["best_performance"][1]:
+            label, value = evidence["best_performance"]
+            reasons.append(f"{label.lower()} nhóm em lọc — {value}")
+        else:
+            reasons.append("thông số thuộc nhóm mạnh nhất trong tầm này")
+    for role in roles:
+        if role.startswith("dim:") and role in evidence:
+            label, value = evidence[role]
+            detail = f" ({value})" if value else ""
+            reasons.append(f"{label.lower()} trong nhóm em lọc{detail}")
     if "most_expensive" in roles:
         reasons.append("là mẫu cao cấp nhất bên em đang có theo yêu cầu của mình")
     if product.gift_promotion and "best_value" not in roles:
@@ -155,16 +183,25 @@ def _debate_line(suggestions: Suggestions) -> str | None:
     if delta <= 0:
         return None
     pricier_roles = suggestions.roles_for(priciest.productidweb)
-    if "best_performance" in pricier_roles:
-        perk = "mạnh hơn hẳn về thông số"
-    elif (priciest.promotion.discount_percent or 0) > (
-        cheapest.promotion.discount_percent or 0
-    ):
-        perk = "đang được giảm sâu hơn"
-    elif priciest.gift_promotion and not cheapest.gift_promotion:
-        perk = "kèm quà tặng mà mẫu kia không có"
-    else:
-        perk = "thuộc phân khúc cao cấp hơn"
+    # The pricier model's winning dimension IS its counter-argument — cite
+    # the real value instead of a generic "mạnh hơn" (live-test 3 finding).
+    perk = None
+    for role in pricier_roles:
+        if role in suggestions.role_evidence:
+            label, value = suggestions.role_evidence[role]
+            perk = f"{label.lower()}" + (f" ({value})" if value else "")
+            break
+    if perk is None:
+        if "best_performance" in pricier_roles:
+            perk = "mạnh hơn hẳn về thông số"
+        elif (priciest.promotion.discount_percent or 0) > (
+            cheapest.promotion.discount_percent or 0
+        ):
+            perk = "đang được giảm sâu hơn"
+        elif priciest.gift_promotion and not cheapest.gift_promotion:
+            perk = "kèm quà tặng mà mẫu kia không có"
+        else:
+            perk = "thuộc phân khúc cao cấp hơn"
     return (
         f"So nhanh: {cheapest.name} rẻ hơn {priciest.name} "
         f"{format_vnd(delta)}; đổi lại {priciest.name} {perk} ạ."
@@ -193,8 +230,8 @@ def render_suggestions(
     lines = [opener, ""]
     for product in suggestions.distinct_products:
         roles = suggestions.roles_for(product.productidweb)
-        lines.append(_product_line(product, roles))
-        reason = _fit_reason(product, roles, need)
+        lines.append(_product_line(product, roles, suggestions.role_evidence))
+        reason = _fit_reason(product, roles, need, suggestions.role_evidence)
         if reason:
             lines.append(reason)
         lines.append("")
