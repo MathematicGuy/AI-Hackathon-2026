@@ -47,3 +47,21 @@ so E2E trace-tree evidence is explicitly pending rather than inferred.
 - Fake transports verified complete system/user prompts, raw outputs, candidate order/index, provider/model/role, temperatures, fallback markers, observer injection, and that API keys, authorization material, and raw provider error text never enter captured payloads. Tracing exceptions are fail-open in the LLM client.
 - Task 4 scope includes the minimal `backend/app/agent/graph.py` wiring required to pass the active root observer into default extractor/polisher instances.
 - No live Langfuse project or E2E trace was used; sanitized E2E evidence remains pending credentials and environment access.
+
+### Live Langfuse smoke trace (2026-07-19)
+
+**Trace ID:** `9a7e6a4216344b009ac432aac251651e`
+**Langfuse URL:** `https://jp.cloud.langfuse.com/project/cmrqtlknr008vad0dwhwviuv6/traces/9a7e6a4216344b009ac432aac251651e`
+**Observer:** `LangfuseAgentObserver` (live, fail-open no-op confirmed inactive)
+
+One agent turn (`tư vấn máy lạnh cho phòng 20m2`) produced a complete trace
+with the expected span hierarchy under a single root `agent_turn`. The
+`understanding_model_call` GENERATION captured full system/user prompts and
+structured output via `deepseek/deepseek-v4-flash` through OpenRouter. All
+other spans (input_guardrail, state_update, route_decision, product_search,
+filter_and_rank, response_generation, output_validation, final_state) recorded
+inputs, outputs, and metadata without any credential leakage.
+
+Secret redaction: grep for `sk-lf-*`, `sk-or-*`, and other known secret
+values found zero matches in observation payloads. Only the public key
+(`pk-lf-*`) appears in SDK scope metadata as designed.

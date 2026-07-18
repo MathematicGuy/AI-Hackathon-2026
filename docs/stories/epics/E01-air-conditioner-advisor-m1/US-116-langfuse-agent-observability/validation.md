@@ -81,3 +81,43 @@ advisor_turn
 Node outputs and existing M1 contracts are unchanged: every node defaults to
 the US-207 no-op adapter, and the focused suite asserts identical outputs with
 and without an observer.
+
+### Live Langfuse smoke trace (2026-07-19)
+
+**Trace ID:** `9a7e6a4216344b009ac432aac251651e`
+**Langfuse URL:** `https://jp.cloud.langfuse.com/project/cmrqtlknr008vad0dwhwviuv6/traces/9a7e6a4216344b009ac432aac251651e`
+**Observer:** `LangfuseAgentObserver` (live, not no-op)
+**Environment:** `AGENT_DATA_BACKEND=excel`, no `OPENAI_API_KEY` (OpenRouter
+route used for the understanding model call via the existing LLM client)
+**Input message:** `tư vấn máy lạnh cho phòng 20m2`
+**Resulting intent:** `new_search` (confidence 0.95, category_code 36)
+
+Verified observation tree (all spans nested under the root `agent_turn`):
+
+```text
+agent_turn
+├── input_guardrail          # SPAN — message in, blocked=false, flags out
+├── understanding            # SPAN — message + state_summary in
+│   └── understanding_model_call  # GENERATION — deepseek/deepseek-v4-flash,
+│                                  #   full system/user prompt + structured output
+├── state_update             # SPAN — before/after state, memory_delta
+├── route_decision           # SPAN — intent → product_flow
+├── product_search           # SPAN — category/budget/brand in, product_ids out
+├── filter_and_rank          # SPAN — domain filters + role-based suggestions
+├── response_generation      # SPAN — final text, intent, flags, presented_ids
+├── output_validation        # SPAN — text + allowed_products in, ok/violations out
+└── final_state              # SPAN — session state snapshot
+```
+
+The M1 standalone nodes (`intent_classifier`, `intent_model_call`,
+`deterministic_fallback`) and `state_merge` from `backend/app/graph/nodes/` are
+wired identically to the same observer and assert output-equivalence in the
+focused unit suite (70 tests). They are exercised on the M1 graph path, not the
+E02 agent path; both share the same `LangfuseAgentObserver` adapter.
+
+**Secret redaction check:** grep of the full trace JSON for known secret
+values (`sk-lf-*`, `sk-or-*`, `MISTRAL_API_KEY`, `AI_LOG_API_KEY`,
+`JINA_API_KEY`) found **zero matches in any observation payload**. The only
+hit was the `pk-lf-*` public key in the SDK scope metadata (expected and safe).
+Both redaction layers (`_is_secret_key` key-based + `_secret_values` env-value
+substring, ≥ 8 chars) are confirmed active.
