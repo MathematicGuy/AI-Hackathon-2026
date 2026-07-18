@@ -2,8 +2,8 @@
 
 ## Goal
 
-Instrument the backend agent so every user turn is fully observable in
-Langfuse without changing agent behavior or public API contracts.
+Instrument the implemented M1 decision boundaries that provide the most value
+for bug diagnosis and model improvement without changing behavior or contracts.
 
 ## Domain Model
 
@@ -20,22 +20,18 @@ Langfuse without changing agent behavior or public API contracts.
 
 ## Application Flow
 
-1. The API allocates `session_id` and `request_id` before invoking `run_turn`.
-2. The observation adapter starts one `advisor_turn` root observation and
-   stores session/request/turn metadata.
-3. `run_turn` wraps the existing canonical operations in stable child
-   observations, including guardrail short-circuits, policy, compare,
-   no-match, stop, fallback, and normal recommendation paths.
-4. The extractor and polisher wrap every configured candidate attempt in a
-   nested `generation` observation containing full system/user input and raw
-   provider output. Existing candidate order and fallback behavior remain
-   unchanged.
-5. Each logical observation records deterministic inputs and outputs, product
-   IDs/counts, state snapshots needed for evaluation, flags, and errors.
-6. The root observation closes after response/error handling. The API performs
-   one best-effort client flush; flush failures are non-fatal.
+1. US-207 provides the shared adapter and `advisor_turn` lifecycle.
+2. `input_guard_node`, `classify_and_extract`, and `merge_state` create the
+   canonical `input_guardrail`, `intent_classifier`, and `state_merge`
+   observations when an active turn context exists.
+3. Intent/extraction provider calls create nested generation observations with
+   full prompt/output and resolved route metadata.
+4. Direct node calls without active tracing use the no-op adapter and preserve
+   existing tests and behavior.
+5. Later M1 stories add only high-value observations justified by debugging or
+   model-improvement needs; unimplemented nodes never produce placeholder spans.
 
-## Canonical Observation Tree
+## Priority Observation Tree
 
 ```text
 advisor_turn
@@ -44,33 +40,24 @@ advisor_turn
 │   ├── intent_model_call (generation, one per candidate attempt)
 │   └── deterministic_fallback (span, when used)
 ├── state_merge
-├── intent_router
-├── clarification_decision
-├── product_search
-├── product_normalization
-├── hard_constraint_filter
-├── availability_decision
-├── best_overall_ranking
-├── best_value_ranking
-├── cheapest_qualified_ranking
-├── ui_deduplication
-├── response_generation
-│   └── explanation_model_call (generation, one per candidate attempt)
-├── output_validation
-├── next_question_selection
-└── memory_write
+└── future priority boundaries when implemented:
+    ├── product_search
+    ├── hard_constraint_filter
+    ├── role_ranking
+    ├── response_generation
+    ├── output_validation
+    └── memory_write
 ```
 
-Conditional observations are still created when their path is reached. A
-short-circuit records only observations that ran and marks the root outcome;
-it must not invent observations for skipped work.
+Current US-116 proof covers the three implemented M1 boundaries. The accepted
+architecture's detailed canonical tree remains product authority, but this
+story intentionally does not manufacture or instrument missing/low-value steps.
 
 ## Interface Contract
 
 ### Observation adapter
 
-Create `backend/app/observability/langfuse.py` with a small protocol and
-concrete implementations:
+Consume `backend/app/observability/langfuse.py` created by US-207:
 
 - `AgentObserver.start_turn(session_id, request_id, user_id, message, state) -> TurnObservation`
 - `TurnObservation.span(name, input, metadata) -> ObservationHandle`
@@ -85,14 +72,14 @@ environment-based enablement. Business modules depend only on the protocol.
 
 ### Injection points
 
-- Add an optional observer/context field to `AgentDependencies`.
-- Update the API route to create the request ID before `run_turn` and start the
-  root turn observation.
-- Update `run_turn` and `_product_flow` at existing operation boundaries.
-- Update `LLMUnderstandingExtractor` and `LLMPolisher` around `_call` attempts.
+- Wrap `backend/app/graph/nodes/input_guard.py::input_guard_node`.
+- Wrap `backend/app/graph/nodes/intent.py::classify_and_extract` and its
+  provider/fallback path.
+- Wrap `backend/app/graph/nodes/merge_state.py::merge_state`.
+- Add tests for these three priority boundaries and their provider fallback.
 
-No response DTO field changes are allowed. Existing `trace_id` behavior, when
-present in the product contract, must remain compatible with the API envelope.
+M1 API response reconciliation remains owned by its future gateway story. This
+story does not add an incomplete gateway merely to expose `trace_id`.
 
 ## Metadata and Payload Contract
 
@@ -135,14 +122,12 @@ are never stored in payloads or metadata.
 
 ## Acceptance Criteria
 
-- Normal recommendation creates one root `advisor_turn` and the complete
-  canonical child tree.
-- Guardrail, policy, compare, no-match, stop, fallback, and rejected-polish
-  paths close all observations they start.
-- Each extractor/polisher candidate attempt records a nested generation with
+- Each selected M1 priority boundary records its exact observation name under
+  an active `advisor_turn`.
+- Intent/extraction candidate attempts record nested generations with
   role/provider/model and full raw input/output.
 - Langfuse failures leave agent responses and deterministic fallback behavior
   unchanged, while recording degradation when possible.
 - Disabled or missing configuration is a no-op.
-- Focused tests prove tree shape, raw payloads, error closure, request/trace ID
-  linkage, and non-fatal flush failure.
+- Focused tests prove current-node tree shape, raw payloads, error closure, and
+  unchanged node outputs without requiring spans for every helper.

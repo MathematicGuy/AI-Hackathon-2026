@@ -2,18 +2,17 @@
 
 ## Current Behavior
 
-`POST /api/v1/agent/respond` executes the agent through `run_turn` and its
-injected extractor, polisher, guardrails, state, catalog, ranking, response,
-and validation helpers. The accepted M1 contract names a Langfuse trace tree,
-but the current backend does not emit that tree or provider-level observations.
+The accepted M1 contract names a complete Langfuse trace tree. The current M1
+rig implements only input guard, intent/extraction, and state-merge nodes under
+`backend/app/graph/`; it has no complete workflow/API composition root yet.
+Those implemented nodes emit no Langfuse observations.
 
 ## Target Behavior
 
-Every agent turn emits one `advisor_turn` Langfuse trace with the complete
-canonical child-observation tree and nested provider generations. Every
-short-circuit, fallback, error, and successful response closes its relevant
-observation. Tracing is fail-open: missing configuration or Langfuse failures
-never change the agent response or deterministic fallback behavior.
+Implemented high-value M1 nodes emit canonical child observations when executed
+inside an `advisor_turn` context. Missing future nodes are never represented by
+fake spans, and low-value helpers do not need individual observations. The
+shared adapter comes from US-207. Tracing remains fail-open.
 
 ## Affected Users
 
@@ -36,5 +35,13 @@ never change the agent response or deterministic fallback behavior.
   response schemas.
 - Adding Langfuse datasets, judge scoring, dashboards, or release-gate logic.
 - Replacing the existing in-memory session store or LangGraph state contract.
-- Automatic tracing of every private helper function outside the canonical
-  product-level observations.
+- Tracing every private helper or completing the full future canonical tree in
+  this story.
+
+## Ownership Dependency
+
+The selected M1 node files are currently assigned to USER1/USER2 tracker
+boundaries. This packet is planning-ready but implementation must pause until
+the integration controller resolves that overlap and publishes one owner.
+- Implementing missing M1 workflow nodes or a gateway solely to manufacture a
+  complete trace tree.
