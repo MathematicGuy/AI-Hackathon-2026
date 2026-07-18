@@ -20,6 +20,15 @@ single member may own multiple aliases when solo-driving parallel lanes.
 Conflict avoidance is enforced by each tracker's file boundary and serialized
 merges, not by requiring one member per alias.
 
+## Specialized Trackers
+
+Non-alias, single-owner technical trackers. Independent of the product-progress
+trackers above (they do not track task/product progress).
+
+| Tracker | Owner | Scope |
+| --- | --- | --- |
+| [`OBSERVIBILITY-NOW.md`](OBSERVIBILITY-NOW.md) | dinh-nhat-thanh | Langfuse observability instrumentation: span map, adapter invariants, test contract, and the re-instrumentation procedure for future `main` syncs. |
+
 
 ## Mandatory Use
 

@@ -6,9 +6,10 @@ with `main` can update tracing **without re-reading the whole agent codebase**.
 Read this first, then read only the files it points at and the code diff from
 `main`.
 
-- Product-progress ledger stays in `THANH-NOW.md` (do not track progress here).
-- This file tracks: the span tree, where each span is emitted, the adapter
-  invariants, the test contract, and the re-instrumentation procedure.
+- This file is **independent** of the product-progress trackers. It does NOT
+  track task or product progress — it is limited to the observability layer
+  (span map, adapter invariants, test contract, and update procedure).
+- Owner: dinh-nhat-thanh (see `docs/team/now/README.md`).
 
 **Last synced with `main`:** commit `3068a66` ("Update Hackathon checklist to
 git"), 2026-07-19. **Adapter SDK:** `langfuse` 4.x. **Latest live trace:**
