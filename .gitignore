@@ -1,18 +1,25 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+.next/
+out/
+build/
+dist/
+
 # Local environment files
 .env
-.env.*
-**/.env
-**/.env.*
-!.env.example
-!**/.env.example
-!.env.*.example
-!**/.env.*.example
-.envrc
-.direnv/
-.tokensave/
 
 # Agent Memory
 .agents/memory/
+chrome_profile/
+browser_recordings/
+.design-sync/
+.tokensave
+.playwright-mcp
+.railway-config-pull-31116
 
 # Python
 __pycache__/
@@ -20,81 +27,42 @@ __pycache__/
 *$py.class
 venv/
 .venv/
-build/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
-.jsonl
-# OS
-.DS_Store
-chrome_profile
-browser_recordings
-.design-sync/
-.tokensave
-.playwright-mcp
-.ruff_cache
-.railway-config-pull-31116
-.harness
+.ruff_cache/
 
-# AI logs — tracked structure, ignored content
-# .ai-log/*.jsonl
-# *.jsonl
-# **/.ai-log/
-
-# App Data
+# Application and generated data
 /data/
 *.db
-
-# Node / Frontend
-node_modules/
-dist/
-
-
-# Stray test/run output
+*.jsonl
 /test_out.txt
 /test_output.txt
 /chrome_launch.log
 
-# Large local folders and screenshots
-.claude/
-chrome_profile/
+# Local worktrees and scratch output
 _git/
 .superpowers/
 .worktrees/
-browser_recordings/
 logs/
 tmp_pytest_manual/
 tmp_pytest_probe/
 pytest-base/
 pytest-temp-root/
-
-# Keep product evidence tracked (screenshots, diagrams, deck assets, eval proof).
-# Ignore only throwaway screenshot scratch dirs, never the evidence folders below:
-#   docs/images/**  demo-pitch-deck/presentation/assets/**  eval/evidence/**  are TRACKED on purpose.
 tmp-screenshots/
 
-# Harness durable layer — each project instance generates its own data.
+# Harness local state and build output
 harness.db
 harness.db-wal
 harness.db-shm
-
-# macOS Finder metadata.
-.DS_Store
-
-# Rust build output for harness tooling.
 target/
-dist/
-
-# Downloaded Harness CLI binary for installed project instances.
 scripts/bin/harness-cli
 scripts/bin/harness-cli.exe
-
 .harness/*
 !.harness/changesets/
 !.harness/changesets/*.changeset.jsonl
 
-
-# codebase-memory-mcp graph database tracking
+# Codebase memory graph
 .codebase-memory/*
 !.codebase-memory/graph.db.zst
 
