@@ -33,6 +33,9 @@ _SHOPPING_MARKERS = (
     "mua", "tư vấn", "sản phẩm", "giá", "khuyến mãi", "so sánh", "gợi ý",
     "chính sách", "bảo hành", "giao hàng", "đổi trả", "hoàn tiền", "xem thêm",
     "chi tiết", "còn hàng", "ngân sách", "triệu",
+    # Polite conversation control is always in-scope (stop/thanks must reach
+    # the intent layer, not die at the degraded fail-closed gate).
+    "dừng", "cảm ơn", "tạm biệt", "thôi", "quay lại",
 )
 
 _POLICY_VIOLATION_MARKERS = (
@@ -292,24 +295,41 @@ def _product_flow(
     # Enough to act: search, suggest by roles, sell.
     shown = state.shown_for(category)
     exclude = tuple(shown) if intent == "more_recommendations" else ()
+    # Pool of 20 (search maximum) so the value/performance roles see more than
+    # the cheapest page (audit finding: a pool of 10 price-sorted items biased
+    # every role toward cheap products).
     result = search_products(
         deps.products,
         category_code=category,
         budget_min=need.budget_min,
         budget_max=need.budget_max,
         brands=tuple(need.brand_prefs),
-        limit=10,
+        limit=20,
         exclude_ids=exclude,
     )
     if not result.items:
         budget_note = (
             f" trong tầm giá {format_vnd(need.budget_max)}" if need.budget_max else ""
         )
+        unpriced_note = ""
+        if need.budget_max is not None or need.budget_min is not None:
+            unpriced = sum(
+                1
+                for p in deps.products
+                if p.category_code == category and p.effective_price is None
+            )
+            if unpriced:
+                unpriced_note = (
+                    f" (Ngoài ra có {unpriced} mẫu chưa niêm yết giá trên hệ "
+                    "thống — anh/chị có thể để lại nhu cầu, em nhờ cửa hàng "
+                    "báo giá chính xác ạ.)"
+                )
         return AgentReply(
             text=(
                 f"Dạ em chưa tìm được mẫu {registry_category.sheet_name}"
                 f"{budget_note} phù hợp ạ. Anh/chị có thể nới ngân sách một chút "
                 "hoặc bỏ bớt một tiêu chí để em tìm thêm lựa chọn tốt không ạ?"
+                + unpriced_note
             ),
             intent=intent,
             flags=flags,

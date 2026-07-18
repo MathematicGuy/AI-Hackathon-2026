@@ -35,8 +35,10 @@ class ProposedResponse:
 def _product_line(product: GenericProduct, roles: list[str]) -> str:
     badges = " + ".join(ROLE_LABELS.get(role, role) for role in roles)
     parts = [f"• [{badges}] {product.name}"]
-    if product.sale_price is not None and product.list_price is not None:
-        discount = product.promotion.discount_percent
+    discount = product.promotion.discount_percent
+    # Real data contains rows where sale price equals list price — there is a
+    # promotion field but no actual discount, so guard on the percent itself.
+    if discount is not None and product.sale_price is not None:
         parts.append(
             f"  Giá khuyến mãi {format_vnd(product.sale_price)} "
             f"(giá gốc {format_vnd(product.list_price)}, giảm {discount:.0f}%)"

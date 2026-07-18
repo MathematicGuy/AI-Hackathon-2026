@@ -28,6 +28,12 @@ _BUDGET = re.compile(
     re.IGNORECASE,
 )
 
+# Obvious usage purposes the deterministic fallback can extract safely.
+_PURPOSE_MARKERS = (
+    "gaming", "chơi game", "văn phòng", "đồ họa", "học online", "cho bé học",
+    "livestream", "thể thao", "kinh doanh", "gia đình", "làm việc",
+)
+
 
 class UnderstandingExtractor(Protocol):
     async def extract(self, message: str, *, state_summary: str) -> AgentUnderstanding: ...
@@ -77,6 +83,10 @@ def fallback_understanding(
         need_kwargs["budget_max"] = budget_max
     if "rẻ nhất" in low or "giá thấp nhất" in low:
         need_kwargs["requested_roles"] = ["best_price"]
+    for purpose in _PURPOSE_MARKERS:
+        if purpose in low:
+            need_kwargs["usage_purpose"] = purpose
+            break
 
     if any(k in low for k in _STOP):
         intent = "stop"

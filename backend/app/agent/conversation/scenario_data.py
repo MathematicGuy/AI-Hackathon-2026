@@ -33,7 +33,9 @@ SCENARIOS: dict[str, dict] = {
             {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?"},
         ],
         "purpose_followups": {},
-        "performance_attribute": "Khối lượng giặt",
+        # Real data: Máy giặt rows carry no spec columns (mirror + prices
+        # only) — performance role is skipped with disclosure.
+        "performance_attribute": None,
     },
     "116": {  # Máy sấy quần áo
         "questions": [
@@ -42,7 +44,7 @@ SCENARIOS: dict[str, dict] = {
             {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?"},
         ],
         "purpose_followups": {},
-        "performance_attribute": "Khối lượng sấy",
+        "performance_attribute": "Khối lượng tải chính",
     },
     "39": {  # Máy rửa chén
         "questions": [
@@ -51,7 +53,7 @@ SCENARIOS: dict[str, dict] = {
             {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?"},
         ],
         "purpose_followups": {},
-        "performance_attribute": "Số bộ chén dĩa",
+        "performance_attribute": "Công suất đầu ra",
     },
     "40": {  # Tủ mát, tủ đông
         "questions": [
@@ -60,7 +62,8 @@ SCENARIOS: dict[str, dict] = {
             {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?"},
         ],
         "purpose_followups": {},
-        "performance_attribute": "Dung tích",
+        # Real data has no reliable capacity column for this sheet.
+        "performance_attribute": None,
     },
     "41": {  # Máy nước nóng
         "questions": [
@@ -68,7 +71,7 @@ SCENARIOS: dict[str, dict] = {
             {"key": "budget", "ask": "Ngân sách anh/chị dự định khoảng bao nhiêu ạ?"},
         ],
         "purpose_followups": {},
-        "performance_attribute": "Công suất",
+        "performance_attribute": "Công suất đầu ra",
     },
     "139": {  # Micro karaoke
         "questions": [
@@ -95,7 +98,8 @@ SCENARIOS: dict[str, dict] = {
         "purpose_followups": {
             "thể thao": [{"key": "sport_gps", "ask": "Anh/chị có cần GPS và chống nước khi chạy bộ/bơi không ạ?"}],
         },
-        "performance_attribute": "Thời gian sử dụng pin",
+        # Real data exposes charge time / face size, not battery life.
+        "performance_attribute": None,
     },
     "72": {  # Máy tính để bàn
         "questions": [
@@ -122,7 +126,7 @@ SCENARIOS: dict[str, dict] = {
         "purpose_followups": {
             "gaming": [{"key": "refresh", "ask": "Anh/chị có cần tần số quét cao (144Hz trở lên) để chơi game không ạ?"}],
         },
-        "performance_attribute": "Tần số quét",
+        "performance_attribute": "Kích thước màn hình",
     },
     "75": {  # Máy in
         "questions": [

@@ -63,8 +63,16 @@ def apply_turn(state: AgentState, understanding: AgentUnderstanding) -> AgentSta
 
     state.current_intent = understanding.intent
     state.turn_number += 1
-    if understanding.intent == "new_search" and new_category is None:
-        # Brand-new search without a detected category keeps the need but the
-        # clarification cycle restarts for the current category.
-        pass
+
+    # A materially new search reopens the clarification cycle for the current
+    # category: the question budget and asked-list reset, while answered
+    # questions stay answered through the need itself (audit finding: without
+    # this, a category could never be asked anything again after one cycle).
+    materially_new = understanding.intent == "new_search" and bool(
+        patch.model_fields_set - {"requested_roles"}
+    )
+    category = state.need.category_code
+    if materially_new and category is not None:
+        state.clarification_count[category] = 0
+        state.asked_questions[category] = []
     return state
