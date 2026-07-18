@@ -29,7 +29,7 @@ from backend.app.agent.tools.search import search_products
 from backend.app.agent.tools.suggest import suggest_products
 from backend.app.agent.validate import degrade_to_facts, validate_response
 from backend.app.guardrails.input_rules import evaluate_input
-from backend.app.observability import AgentObserver
+from backend.app.observability import AgentObserver, noop_agent_observer
 
 _SHOPPING_MARKERS = (
     "mua", "tư vấn", "sản phẩm", "giá", "khuyến mãi", "so sánh", "gợi ý",
@@ -113,6 +113,83 @@ class AgentReply:
     presented_ids: list[str] = field(default_factory=list)
 
 
+def _observer(deps: AgentDependencies) -> AgentObserver:
+    observer = deps.observer
+    if observer is None or not callable(getattr(observer, "span", None)):
+        return noop_agent_observer()
+    return observer
+
+
+def _state_snapshot(state: AgentState) -> dict[str, object]:
+    return {
+        "turn_number": state.turn_number,
+        "current_intent": state.current_intent,
+        "need": state.need.model_dump(),
+        "previous_needs": {
+            category: need.model_dump()
+            for category, need in state.previous_needs.items()
+        },
+        "pending_question_key": state.pending_question_key,
+        "shown_product_ids": dict(state.shown_product_ids),
+        "last_presented_ids": list(state.last_presented_ids),
+        "guardrail_flags": list(state.guardrail_flags),
+    }
+
+
+def _observed_response(
+    observer: AgentObserver,
+    reply: AgentReply,
+    *,
+    outcome: str,
+    response_source: str = "deterministic",
+    polish_accepted: bool | None = None,
+) -> AgentReply:
+    metadata: dict[str, object] = {
+        "outcome": outcome,
+        "response_source": response_source,
+    }
+    if polish_accepted is not None:
+        metadata["polish_accepted"] = polish_accepted
+    with observer.span(
+        "response_generation",
+        input={"intent": reply.intent},
+        metadata={"outcome": outcome},
+    ) as observation:
+        observation.update(
+            output={
+                "text": reply.text,
+                "intent": reply.intent,
+                "flags": reply.flags,
+                "presented_ids": reply.presented_ids,
+            },
+            metadata=metadata,
+        )
+    return reply
+
+
+def _observe_output_validation(
+    observer: AgentObserver,
+    *,
+    text: str,
+    allowed_product_ids: list[str],
+    ok: bool,
+    violations: list[str],
+) -> None:
+    outcome = "accepted" if ok else "degraded"
+    with observer.span(
+        "output_validation",
+        input={
+            "text": text,
+            "allowed_product_ids": allowed_product_ids,
+        },
+        metadata={"outcome": outcome},
+    ) as observation:
+        observation.update(
+            output={"ok": ok, "violations": violations},
+            metadata={"outcome": outcome},
+        )
+
+
 def _agent_scope_markers(registry: CategoryRegistry) -> tuple[str, ...]:
     return registry.all_markers() + _SHOPPING_MARKERS
 
@@ -127,26 +204,76 @@ def _category_menu(registry: CategoryRegistry) -> str:
 
 
 async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> AgentReply:
+    observer = _observer(deps)
+    try:
+        return await _run_turn(state, message, deps, observer)
+    finally:
+        with observer.span(
+            "final_state",
+            input={"session_id": state.session_id},
+            metadata={"turn_number": state.turn_number},
+        ) as observation:
+            observation.update(
+                output=_state_snapshot(state),
+                metadata={"intent": state.current_intent},
+            )
+
+
+async def _run_turn(
+    state: AgentState,
+    message: str,
+    deps: AgentDependencies,
+    observer: AgentObserver,
+) -> AgentReply:
     # 1. Benefit-exploit guard first: the bot never grants or commits
     # promotions. The reply is a fixed refusal that processes no content, so
     # checking before the input guard is safe.
     low = message.lower()
     if any(marker in low for marker in _EXPLOIT_MARKERS):
         state.guardrail_flags.append("promotion_exploit_blocked")
-        return AgentReply(
+        with observer.span(
+            "input_guardrail",
+            input={"message": message},
+            metadata={"subtype": "promotion_exploit"},
+        ) as observation:
+            observation.update(
+                output={"blocked": True, "flags": ["promotion_exploit_blocked"]},
+                metadata={"subtype": "promotion_exploit"},
+            )
+        return _observed_response(
+            observer,
+            AgentReply(
             text=EXPLOIT_REPLY,
             intent="unsupported",
             flags=["promotion_exploit_blocked"],
+            ),
+            outcome="guardrail_block",
         )
 
     # 2. Input guard (word count, payload, injection; agent scope = all
     # categories). A plain answer to the pending cold-start question is
     # in-scope by construction — never fail closed on it.
-    guard = evaluate_input(
-        message,
-        in_scope_markers=_agent_scope_markers(deps.registry),
-        other_category_markers=(),
-    )
+    with observer.span(
+        "input_guardrail",
+        input={"message": message},
+    ) as observation:
+        guard = evaluate_input(
+            message,
+            in_scope_markers=_agent_scope_markers(deps.registry),
+            other_category_markers=(),
+        )
+        observation.update(
+            output={
+                "blocked": guard.blocked,
+                "stage": guard.stage,
+                "reason": guard.reason,
+                "flags": list(guard.flags),
+            },
+            metadata={
+                "subtype": guard.stage or "passed",
+                "reason": guard.reason,
+            },
+        )
     state.guardrail_flags.extend(guard.flags)
     expecting_answer = state.pending_question_key is not None
     if guard.blocked and not (
@@ -154,7 +281,11 @@ async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> 
     ):
         state.guardrail_flags.append("guardrail_block")
         text = guard.message or GUARDRAIL_REPLY
-        return AgentReply(text=text, intent="unsupported", flags=list(guard.flags))
+        return _observed_response(
+            observer,
+            AgentReply(text=text, intent="unsupported", flags=list(guard.flags)),
+            outcome="guardrail_block",
+        )
 
     # 2. Understand (LLM route when configured, deterministic fallback always).
     understanding, flags = await understand_turn(
@@ -162,41 +293,86 @@ async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> 
         extractor=deps.extractor,
         state_summary=_state_summary(state),
         registry=deps.registry,
+        observer=observer,
     )
     state.guardrail_flags.extend(flags)
 
-    # 2b. A low-confidence (fallback) category switch mid-conversation needs an
-    # explicit switch cue — merely mentioning another appliance ("mình chưa có
-    # màn hình" while buying a PC) must not reroute the whole consultation.
-    if (
-        understanding.confidence <= 0.35
-        and state.need.category_code is not None
-        and understanding.need_patch.category_code
-        not in (None, state.need.category_code)
-        and not any(cue in low for cue in _SWITCH_CUES)
-    ):
-        patch = understanding.need_patch.model_copy(update={"category_code": None})
-        understanding = understanding.model_copy(update={"need_patch": patch})
+    before_state = _state_snapshot(state)
+    with observer.span(
+        "state_update",
+        input={"state": before_state},
+    ) as state_observation:
+        # 2b. A low-confidence (fallback) category switch mid-conversation needs an
+        # explicit switch cue — merely mentioning another appliance ("mình chưa có
+        # màn hình" while buying a PC) must not reroute the whole consultation.
+        if (
+            understanding.confidence <= 0.35
+            and state.need.category_code is not None
+            and understanding.need_patch.category_code
+            not in (None, state.need.category_code)
+            and not any(cue in low for cue in _SWITCH_CUES)
+        ):
+            patch = understanding.need_patch.model_copy(update={"category_code": None})
+            understanding = understanding.model_copy(update={"need_patch": patch})
 
-    # 2c. Capture the pending cold-start answer when the reply carried no
-    # structured signal (keeps per-category filter memory complete).
-    understanding = _capture_pending_answer(state, message, understanding)
+        # 2c. Capture the pending cold-start answer when the reply carried no
+        # structured signal (keeps per-category filter memory complete).
+        understanding = _capture_pending_answer(state, message, understanding)
 
-    # 3. Remember (fixed-format need; patch / correction / category switch).
-    memory.apply_turn(state, understanding)
+        # 3. Remember (fixed-format need; patch / correction / category switch).
+        memory.apply_turn(state, understanding)
+        after_state = _state_snapshot(state)
+        delta = {
+            key: {"before": before_state[key], "after": after_state[key]}
+            for key in before_state
+            if before_state[key] != after_state[key]
+        }
+        state_observation.update(
+            output={"state": after_state},
+            metadata={"memory_delta": delta},
+        )
     intent = understanding.intent
 
     # 4. Route.
+    route = {
+        "stop": "stop",
+        "policy_question": "policy_flow",
+        "unsupported": "unsupported",
+    }.get(intent, "product_flow")
+    with observer.span(
+        "route_decision",
+        input={"intent": intent},
+        metadata={"route": route},
+    ) as route_observation:
+        route_observation.update(
+            output={"intent": intent},
+            metadata={
+                "route": route,
+                "branch": (
+                    "policy"
+                    if intent == "policy_question"
+                    else route.removesuffix("_flow")
+                ),
+            },
+        )
     if intent == "stop":
-        return AgentReply(text=STOP_REPLY, intent=intent, flags=flags)
+        return _observed_response(
+            observer,
+            AgentReply(text=STOP_REPLY, intent=intent, flags=flags),
+            outcome="stop",
+        )
 
     if intent == "policy_question":
-        return _policy_flow(message, deps, flags)
+        return _policy_flow(message, deps, flags, observer)
 
     if intent == "unsupported":
-        return AgentReply(text=_category_menu(deps.registry), intent=intent, flags=flags)
+        return _observed_response(
+            observer,
+            AgentReply(text=_category_menu(deps.registry), intent=intent, flags=flags),
+            outcome="unsupported",
+        )
 
-    return await _product_flow(state, deps, intent, flags)
+    return await _product_flow(state, deps, intent, flags, observer)
 
 
 def _state_summary(state: AgentState) -> str:
@@ -242,21 +418,47 @@ def _capture_pending_answer(state, message: str, understanding):
     return understanding
 
 
-def _policy_flow(message: str, deps: AgentDependencies, flags: list[str]) -> AgentReply:
-    answer = build_policy_answer(deps.corpus, message)
+def _policy_flow(
+    message: str,
+    deps: AgentDependencies,
+    flags: list[str],
+    observer: AgentObserver,
+) -> AgentReply:
+    with observer.span(
+        "policy_retrieval",
+        input={"message": message},
+    ) as retrieval_observation:
+        answer = build_policy_answer(deps.corpus, message)
+        retrieval_outcome = "matches" if answer.quotes else "no_match"
+        retrieval_observation.update(
+            output={
+                "sources": list(answer.sources),
+                "quotes": list(answer.quotes),
+                "count": len(answer.quotes),
+            },
+            metadata={"outcome": retrieval_outcome},
+        )
     low = message.lower()
     if any(marker in low for marker in _POLICY_VIOLATION_MARKERS):
         text = degradation_response(user_request=message, answer=answer)
-        return AgentReply(text=text, intent="policy_question", flags=flags)
+        return _observed_response(
+            observer,
+            AgentReply(text=text, intent="policy_question", flags=flags),
+            outcome="policy_conflict",
+        )
     if not answer.quotes:
-        return AgentReply(
-            text=(
-                "Dạ em chưa tìm thấy điều khoản phù hợp với câu hỏi này ạ. "
-                "Anh/chị có thể hỏi rõ hơn, hoặc gọi tổng đài 1900 232 461 để "
-                "được hỗ trợ chính xác nhất ạ."
+        return _observed_response(
+            observer,
+            AgentReply(
+                text=(
+                    "Dạ em chưa tìm thấy điều khoản phù hợp với câu hỏi này ạ. "
+                    "Anh/chị có thể hỏi rõ hơn, hoặc gọi tổng đài 1900 232 461 để "
+                    "được hỗ trợ chính xác nhất ạ."
+                ),
+                intent="policy_question",
+                flags=flags,
             ),
-            intent="policy_question",
-            flags=flags,
+            outcome="policy_no_match",
         )
     lines = [
         f"Dạ theo {answer.sources[0]}, chính sách quy định nguyên văn ạ:",
@@ -265,37 +467,64 @@ def _policy_flow(message: str, deps: AgentDependencies, flags: list[str]) -> Age
         "Anh/chị cần em giải thích thêm điểm nào trong chính sách này không ạ?",
     ]
     text = "\n".join(lines)
+    validation_input = text
     result = validate_response(
         text, allowed_products=[], policy_quotes=[answer.quotes[0]], corpus=deps.corpus
     )
     if not result.ok:
         text = degradation_response(user_request=message, answer=answer)
-    return AgentReply(text=text, intent="policy_question", flags=flags)
+    reply = _observed_response(
+        observer,
+        AgentReply(text=text, intent="policy_question", flags=flags),
+        outcome="policy_answer" if result.ok else "policy_degraded",
+    )
+    _observe_output_validation(
+        observer,
+        text=validation_input,
+        allowed_product_ids=[],
+        ok=result.ok,
+        violations=list(result.violations),
+    )
+    return reply
 
 
 async def _product_flow(
-    state: AgentState, deps: AgentDependencies, intent: str, flags: list[str]
+    state: AgentState,
+    deps: AgentDependencies,
+    intent: str,
+    flags: list[str],
+    observer: AgentObserver,
 ) -> AgentReply:
     need = state.need
     category = need.category_code
 
     if category is None:
-        return AgentReply(text=_category_menu(deps.registry), intent=intent, flags=flags)
+        return _observed_response(
+            observer,
+            AgentReply(
+                text=_category_menu(deps.registry), intent=intent, flags=flags
+            ),
+            outcome="clarification",
+        )
 
     registry_category = deps.registry.by_code(category)
 
     if intent == "compare_products":
-        return _compare_flow(state, deps, flags)
+        return _compare_flow(state, deps, flags, observer)
 
     if intent == "check_availability":
-        return AgentReply(
-            text=(
-                "Dạ hiện em chưa có dữ liệu tồn kho theo thời gian thực ạ. "
-                "Anh/chị để lại khu vực của mình, em sẽ nhờ cửa hàng gần nhất "
-                "kiểm tra và báo lại ngay ạ?"
+        return _observed_response(
+            observer,
+            AgentReply(
+                text=(
+                    "Dạ hiện em chưa có dữ liệu tồn kho theo thời gian thực ạ. "
+                    "Anh/chị để lại khu vực của mình, em sẽ nhờ cửa hàng gần nhất "
+                    "kiểm tra và báo lại ngay ạ?"
+                ),
+                intent=intent,
+                flags=flags,
             ),
-            intent=intent,
-            flags=flags,
+            outcome="availability_unavailable",
         )
 
     # Cold-start: ask the most material missing question first.
@@ -304,7 +533,11 @@ async def _product_flow(
         if question is not None:
             coldstart.record_asked(state, question)
             state.pending_question_key = question.key
-            return AgentReply(text=question.ask, intent=intent, flags=flags)
+            return _observed_response(
+                observer,
+                AgentReply(text=question.ask, intent=intent, flags=flags),
+                outcome="clarification",
+            )
 
     # Enough to act: search, suggest by roles, sell.
     shown = state.shown_for(category)
@@ -312,15 +545,34 @@ async def _product_flow(
     # Pool of 20 (search maximum) so the value/performance roles see more than
     # the cheapest page (audit finding: a pool of 10 price-sorted items biased
     # every role toward cheap products).
-    result = search_products(
-        deps.products,
-        category_code=category,
-        budget_min=need.budget_min,
-        budget_max=need.budget_max,
-        brands=tuple(need.brand_prefs),
-        limit=20,
-        exclude_ids=exclude,
-    )
+    search_input = {
+        "category_code": category,
+        "budget_min": need.budget_min,
+        "budget_max": need.budget_max,
+        "brands": tuple(need.brand_prefs),
+        "limit": 20,
+        "exclude_ids": exclude,
+    }
+    with observer.span("product_search", input=search_input) as search_observation:
+        result = search_products(
+            deps.products,
+            category_code=category,
+            budget_min=need.budget_min,
+            budget_max=need.budget_max,
+            brands=tuple(need.brand_prefs),
+            limit=20,
+            exclude_ids=exclude,
+        )
+        search_outcome = "matches" if result.items else "no_match"
+        search_observation.update(
+            output={
+                "product_ids": [p.productidweb for p in result.items],
+                "count": len(result.items),
+                "total_candidates": result.total_candidates,
+                "has_more": result.has_more,
+            },
+            metadata={"outcome": search_outcome},
+        )
     if not result.items:
         budget_note = (
             f" trong tầm giá {format_vnd(need.budget_max)}" if need.budget_max else ""
@@ -338,22 +590,45 @@ async def _product_flow(
                     "thống — anh/chị có thể để lại nhu cầu, em nhờ cửa hàng "
                     "báo giá chính xác ạ.)"
                 )
-        return AgentReply(
-            text=(
-                f"Dạ em chưa tìm được mẫu {registry_category.sheet_name}"
-                f"{budget_note} phù hợp ạ. Anh/chị có thể nới ngân sách một chút "
-                "hoặc bỏ bớt một tiêu chí để em tìm thêm lựa chọn tốt không ạ?"
-                + unpriced_note
+        return _observed_response(
+            observer,
+            AgentReply(
+                text=(
+                    f"Dạ em chưa tìm được mẫu {registry_category.sheet_name}"
+                    f"{budget_note} phù hợp ạ. Anh/chị có thể nới ngân sách một chút "
+                    "hoặc bỏ bớt một tiêu chí để em tìm thêm lựa chọn tốt không ạ?"
+                    + unpriced_note
+                ),
+                intent=intent,
+                flags=flags,
             ),
-            intent=intent,
-            flags=flags,
+            outcome="no_match",
         )
 
     # Per-category domain rules narrow the pool from captured answers
     # (household → capacity band, room area → coverage, screen size → inches).
-    pool = apply_domain_filters(result.items, need)
     roles = tuple(need.requested_roles) or DEFAULT_ROLES
-    suggestions = suggest_products(pool, category_code=category, roles=roles)
+    with observer.span(
+        "filter_and_rank",
+        input={
+            "product_ids": [p.productidweb for p in result.items],
+            "need": need.model_dump(),
+            "roles": roles,
+        },
+    ) as rank_observation:
+        pool = apply_domain_filters(result.items, need)
+        suggestions = suggest_products(pool, category_code=category, roles=roles)
+        rank_observation.update(
+            output={
+                "eligible_ids": [p.productidweb for p in pool],
+                "winners": {
+                    role: product.productidweb
+                    for role, product in suggestions.winners.items()
+                },
+                "skipped_roles": list(suggestions.skipped_roles),
+            },
+            metadata={"skipped_roles": list(suggestions.skipped_roles)},
+        )
     winner_ids = {p.productidweb for p in suggestions.distinct_products}
     also_consider = [
         p for p in pool if p.productidweb not in winner_ids
@@ -373,11 +648,15 @@ async def _product_flow(
     validation = validate_response(
         response.text, allowed_products=response.allowed_products
     )
+    validation_input = response.text
     text = response.text if validation.ok else degrade_to_facts(response.allowed_products)
 
     # Optional LLM polish: rephrase, then re-validate against the same
     # records; any violation keeps the deterministic text.
+    polish_accepted: bool | None = None
+    response_source = "deterministic"
     if validation.ok and deps.polisher is not None:
+        polish_accepted = False
         polished = await deps.polisher.polish(text)
         if polished and polished != text:
             recheck = validate_response(
@@ -385,29 +664,64 @@ async def _product_flow(
             )
             if recheck.ok:
                 text = polished
+                validation = recheck
+                validation_input = polished
+                polish_accepted = True
+                response_source = "polished"
             else:
                 flags = flags + ["polish_rejected"]
+                validation = recheck
+                validation_input = polished
 
     presented = [p.productidweb for p in response.allowed_products]
     state.last_presented_ids = presented
     for pid in presented:
         if pid not in shown:
             shown.append(pid)
-    return AgentReply(text=text, intent=intent, flags=flags, presented_ids=presented)
+    reply = _observed_response(
+        observer,
+        AgentReply(
+            text=text,
+            intent=intent,
+            flags=flags,
+            presented_ids=presented,
+        ),
+        outcome={
+            "more_recommendations": "more_products",
+            "product_detail": "product_detail",
+        }.get(intent, "recommendation"),
+        response_source=response_source,
+        polish_accepted=polish_accepted,
+    )
+    _observe_output_validation(
+        observer,
+        text=validation_input,
+        allowed_product_ids=[p.productidweb for p in response.allowed_products],
+        ok=validation.ok,
+        violations=list(validation.violations),
+    )
+    return reply
 
 
 def _compare_flow(
-    state: AgentState, deps: AgentDependencies, flags: list[str]
+    state: AgentState,
+    deps: AgentDependencies,
+    flags: list[str],
+    observer: AgentObserver,
 ) -> AgentReply:
     ids = tuple(state.last_presented_ids[:2])
     if len(ids) < 2:
-        return AgentReply(
-            text=(
-                "Dạ anh/chị muốn so sánh hai mẫu nào ạ? Em có thể gợi ý vài mẫu "
-                "trước rồi mình so sánh chi tiết nhé ạ?"
+        return _observed_response(
+            observer,
+            AgentReply(
+                text=(
+                    "Dạ anh/chị muốn so sánh hai mẫu nào ạ? Em có thể gợi ý vài mẫu "
+                    "trước rồi mình so sánh chi tiết nhé ạ?"
+                ),
+                intent="compare_products",
+                flags=flags,
             ),
-            intent="compare_products",
-            flags=flags,
+            outcome="comparison_clarification",
         )
     comparison = compare_products(deps.products, ids)
     lines = ["Dạ em so sánh nhanh hai mẫu anh/chị đang xem ạ:", ""]
@@ -431,7 +745,20 @@ def _compare_flow(
     lines.append("Anh/chị nghiêng về mẫu nào hơn để em tư vấn sâu thêm ạ?")
     text = "\n".join(lines)
     allowed = [p for p in deps.products if p.productidweb in ids]
+    validation_input = text
     validation = validate_response(text, allowed_products=allowed)
     if not validation.ok:
         text = degrade_to_facts(allowed)
-    return AgentReply(text=text, intent="compare_products", flags=flags)
+    reply = _observed_response(
+        observer,
+        AgentReply(text=text, intent="compare_products", flags=flags),
+        outcome="comparison",
+    )
+    _observe_output_validation(
+        observer,
+        text=validation_input,
+        allowed_product_ids=[p.productidweb for p in allowed],
+        ok=validation.ok,
+        violations=list(validation.violations),
+    )
+    return reply

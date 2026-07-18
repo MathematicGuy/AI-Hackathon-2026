@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from backend.app.agent.catalog.registry import CategoryRegistry
 from backend.app.agent.contracts import AgentUnderstanding, GenericNeed
+from backend.app.observability import AgentObserver, noop_agent_observer
 
 FALLBACK_CONFIDENCE = 0.3
 
@@ -122,11 +123,51 @@ async def understand_turn(
     extractor: UnderstandingExtractor | None,
     state_summary: str = "",
     registry: CategoryRegistry | None = None,
+    observer: AgentObserver | None = None,
 ) -> tuple[AgentUnderstanding, list[str]]:
-    if extractor is not None:
-        try:
-            return await extractor.extract(message, state_summary=state_summary), []
-        except (ExtractorError, ValidationError):
-            pass
-    flags = ["understanding_degraded"] if extractor is not None else []
-    return fallback_understanding(message, registry=registry), flags
+    observer = observer or noop_agent_observer()
+    with observer.span(
+        "understanding",
+        input={"message": message, "state_summary": state_summary},
+        metadata={"extractor_configured": extractor is not None},
+    ) as observation:
+        fallback_reason: str | None = None
+        flags: list[str] = []
+        understanding: AgentUnderstanding | None = None
+        if extractor is not None:
+            try:
+                understanding = await extractor.extract(
+                    message, state_summary=state_summary
+                )
+            except (ExtractorError, ValidationError) as exc:
+                fallback_reason = type(exc).__name__
+                flags = ["understanding_degraded"]
+        else:
+            fallback_reason = "extractor_unconfigured"
+
+        if understanding is None:
+            with observer.span(
+                "understanding_fallback",
+                input={"message": message, "state_summary": state_summary},
+                metadata={"reason": fallback_reason},
+            ) as fallback_observation:
+                understanding = fallback_understanding(message, registry=registry)
+                fallback_observation.update(
+                    output={
+                        "intent": understanding.intent,
+                        "confidence": understanding.confidence,
+                        "need_patch": understanding.need_patch.model_dump(),
+                    },
+                    metadata={"reason": fallback_reason},
+                )
+
+        observation.update(
+            output={
+                "intent": understanding.intent,
+                "confidence": understanding.confidence,
+                "need_patch": understanding.need_patch.model_dump(),
+                "flags": flags,
+            },
+            metadata={"fallback_used": fallback_reason is not None},
+        )
+        return understanding, flags
