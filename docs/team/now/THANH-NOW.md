@@ -56,7 +56,7 @@ before a story becomes ready. A legacy plan cannot assign files.
 | 3 | M1.3 / US-102 layered input guardrail | USER1 — details in `docs/team/now/USER1-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; blocked until USER1 is mapped to a human |
 | 4 | M1.3 / US-103 Vietnamese intent/need extraction | USER1 — details in `docs/team/now/USER1-NOW.md` | `gpt-5.6-terra-high` | US-102 | ⬜ USER1 queued after mapping and US-102 merge |
 | 5 | M1.4 / US-104 state merge and correction precedence | USER2 — details in `docs/team/now/USER2-NOW.md` | `gpt-5.6-terra-high` | US-121 | 🟨 Delegated; blocked until USER2 is mapped to a human |
-| 6 | M1.2 / US-108 hard constraints | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-107 | ⬜ Queued |
+| 6 | M1.2 / US-108 hard constraints | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-107 | ✅ Done — 20 unit tests, 186 full-backend passing, packet review approved, trace 23, matrix `implemented` |
 | 7 | M1.2 / US-109 injected deterministic ranking | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-108 | ⬜ Queued; production policy remains injected |
 | 8 | M1.2 / US-110 truthful deduplication | Fresh implementation subagent, then separate reviewer | `gpt-5.6-terra-high` | US-109 | ⬜ Queued |
 | 9 | M1.4 / US-105 clarification/routing/persistence | USER2 — details in `docs/team/now/USER2-NOW.md` | `gpt-5.6-terra-high` | US-103, US-104 | ⬜ USER2 blocked until mapping and both merges |
@@ -88,10 +88,9 @@ RED/GREEN commands.
 
 - M1.0 — request, response, state, product, graph, and model-routing contracts frozen with `US-100` proof.
 - US-122 environment-owned model routing — Tasks 1–4 complete (`ab6bc1f..fcda6ae`; 34 settings, 9 routing, 8 contract, 51 focused and 96 full-backend tests; all independent reviews approved). Waiting for the explicit command to merge remote `main` into the current branch; no later task has started.
-- M1.1–M1.8 — historical implementation provenance exists; US-121, US-106, and
-  US-107 are complete (M1.1 done). US-108 (M1.2 hard constraints) is next in
-  dependency order and remains blocked until its registered story packet is
-  created and reviewed.
+- M1.1–M1.8 — historical implementation provenance exists; US-121, US-106,
+  US-107, and US-108 are complete. US-109 (M1.2 injected deterministic ranking)
+  is next in dependency order.
 - M1.9 / US-117 — implement dataset loader, deterministic assertions, Langfuse import, and release report when selected.
 
 ## Integration status
@@ -101,6 +100,7 @@ RED/GREEN commands.
 - Completed US-106 scope committed on `agent/m1-implementation` as `a4dedfd` and merged to local `main` as `9dc9363`.
 - Clean-main US-106 verification: 53 passed; third-party pytest plugin autoload was disabled because the global `deepeval` plugin attempted an out-of-scope filesystem write.
 - Completed US-107 scope implemented on `agent/m1-implementation` (uncommitted; awaits explicit merge/commit command): 14 unit tests, 166 full-backend passing, golden `normalized_fixture` oracle holds for all 14 products, separate review found no blocking findings, trace 22, matrix `implemented`.
+- Completed US-108 scope on `agent/m1-implementation`: 20 focused unit tests, 186 full-backend passing with an isolated workspace pytest base directory, golden eligibility split holds, separate packet review approved, trace 23, matrix `implemented`.
 
 ## Working files
 
@@ -116,10 +116,9 @@ RED/GREEN commands.
 
 ## Next integration checkpoint
 
-- Milestone 1.2 begins with US-108 hard constraints. Handoff for the fresh
-  session: `.agents/handoffs/m1-2-constraints-ranking-dedup.md` (scope, DoD,
-  dependency order US-108 → US-109 → US-110, and carried tech constraints).
-- Create and review the registered US-108 story packet from accepted product
-  authority; only then activate it, complete RED → GREEN and separate review,
-  and proceed to US-109 then US-110.
+- Milestone 1.2 continues with US-109 injected deterministic ranking. Handoff:
+  `.agents/handoffs/m1-2-constraints-ranking-dedup.md` (scope, DoD, dependency
+  order US-108 → US-109 → US-110, and carried tech constraints).
+- Create and separately review the registered US-109 story packet before
+  implementation, then complete RED → GREEN and proceed to US-110.
 - Keep all later story packets uncreated until their turn in the dependency order.

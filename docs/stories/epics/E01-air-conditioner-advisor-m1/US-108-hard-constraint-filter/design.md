@@ -40,13 +40,15 @@ and cannot be overridden by score", and the frozen ranking fixture's
    `product.sale_price_vnd` is **known**, exclude if
    `sale_price_vnd > budget_max_vnd`.
    Reason: `sale_price_vnd {price} exceeds budget_max_vnd {budget}`.
-3. **Room fit** — when `need.room_size_m2` is set and both
-   `recommended_room_area_min_m2` and `recommended_room_area_max_m2` are
-   **known**, exclude if `room_size_m2` is outside `[min, max]` (inclusive).
-   Reason: `room_size_m2 {room} outside recommended_room_area [{min}, {max}]`.
-4. **Stock policy** — exclude only when `stock_status` is the **known** value
-   `"unavailable"`. `"available"` and `"unknown"` both pass (see decision below).
-   Reason: `stock_status is unavailable`.
+3. **Room fit** — when `need.room_size_m2` is set, compare each known bound
+   independently: exclude below a known minimum or above a known maximum;
+   inclusive boundary values pass. An unknown bound cannot establish a
+   violation. Reasons: `room_size_m2 {room} below recommended_room_area_min_m2
+   {min}` or `room_size_m2 {room} above recommended_room_area_max_m2 {max}`.
+4. **Stock policy** — the fixture selects `available`, so only the known value
+   `"available"` passes. `"unavailable"` and `"unknown"` fail the selected
+   policy. Reasons: `stock_status is unavailable` or `stock_status unknown does
+   not satisfy stock_policy available`.
 5. **Required evidence for the primary priority** — for each priority in
    `need.priorities` with `importance == "primary"` that appears in the fixture
    map, exclude if the required field is missing (unknown). Map (from the
@@ -58,12 +60,11 @@ and cannot be overridden by score", and the frozen ranking fixture's
 ## Unknown / null field decision (required by the handoff)
 
 **A `null` normalized field (present in `missing_fields`) is UNKNOWN, not a
-constraint violation. A product is excluded only when a KNOWN, non-null field
-value actually violates a hard constraint.** The one exception is constraint 5:
-when the fixture requires a field as evidence for the customer's **primary**
-priority and that field is missing, the product **is** excluded, because missing
-data there invalidates eligibility — the primary priority cannot be
-substantiated and no claim may rest on it.
+constraint violation by itself.** A product is excluded when a known value
+violates a hard constraint, or when a selected policy requires a known value and
+the value is missing. Therefore required primary evidence and the available-only
+stock policy fail closed, while unknown price or room bounds remain eligible on
+those dimensions.
 
 Citations:
 - PRD §10.7 "Missing product evidence": "preserve the product only if missing
@@ -80,17 +81,17 @@ Golden-case validation of the decision:
 - `AC-M1-009` is missing `cspf` while `energy_saving` is the **primary**
   priority → **excluded** (constraint 5).
 - `AC-M1-014` has `stock_status == "unknown"`; it is excluded for **budget**
-  (21.5M > 20M), never for unknown stock — validating that unknown stock passes
-  the stock policy.
+  (21.5M > 20M) and the available-only stock policy.
 
 ## Evidence grounding
 
 `ExcludedProduct` carries only `product_id` and `reasons: list[str]` (frozen), so
 grounding is expressed by citing the offending normalized field and its value in
 the reason string. Those fields are the same ones US-107 attached an
-`EvidenceRef` to, so each reason references an evidence-backed value; the
-missing-evidence reason cites the absence disclosed in `missing_fields`. The
-filter never invents a value to justify an exclusion.
+`EvidenceRef` to, so each known-value reason references an evidence-backed
+value; policy-failure reasons cite the normalized field and, for missing values,
+the absence disclosed in `missing_fields`. Tests must assert these mappings.
+The filter never invents a value to justify an exclusion.
 
 ## "Field is known" test
 
