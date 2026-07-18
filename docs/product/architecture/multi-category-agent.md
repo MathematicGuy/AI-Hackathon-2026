@@ -26,12 +26,16 @@ deterministic code owns filtering, comparison, validation, and quoting.
 
 ```text
 guard → understand → merge_need → route
-   route = clarify        (cold-start question for the category, 1/turn, ≤3/cycle)
-         | product_flow   (search/aggregate/compare/detail tools → sell)
-         | policy_flow    (corpus retrieve → answer with verbatim quote)
+   route = clarify           (bundled cold-start opener 2-3 questions, then 1/turn)
+         | product_flow      (search/aggregate/compare/detail tools → sell)
+         | policy_flow       (corpus retrieve → natural answer, verbatim-validated)
+         | catalog_overview  (category menu / per-category aggregate overview)
+         | price_range_flow  (aggregate price_min/max for the category)
+         | promotion_flow    (grounded promo overview or graceful degradation)
+         | smalltalk         (friendly employee reply + gentle sales pivot)
          | stop | scope_safe
 → sell (proactive salesman prose over verified records + promotions)
-→ validate (grounding: claims ⊆ records; quotes ⊆ corpus; ≤1 question)
+→ validate (grounding: claims ⊆ records; quotes ⊆ corpus; question cap)
 → respond (+ session state persist)
 ```
 
@@ -82,7 +86,10 @@ Per-category question scripts live in versioned data
 never the first question (e.g. PC: purpose → budget; tủ lạnh: household size →
 budget → door style; máy lạnh: room size → budget → priority) — with
 purpose-aware follow-ups once the usage purpose is known (gaming →
-display/GPU). Rules: one question per turn, at most three per cycle, never
+display/GPU). Rules: when a category cycle starts, the opener bundles the top
+2-3 script questions into one message (① ② ③) so the customer answers in one
+go — the whole bundle is marked asked and the first question stays pending
+for plain-reply capture; later follow-ups ask one question per turn. Never
 re-ask an answered or already-asked question, and proceed with tools as soon
 as the material minimum (category + one narrowing fact) is known. A plain
 reply to the pending question is captured verbatim into the fixed-format need
@@ -95,12 +102,17 @@ band, room area → coverage range, screen size → inches).
 ## 6. Policy engine (ADR-0016)
 
 Markdown corpus from `AGENT_POLICY_DIR` (default `data/dataset`), heading-based
-sections, keyword-scored retrieval, no vector store. Lazy: loaded only for
-`policy_question` intent or a compliance check. Every policy answer carries a
-**verbatim quote** (validated as an exact substring of the source) plus the
-source document name. Requests conflicting with policy get a sincere apology +
-the governing clause + legitimate alternatives. Policy always outranks sales
-behavior.
+sections, keyword-scored retrieval with a relevance floor (`min_score` — a
+weak top match degrades gracefully instead of quoting an off-topic clause),
+no vector store. Lazy: loaded only for `policy_question` intent or a
+compliance check. Every policy answer quotes the source **verbatim**
+(validated as an exact substring) but presents it naturally: "Dạ theo
+{display name} của bên em ạ: …" using the human-readable policy name
+(`answer.DISPLAY_NAMES` / `display_source()`) — file names never appear, and
+the literal “trích nguyên văn: "…"” frame is used only when the customer
+explicitly asks for a verbatim quote ("nguyên văn"/"trích"). Requests
+conflicting with policy get a sincere apology + the governing clause +
+legitimate alternatives. Policy always outranks sales behavior.
 
 ## 7. Proactive salesman behavior
 
@@ -123,18 +135,33 @@ before any content processing (`promotion_exploit_blocked`).
 
 ## 8. Guardrails
 
-Input: the layered guardrail (word count → regex/payload → NeMo rail → scope)
-is reused with an agent scope configuration in which all 14 categories are
-in-scope; injection/credential/unsafe-execution rules unchanged; the M1 rig's
-default behavior is untouched. Output: deterministic grounding validation —
-product IDs/prices/promotions must exist in retrieved records, policy quotes
-must be verbatim, at most one question; a failed check strips the claim and
-degrades to verified facts.
+Input: refusal fires ONLY on deliberate abuse — the word limit, deterministic
+payload rules (prompt injection, credential/hidden-prompt, unsafe execution),
+a real NeMo block, and promotion-exploit attempts. Ordinary text without
+shopping markers is never refused (`degraded_fail_closed` does not fire for
+the agent): friendliness is handled at the understanding layer, matching the
+retailer's real bot. The M1 rig's stricter default behavior is untouched.
+Output: deterministic grounding validation — product IDs/prices/promotions
+must exist in retrieved records, policy quotes must be verbatim, at most one
+question per suggestion/comparison answer (the bundled cold-start opener may
+carry 2-3); a failed check strips the claim and degrades to verified facts.
+User-need amounts (budgets) render as "X triệu" so they are never mistaken
+for price claims.
 
-## 9. Intents (agent enum, 9 values)
+## 9. Intents (agent enum, 13 values)
 
 `new_search, change_constraints, more_recommendations, compare_products,
-product_detail, check_availability, policy_question, stop, unsupported`.
+product_detail, check_availability, policy_question, catalog_overview,
+price_range_query, promotion_inquiry, smalltalk, stop, unsupported`.
+
+Routing notes (2026-07-19 live-test round): price-range and running-promotion
+questions are catalog questions answered from the aggregate tool (never
+policy); catalog exploration ("bán cái gì", "có những loại hàng nào") returns
+the category menu or a per-category overview; small talk (thanks, weather,
+greetings, polite agreement) gets a friendly employee-style reply with a
+gentle sales pivot — never a refusal. A full ReAct loop was considered and
+deferred: the deterministic router over a finer-grained intent set stays
+testable and predictable; revisit if the intent space keeps growing.
 
 ## 10. Repository mapping
 
@@ -148,9 +175,14 @@ backend/app/agent/
 ├── llm/client.py               # env-routed OpenAI-compatible client (main→fallback)
 ├── prompts/*.md                # SOUL, SALES_POLICY, POLICY_QA, CLARIFY (Vietnamese)
 ├── graph.py                    # LangGraph assembly
-├── api.py                      # POST /api/v1/agent/respond
+├── api.py                      # POST /api/v1/agent/respond (+ /respond/stream NDJSON)
 └── demo.py                     # local CLI chat
 ```
+
+`/respond/stream` is presentation streaming: the deterministic pipeline
+produces the full grounded text, which is then chunk-streamed as NDJSON
+(`{"type":"chunk"}`… then `{"type":"done"}` with intent/flags). Token-level
+streaming arrives when the sell step itself runs on a streaming LLM.
 
 Stories: `docs/stories/epics/E02-multi-category-agent/` (US-201 catalog,
 US-202 tools, US-203 policy, US-204 conversation, US-205 salesman, US-206

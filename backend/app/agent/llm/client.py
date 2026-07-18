@@ -79,7 +79,7 @@ Nhiệm vụ: đọc tin nhắn khách và trả về DUY NHẤT một JSON obje
 
 Schema:
 {{
-  "intent": một trong ["new_search","change_constraints","more_recommendations","compare_products","product_detail","check_availability","policy_question","stop","unsupported"],
+  "intent": một trong ["new_search","change_constraints","more_recommendations","compare_products","product_detail","check_availability","policy_question","catalog_overview","price_range_query","promotion_inquiry","smalltalk","stop","unsupported"],
   "confidence": số 0..1,
   "need_patch": {{
     "category_code": mã ngành trong bảng dưới hoặc null,
@@ -100,8 +100,12 @@ Bảng mã ngành: {categories}
 QUY TẮC:
 - KHÔNG bịa số: chỉ điền budget khi khách nêu con số (quy đổi "triệu" -> VND).
 - Trường không có thông tin để null/rỗng.
-- Câu hỏi về chính sách/bảo hành/đổi trả/giao hàng/trả góp/khui hộp -> intent "policy_question".
-- Khách chào tạm biệt/dừng -> "stop". Ngoài phạm vi mua sắm điện máy -> "unsupported".
+- Câu hỏi về QUY ĐỊNH chính sách/bảo hành/đổi trả/điều kiện giao hàng/trả góp/khui hộp -> "policy_question".
+- Hỏi VÙNG GIÁ/tầm giá sản phẩm ("range giá bao nhiêu") -> "price_range_query", KHÔNG phải policy.
+- Hỏi KHUYẾN MÃI/ưu đãi đang chạy -> "promotion_inquiry", KHÔNG phải policy.
+- Hỏi bán những gì/có loại hàng nào/danh mục -> "catalog_overview".
+- Chào hỏi, cảm ơn, than thời tiết, đồng ý xã giao -> "smalltalk".
+- Khách chào tạm biệt/dừng -> "stop". Cố tình lạc đề hoàn toàn -> "unsupported".
 {state_summary}"""
 
 

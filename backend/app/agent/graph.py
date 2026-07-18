@@ -21,9 +21,11 @@ from backend.app.agent.conversation.understand import (
 from backend.app.agent.policies.answer import (
     build_policy_answer,
     degradation_response,
+    display_source,
 )
 from backend.app.agent.policies.corpus import PolicyCorpus
-from backend.app.agent.respond import format_vnd, render_suggestions
+from backend.app.agent.respond import format_trieu, format_vnd, render_suggestions
+from backend.app.agent.tools.aggregate import category_overview
 from backend.app.agent.tools.compare import compare_products
 from backend.app.agent.tools.search import search_products
 from backend.app.agent.tools.suggest import suggest_products
@@ -135,19 +137,17 @@ async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> 
             flags=["promotion_exploit_blocked"],
         )
 
-    # 2. Input guard (word count, payload, injection; agent scope = all
-    # categories). A plain answer to the pending cold-start question is
-    # in-scope by construction — never fail closed on it.
+    # 2. Input guard — deliberate abuse only (Cường's rebalance): word limit,
+    # payload/injection/credential rules, and a real NeMo block. Ordinary text
+    # without shopping markers is NOT refused; friendliness is handled by the
+    # understanding layer, so degraded fail-closed never fires here.
     guard = evaluate_input(
         message,
         in_scope_markers=_agent_scope_markers(deps.registry),
         other_category_markers=(),
     )
     state.guardrail_flags.extend(guard.flags)
-    expecting_answer = state.pending_question_key is not None
-    if guard.blocked and not (
-        expecting_answer and guard.reason == "degraded_fail_closed"
-    ):
+    if guard.blocked and guard.reason != "degraded_fail_closed":
         state.guardrail_flags.append("guardrail_block")
         text = guard.message or GUARDRAIL_REPLY
         return AgentReply(text=text, intent="unsupported", flags=list(guard.flags))
@@ -188,6 +188,18 @@ async def run_turn(state: AgentState, message: str, deps: AgentDependencies) -> 
 
     if intent == "policy_question":
         return _policy_flow(message, deps, flags)
+
+    if intent == "smalltalk":
+        return await _smalltalk_flow(state, message, deps, flags)
+
+    if intent == "catalog_overview":
+        return _catalog_overview_flow(state, deps, flags)
+
+    if intent == "price_range_query":
+        return _price_range_flow(state, deps, flags)
+
+    if intent == "promotion_inquiry":
+        return _promotion_flow(state, deps, flags)
 
     if intent == "unsupported":
         return AgentReply(text=_category_menu(deps.registry), intent=intent, flags=flags)
@@ -238,6 +250,169 @@ def _capture_pending_answer(state, message: str, understanding):
     return understanding
 
 
+_COOLING_MARKERS = ("nóng", "oi bức", "nóng bức")
+_THANKS_MARKERS = ("cảm ơn", "cám ơn")
+_AGREE_MARKERS = ("đồng ý", "ok", "oke", "được đó", "ừ")
+
+
+async def _smalltalk_flow(
+    state: AgentState, message: str, deps: AgentDependencies, flags: list[str]
+) -> AgentReply:
+    """Friendly retail small talk with a gentle sales pivot — never a refusal."""
+    low = message.lower()
+    if any(marker in low for marker in _COOLING_MARKERS):
+        text = (
+            "Dạ em hiểu anh/chị đang cảm thấy thời tiết nóng bức ạ. Nếu cần tư "
+            "vấn sản phẩm hỗ trợ làm mát như máy lạnh hay quạt điều hòa, "
+            "anh/chị cho em biết diện tích phòng và tầm giá để em hỗ trợ nhanh "
+            "chóng ạ."
+        )
+    elif any(marker in low for marker in _THANKS_MARKERS):
+        text = (
+            "Dạ em cảm ơn anh/chị ạ! Rất vui được hỗ trợ mình. Anh/chị cần em "
+            "tư vấn thêm sản phẩm nào nữa không ạ?"
+        )
+    elif any(marker in low for marker in _AGREE_MARKERS):
+        # Confirmation mid-flow: continue the product conversation.
+        if state.need.category_code is not None:
+            return await _product_flow(state, deps, "new_search", flags)
+        text = (
+            "Dạ vâng ạ! Anh/chị đang quan tâm sản phẩm nào để em tư vấn ngay ạ?"
+        )
+    else:
+        text = (
+            "Dạ em chào anh/chị ạ! Em là trợ lý tư vấn của Điện Máy XANH. "
+            "Anh/chị đang cần tìm sản phẩm nào để em hỗ trợ mình ạ?"
+        )
+    if deps.polisher is not None:
+        polished = await deps.polisher.polish(text)
+        if polished and validate_response(polished, allowed_products=[]).ok:
+            text = polished
+    return AgentReply(text=text, intent="smalltalk", flags=flags)
+
+
+def _catalog_overview_flow(
+    state: AgentState, deps: AgentDependencies, flags: list[str]
+) -> AgentReply:
+    category = state.need.category_code
+    if category is None:
+        return AgentReply(
+            text=_category_menu(deps.registry), intent="catalog_overview", flags=flags
+        )
+    overview = category_overview(deps.products, category_code=category)
+    registry_category = deps.registry.by_code(category)
+    top_brands = sorted(
+        overview.brand_counts.items(), key=lambda kv: -kv[1]
+    )[:5]
+    lines = [
+        f"Dạ ngành {registry_category.sheet_name} bên em hiện có "
+        f"{overview.product_count} mẫu ạ.",
+    ]
+    if top_brands:
+        lines.append(
+            "Các thương hiệu nổi bật: "
+            + ", ".join(name for name, _ in top_brands) + "."
+        )
+    if overview.price_min is not None and overview.price_max is not None:
+        lines.append(
+            f"Giá niêm yết từ {format_vnd(overview.price_min)} đến "
+            f"{format_vnd(overview.price_max)}."
+        )
+    lines.append(
+        "Anh/chị cho em biết nhu cầu và tầm giá để em gợi ý đúng mẫu phù hợp ạ?"
+    )
+    return AgentReply(
+        text="\n".join(lines), intent="catalog_overview", flags=flags
+    )
+
+
+def _price_range_flow(
+    state: AgentState, deps: AgentDependencies, flags: list[str]
+) -> AgentReply:
+    category = state.need.category_code
+    if category is None:
+        return AgentReply(
+            text=(
+                "Dạ anh/chị muốn xem vùng giá của ngành hàng nào ạ (tủ lạnh, "
+                "máy giặt, máy lạnh...) để em tra chính xác giúp mình ạ?"
+            ),
+            intent="price_range_query",
+            flags=flags,
+        )
+    overview = category_overview(deps.products, category_code=category)
+    registry_category = deps.registry.by_code(category)
+    if overview.price_min is None or overview.price_max is None:
+        return AgentReply(
+            text=(
+                f"Dạ hiện các mẫu {registry_category.sheet_name} bên em chưa "
+                "niêm yết giá trên hệ thống ạ. Anh/chị để lại nhu cầu, em nhờ "
+                "cửa hàng gần nhất báo giá chính xác giúp mình nhé ạ?"
+            ),
+            intent="price_range_query",
+            flags=flags,
+        )
+    text = (
+        f"Dạ {registry_category.sheet_name} bên em đang có "
+        f"{overview.product_count} mẫu, giá niêm yết dao động từ "
+        f"{format_vnd(overview.price_min)} đến {format_vnd(overview.price_max)} ạ.\n"
+        "Anh/chị dự định trong tầm nào để em lọc đúng những mẫu đáng tiền nhất "
+        "cho mình ạ?"
+    )
+    return AgentReply(text=text, intent="price_range_query", flags=flags)
+
+
+def _promotion_flow(
+    state: AgentState, deps: AgentDependencies, flags: list[str]
+) -> AgentReply:
+    category = state.need.category_code
+    pool = [
+        p
+        for p in deps.products
+        if category is None or p.category_code == category
+    ]
+    discounted = [p for p in pool if p.promotion.discount_percent is not None]
+    gifted = [p for p in pool if p.gift_promotion]
+    if not discounted and not gifted:
+        return AgentReply(
+            text=(
+                "Dạ hiện em chưa có thông tin cụ thể về chương trình khuyến "
+                "mãi đang diễn ra ạ. Anh/chị vui lòng truy cập website Điện "
+                "Máy XANH hoặc đến cửa hàng gần nhất để được cập nhật khuyến "
+                "mãi mới nhất giúp em ạ."
+            ),
+            intent="promotion_inquiry",
+            flags=flags,
+        )
+    scope_note = (
+        f"ngành {deps.registry.by_code(category).sheet_name}"
+        if category
+        else "toàn hệ thống"
+    )
+    lines = [
+        f"Dạ {scope_note} bên em đang có {len(discounted)} mẫu giảm giá và "
+        f"{len(gifted)} mẫu kèm quà tặng ạ.",
+    ]
+    top = sorted(
+        discounted, key=lambda p: -(p.promotion.discount_percent or 0)
+    )[:3]
+    if top:
+        lines.append("Một vài ưu đãi nổi bật:")
+        for product in top:
+            lines.append(
+                f"• {product.name}: giảm {product.promotion.discount_percent:.0f}%"
+                f", còn {format_vnd(product.effective_price)}"
+            )
+    lines.append(
+        "Anh/chị quan tâm ngành hàng nào để em nêu ưu đãi chi tiết và chọn "
+        "mẫu hời nhất ạ?"
+    )
+    text = "\n".join(lines)
+    validation = validate_response(text, allowed_products=top)
+    if not validation.ok:
+        text = degrade_to_facts(top)
+    return AgentReply(text=text, intent="promotion_inquiry", flags=flags)
+
+
 def _policy_flow(message: str, deps: AgentDependencies, flags: list[str]) -> AgentReply:
     answer = build_policy_answer(deps.corpus, message)
     low = message.lower()
@@ -254,9 +429,22 @@ def _policy_flow(message: str, deps: AgentDependencies, flags: list[str]) -> Age
             intent="policy_question",
             flags=flags,
         )
-    lines = [
-        f"Dạ theo {answer.sources[0]}, chính sách quy định nguyên văn ạ:",
-        f'"{answer.quotes[0]}"',
+    # Natural presentation: customer-facing policy name, quote rendered as
+    # normal text. The literal-quote framing appears only when the user asked
+    # for it ("nguyên văn"/"trích"). Verbatim validation still runs below.
+    source_name = display_source(answer.sources[0])
+    wants_literal = "nguyên văn" in low or "trích" in low
+    if wants_literal:
+        lines = [
+            f"Dạ theo {source_name} của bên em, trích nguyên văn ạ:",
+            f'"{answer.quotes[0]}"',
+        ]
+    else:
+        lines = [
+            f"Dạ theo {source_name} của bên em ạ:",
+            answer.quotes[0],
+        ]
+    lines += [
         "",
         "Anh/chị cần em giải thích thêm điểm nào trong chính sách này không ạ?",
     ]
@@ -294,13 +482,15 @@ async def _product_flow(
             flags=flags,
         )
 
-    # Cold-start: ask the most material missing question first.
+    # Cold-start: bundle the top 2-3 missing questions into one opener
+    # message; later gaps are asked one at a time as follow-ups.
     if not coldstart.has_material_minimum(need):
-        question = coldstart.next_question(state)
-        if question is not None:
-            coldstart.record_asked(state, question)
-            state.pending_question_key = question.key
-            return AgentReply(text=question.ask, intent=intent, flags=flags)
+        questions = coldstart.opening_questions(state, limit=3)
+        if questions:
+            text = coldstart.render_opening(
+                questions, registry_category.sheet_name
+            )
+            return AgentReply(text=text, intent=intent, flags=flags)
 
     # Enough to act: search, suggest by roles, sell.
     shown = state.shown_for(category)
@@ -316,6 +506,7 @@ async def _product_flow(
         brands=tuple(need.brand_prefs),
         limit=20,
         exclude_ids=exclude,
+        budget_slack=0.08,
     )
     if not result.items:
         budget_note = (
@@ -365,6 +556,7 @@ async def _product_flow(
         category_name=registry_category.sheet_name,
         next_question=question_text,
         also_consider=also_consider,
+        need=need,
     )
     validation = validate_response(
         response.text, allowed_products=response.allowed_products
@@ -406,7 +598,7 @@ def _compare_flow(
             flags=flags,
         )
     comparison = compare_products(deps.products, ids)
-    lines = ["Dạ em so sánh nhanh hai mẫu anh/chị đang xem ạ:", ""]
+    lines = ["Dạ em so sánh hai mẫu anh/chị đang xem ạ:", ""]
     for item in comparison.items:
         price = format_vnd(item.effective_price) if item.effective_price else "giá đang cập nhật"
         line = f"• {item.name}: {price}"
@@ -415,14 +607,57 @@ def _compare_flow(
         if item.gift:
             line += " — có quà tặng kèm"
         lines.append(line)
-    if comparison.price_delta:
-        lines.append(
-            f"Chênh lệch giá giữa hai mẫu là {format_vnd(comparison.price_delta)} ạ."
-        )
     shared_preview = list(comparison.shared_attributes.items())[:3]
     for key, values in shared_preview:
         rendered = " / ".join(values[pid] for pid in ids if pid in values)
         lines.append(f"• {key}: {rendered}")
+    lines.append("")
+
+    # Reasoning: benefit/drawback per model plus a context-based lean
+    # (Cường: comparison must explain WHY, not just list).
+    first, second = comparison.items[0], comparison.items[1]
+    if (
+        first.effective_price is not None
+        and second.effective_price is not None
+        and comparison.price_delta
+    ):
+        cheaper, pricier = (
+            (first, second)
+            if first.effective_price <= second.effective_price
+            else (second, first)
+        )
+        lines.append(
+            f"{cheaper.name} lợi hơn về giá — tiết kiệm được "
+            f"{format_vnd(comparison.price_delta)} so với {pricier.name}."
+        )
+        pricier_perks = []
+        if pricier.discount_percent and (
+            not cheaper.discount_percent
+            or pricier.discount_percent > cheaper.discount_percent
+        ):
+            pricier_perks.append(
+                f"đang giảm {pricier.discount_percent:.0f}% sâu hơn"
+            )
+        if pricier.gift and not cheaper.gift:
+            pricier_perks.append("có quà tặng kèm mà mẫu kia không có")
+        if pricier_perks:
+            lines.append(
+                f"Đổi lại, {pricier.name} {' và '.join(pricier_perks)}."
+            )
+        need = state.need
+        anchor = need.usage_purpose or (
+            need.priorities[0] if need.priorities else None
+        )
+        if need.budget_max and pricier.effective_price > need.budget_max:
+            lines.append(
+                f"Dựa trên ngân sách khoảng {format_trieu(need.budget_max)} của "
+                f"anh/chị, em nghiêng về {cheaper.name} vì vừa túi tiền hơn ạ."
+            )
+        elif anchor:
+            lines.append(
+                f"Dựa trên yêu cầu về {anchor} của anh/chị, em nghĩ mình nên "
+                "cân giữa mức chênh giá và ưu đãi kèm theo ở trên ạ."
+            )
     lines.append("")
     lines.append("Anh/chị nghiêng về mẫu nào hơn để em tư vấn sâu thêm ạ?")
     text = "\n".join(lines)

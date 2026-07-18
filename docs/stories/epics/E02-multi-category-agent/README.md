@@ -29,5 +29,15 @@ materially new searches, widened the suggestion pool, added unpriced
 disclosure and the long-conversation memory suite. The data-platform round
 added the Postgres adapter over Duy's `products` schema with Excel fallback,
 per-category domain filter rules, optional LLM polish, and the golden eval
-set. Deferred: policy retrieval over pgvector (the platform has no
-knowledge-base tables yet); Langfuse judge wiring (keys not configured).
+set. The live-test round (2026-07-19, from Cường's manual transcript) fixed
+guardrail overfire (refusal now only on deliberate abuse; small talk gets a
+friendly reply with a sales pivot), added four intents
+(catalog_overview/price_range_query/promotion_inquiry/smalltalk) with
+dedicated grounded flows, made policy answers natural (display names, no
+filenames, literal-quote frame only on request, relevance floor), hid the
+internal skip-role line, bundled the cold-start opener (2-3 questions),
+introduced the +8% soft budget margin, added per-product/comparison
+reasoning, and shipped the NDJSON streaming endpoint + frontend
+copy/edit/status/streaming UX (golden cases AGENT-G-013…021). Deferred:
+policy retrieval over pgvector (the platform has no knowledge-base tables
+yet); Langfuse judge wiring (keys not configured).

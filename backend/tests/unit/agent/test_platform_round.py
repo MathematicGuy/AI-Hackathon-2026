@@ -143,7 +143,7 @@ async def test_polish_applied_when_grounded(monkeypatch):
                                   "giá gốc": "10000000"})
 
     async def transport(candidate, system, user):
-        return user.replace("Dạ em gợi ý", "Dạ em rất vui được gợi ý")
+        return user.replace("em gợi ý", "em rất vui được gợi ý")
 
     deps = AgentDependencies(
         products=[fridge],

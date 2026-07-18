@@ -51,6 +51,8 @@ async def test_golden_case(case, deps):
             assert reply.intent != expect["not_intent"], reply.text
         for fragment in expect.get("contains", []):
             assert fragment in reply.text, reply.text
+        for fragment in expect.get("not_contains", []):
+            assert fragment not in reply.text, reply.text
         if expect.get("no_products"):
             assert reply.presented_ids == []
         if expect.get("has_products"):
@@ -66,6 +68,15 @@ async def test_golden_case(case, deps):
             assert len(parts) >= 3, reply.text
             raw = "".join(d.raw_text for d in deps.corpus.documents)
             assert parts[1] in raw
+        if expect.get("verbatim_body"):
+            raw = "".join(d.raw_text for d in deps.corpus.documents)
+            body = (
+                reply.text.split("của bên em ạ:", 1)[-1]
+                .rsplit("Anh/chị cần em", 1)[0]
+                .strip()
+            )
+            assert len(body) > 60, reply.text
+            assert body in raw
         if "need_category" in expect:
             assert state.need.category_code == expect["need_category"]
         if "need_budget_max" in expect:

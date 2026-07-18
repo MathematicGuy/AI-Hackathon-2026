@@ -4,11 +4,14 @@ Sessions are held in-process (demo-grade); durable checkpointer persistence is
 deferred and recorded on US-206. Separate from the M1 rig's advisor endpoint.
 """
 
+import asyncio
+import json
 import os
 import uuid
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from backend.app.agent.contracts import AgentState
@@ -46,6 +49,38 @@ def create_agent_router(deps: AgentDependencies) -> APIRouter:
             flags=reply.flags,
             presented_ids=reply.presented_ids,
         )
+
+    @router.post("/api/v1/agent/respond/stream")
+    async def respond_stream(request: AgentRequest) -> StreamingResponse:
+        """Presentation streaming: the deterministic pipeline produces the
+        full grounded text, which is then streamed in small chunks (NDJSON
+        events). Token-level streaming arrives when the sell step itself runs
+        on a streaming LLM."""
+        session_id = request.session_id or f"session-{uuid.uuid4().hex[:12]}"
+        state = sessions.setdefault(session_id, AgentState(session_id=session_id))
+
+        async def generate():
+            reply = await run_turn(state, request.message, deps)
+            text = reply.text
+            step = 28
+            for start in range(0, len(text), step):
+                chunk = text[start : start + step]
+                yield json.dumps(
+                    {"type": "chunk", "text": chunk}, ensure_ascii=False
+                ) + "\n"
+                await asyncio.sleep(0.025)
+            yield json.dumps(
+                {
+                    "type": "done",
+                    "session_id": session_id,
+                    "intent": reply.intent,
+                    "flags": reply.flags,
+                    "presented_ids": reply.presented_ids,
+                },
+                ensure_ascii=False,
+            ) + "\n"
+
+        return StreamingResponse(generate(), media_type="application/x-ndjson")
 
     return router
 

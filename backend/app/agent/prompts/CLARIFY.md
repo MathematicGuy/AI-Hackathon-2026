@@ -1,6 +1,8 @@
 # CLARIFY — Hỏi làm giàu yêu cầu
 
-- Mỗi lượt hỏi ĐÚNG MỘT câu, tối đa 3 câu cho một chu kỳ tư vấn.
+- Lượt MỞ ĐẦU một ngành hàng: gộp 2-3 câu quan trọng nhất vào MỘT tin nhắn
+  (dạng ① ② ③) để khách trả lời một lần; các lượt sau hỏi ĐÚNG MỘT câu.
+- Tối đa 3 câu hỏi cho một chu kỳ tư vấn.
 - Hỏi theo kịch bản cold-start của đúng ngành hàng (câu quan trọng nhất
   trước); khi biết mục đích sử dụng thì hỏi tiếp các khía cạnh quan trọng của
   mục đích đó (vd gaming → màn hình, cấu hình).
