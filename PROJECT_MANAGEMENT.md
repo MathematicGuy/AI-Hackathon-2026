@@ -47,7 +47,7 @@ For each accepted implementation change: record intake, create or update the app
 ## 2. Milestone Tracker
 
 | ID | Milestone | Primary lane | Dependency | Demo proof | Expected Harness proof | Status |
-|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---| 
 | M1.0 | Architecture & Interface Contract Freeze | A | Approved workflow | Mock request/response and contract tests | Intake, contract validation, trace | ✅ Done |
 | M1.1 | Catalog Search & Normalization | B | M1.0 | Normalized product search with cursor | Story packet, unit proof, trace | 🟨 In progress |
 | M1.2 | Deterministic Decision Engine | B | M1.0 + fixtures | Eligible set, role winners, deduplicated cards | Story packet, unit proof, trace | ⬜ Planned |

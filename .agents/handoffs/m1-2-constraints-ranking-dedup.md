@@ -16,7 +16,7 @@ The handoff does not bypass the AGENTS.md gates. Before any product edit:
    infer identity from Git config / OS user / machine / branch / task), read
    that member's `BOT_INSTRUCTIONS.md`, create the session log.
 2. **Read gate** — read `docs/README.md`, then `docs/team/now/README.md`, then
-   confirm the identity maps to exactly one tracker and read `THANH-NOW.md`.
+   confirm the identity maps to exactly one tracker and read `docs/team/now/THANH-NOW.md`.
 3. **Harness (change lane)** — run `.\scripts\bootstrap-harness.ps1`, classify
    the request via `docs/FEATURE_INTAKE.md`, query
    `.\scripts\bin\harness-cli.exe query matrix --active --summary`, and pull

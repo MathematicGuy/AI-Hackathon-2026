@@ -36,7 +36,7 @@ In New-repository mode, create the full reusable scaffold:
 Create these root Markdown files from their matching template boilerplates:
 
 - `AGENTS.md`
-- `ARCHITECTURE.md`
+- `docs/product/architecture/air-conditioner-advisor-m1.md`
 - `HACKATHON_RUNBOOK.md`
 - `JTBD.md`
 - `JUDGING.md`

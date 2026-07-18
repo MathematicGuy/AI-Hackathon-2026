@@ -20,7 +20,7 @@ Need: `budget_max_vnd=20000000`, `room_size_m2=18`, priorities
 | AC-M1-011 | excluded | room 18 outside `[20, 30]` |
 | AC-M1-012 | excluded | `stock_status` unavailable |
 | AC-M1-013 | excluded | room 18 outside `[20, 30]` |
-| AC-M1-014 | excluded | `sale_price_vnd` 21,500,000 > budget 20,000,000 (unknown stock does NOT exclude) |
+| AC-M1-014 | excluded | `sale_price_vnd` 21,500,000 > budget 20,000,000; `stock_status` unknown fails available-only policy |
 
 Assertions: `eligible ids == [AC-M1-001..008]`; `excluded ids == [AC-M1-009..014]`;
 both lists in input order; each excluded product's `reasons` matches the table.
@@ -29,10 +29,10 @@ both lists in input order; each excluded product's `reasons` matches the table.
 
 - **Budget**: price > budget → excluded; price == budget → eligible; price <
   budget → eligible; price unknown (null) → eligible (not a violation).
-- **Room fit**: room < min → excluded; room == min / == max / within → eligible;
-  room > max → excluded; area range unknown (null) → eligible.
-- **Stock**: `available` → eligible; `unavailable` → excluded; `unknown` →
-  eligible.
+- **Room fit**: room < known min or > known max → excluded; room == min / ==
+  max / within → eligible; an unknown bound cannot exclude on that side.
+- **Stock**: `available` → eligible; `unavailable` or `unknown` → excluded by
+  the selected available-only policy.
 - **Required evidence**: primary `energy_saving` with `cspf` present → eligible;
   primary `energy_saving` with `cspf` missing → excluded; primary `low_noise`
   with `indoor_noise_min_db` missing → excluded; secondary `low_noise` with
@@ -41,13 +41,16 @@ both lists in input order; each excluded product's `reasons` matches the table.
   in constraint order.
 - **Determinism / order**: same input twice → identical `FilterResult`; eligible
   and excluded lists preserve input order.
+- **Evidence grounding**: known-value and explicit-unknown exclusion reasons
+  reference populated fields present in `NormalizedProduct.evidence`; absent
+  required fields or absent stock reference fields listed in `missing_fields`.
 
 ## Proof commands
 
 ```powershell
 $env:PYTHONPATH="E:/VIN-INTERNSHIP/AI-Hackathon-2026"
-pytest backend/tests/unit/domain/air_conditioner/test_hard_constraints.py -q
-pytest -q
+python -m pytest backend/tests/unit/domain/air_conditioner/test_hard_constraints.py -q -p no:cacheprovider
+python -m pytest -q -p no:cacheprovider
 ```
 
 Record the final counts (golden + unit cases pass; full suite green, no

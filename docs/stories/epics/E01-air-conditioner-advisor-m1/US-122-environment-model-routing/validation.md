@@ -54,18 +54,18 @@ rtk git diff --check
 - The scoped customer-runtime scan found zero production model or base-URL
   literals in backend source/tests, the routing plan/spec, the US-122 packet,
   ADR 0009, the product contract, the active M1 plan, or the workflow PRD.
-- `ARCHITECTURE.md` has exactly one remaining model literal, in the explicitly
+- `docs/product/architecture/air-conditioner-advisor-m1.md` has exactly one remaining model literal, in the explicitly
   preserved engineering coding-assistant entry; customer-runtime sections have
   none.
 
 ### Diff and scope checks
 
 - `rtk git diff --check` passed with no output before staging.
-- Tracked changes are limited to ADR 0009, `ARCHITECTURE.md`,
-  `WORKFLOW-MVP(4).md`, the product contract, the active M1 plan, and this
+- Tracked changes are limited to ADR 0009, `docs/product/architecture/air-conditioner-advisor-m1.md`,
+  the workflow PRD, the product contract, the active M1 plan, and this
   validation file.
 - Cached whitespace and exact staged-scope checks passed before commit.
-- `.env`, `THANH-NOW.md`, and unrelated dirty files were not staged.
+- `.env`, `docs/team/now/THANH-NOW.md`, and unrelated dirty files were not staged.
 
 ### Review result
 

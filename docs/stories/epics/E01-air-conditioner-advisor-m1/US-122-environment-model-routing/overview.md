@@ -19,8 +19,7 @@ A typed settings boundary loads required role, provider, base URL, and credentia
 
 - `docs/superpowers/specs/2026-07-18-env-model-routing-design.md`
 - `docs/decisions/0009-m1-explanation-model-routing.md`
-- `ARCHITECTURE.md`
-- `WORKFLOW-MVP(4).md`
+- `docs/product/architecture/air-conditioner-advisor-m1.md`
 - `docs/product/air-conditioner-advisor-m1-contract.md`
 - `docs/superpowers/plans/2026-07-17-m1-1-through-m1-8.md`
 
