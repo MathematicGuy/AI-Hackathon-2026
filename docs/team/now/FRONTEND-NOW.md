@@ -9,7 +9,7 @@ and mobile while preserving the server-owned recommendation contract.
 
 - Tracker alias: `FRONTEND`
 - Member identity: `nguyen-phuong-hoai-ngoc`
-- Story: `US-115`
+- Story: `US-124` (`implemented`)
 - Branch: `frontend`
 - Worktree: `E:\VAI\AI-Hackathon-2026`
 
@@ -20,7 +20,7 @@ This lane owns only:
 - `frontend/src/components/ChatbotAssistant.tsx`
 - `frontend/src/components/chat/ChatComparisonResult.tsx`
 - `frontend/src/app/globals.css`
-- `docs/stories/epics/E01-air-conditioner-advisor-m1/US-115-approved-mock-first-frontend.md`
+- `docs/stories/epics/E01-air-conditioner-advisor-m1/US-124-independent-chatbot-ux.md`
 - `docs/team/now/FRONTEND-NOW.md`
 
 The explicit human assignment also authorizes the one-time `FRONTEND` identity
@@ -29,7 +29,7 @@ files, product contracts, ranking logic, or catalog data.
 
 ## Dependencies
 
-- Mock-first UI work depends on the completed US-121 mock contract and is ready.
+- The UX slice operates on the existing mock chatbot and has no backend dependency.
 - Real advisor API integration remains dependency-gated on M1.5-M1.7 and is out
   of scope for this UI review.
 - The frontend must render supplied fields without recalculating eligibility,
@@ -39,10 +39,10 @@ files, product contracts, ranking logic, or catalog data.
 
 | Order | Work | Status |
 | ---: | --- | --- |
-| 1 | Register and align US-115 with current product authority | In progress |
-| 2 | Capture a visual and interaction baseline | Pending |
-| 3 | Apply bounded chatbot UX improvements | Pending |
-| 4 | Run lint, typecheck, build, and desktop/mobile visual checks | Pending |
+| 1 | Register and align US-124 with current product authority | Complete |
+| 2 | Capture a visual and interaction baseline | Complete |
+| 3 | Apply bounded chatbot UX improvements | Complete |
+| 4 | Run lint, typecheck, build, and desktop/mobile visual checks | Complete |
 
 ## Verification
 

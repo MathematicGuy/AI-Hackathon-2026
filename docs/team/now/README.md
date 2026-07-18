@@ -11,7 +11,7 @@ contracts and not substitutes for Harness proof.
 | THANH | dinh-nhat-thanh | [`THANH-NOW.md`](THANH-NOW.md) | Assigned by a human |
 | USER1 | luu-thien-viet-cuong | [`USER1-NOW.md`](USER1-NOW.md) | Assigned by Cường (Lưu Thiện Việt Cường) on 2026-07-18; direction recorded in the member session log |
 | USER2 | luu-thien-viet-cuong | [`USER2-NOW.md`](USER2-NOW.md) | Assigned by Cường (Lưu Thiện Việt Cường) on 2026-07-18; direction recorded in the member session log |
-| FRONTEND | nguyen-phuong-hoai-ngoc | [`FRONTEND-NOW.md`](FRONTEND-NOW.md) | Assigned by Ngọc's explicit human direction on 2026-07-18 for US-115 |
+| FRONTEND | nguyen-phuong-hoai-ngoc | [`FRONTEND-NOW.md`](FRONTEND-NOW.md) | Assigned by Ngọc's explicit human direction on 2026-07-18 for US-124 |
 
 Aliases are not identities. An agent must never infer an alias owner from Git
 configuration, operating-system usernames, earlier chat, or task content. A
@@ -21,7 +21,7 @@ single member may own multiple aliases when solo-driving parallel lanes.
 Conflict avoidance is enforced by each tracker's file boundary and serialized
 merges, not by requiring one member per alias.
 
-`FRONTEND` is the isolated US-115 implementation lane. It does not inherit the
+`FRONTEND` is the isolated US-124 implementation lane. It does not inherit the
 backend scope owned by `THANH`, `USER1`, or `USER2`.
 
 ## Mandatory Use

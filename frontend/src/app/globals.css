@@ -229,14 +229,15 @@
   }
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .chatbot-panel {
     inset-block-start: auto;
     inset-inline-start: auto;
     inset-inline-end: 1rem;
     inset-block-end: 1rem;
-    width: min(680px, calc(100vw - 2rem));
-    height: min(680px, calc(100dvh - 2rem));
+    /* Leave the desktop storefront usable beside the chat panel. */
+    width: min(520px, calc(100vw - 2rem));
+    height: min(640px, calc(100dvh - 2rem));
   }
 }
 
