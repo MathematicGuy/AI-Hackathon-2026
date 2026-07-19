@@ -10,7 +10,10 @@ from backend.app.agent.contracts import AgentState
 @pytest.fixture(scope="module")
 def deps():
     graph = importlib.import_module("backend.app.agent.graph")
-    return graph.AgentDependencies.from_default_paths()
+    # with_llm=False keeps the suite deterministic and offline — the default
+    # was silently building the REAL extractor and calling the network
+    # (audit round 5 finding).
+    return graph.AgentDependencies.from_default_paths(with_llm=False)
 
 
 @pytest.fixture

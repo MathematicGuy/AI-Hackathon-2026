@@ -112,8 +112,8 @@ Schema:
     "location": khu vực hoặc null,
     "requested_roles": [] hoặc ["best_price"] nếu khách chỉ muốn rẻ nhất, ["most_expensive"] nếu khách muốn mẫu đắt/cao cấp nhất
   }},
-  "product_refs": [],
-  "clear_fields": [] hoặc ["budget"] khi khách muốn BỎ khung giá đã đặt
+  "product_refs": [tên/mã mẫu khách nhắc tới trong các mẫu đã gợi ý],
+  "clear_fields": tập con của ["budget","brands","priorities","roles"] khi khách muốn BỎ ràng buộc đã đặt
 }}
 
 Bảng mã ngành: {categories}
@@ -144,6 +144,13 @@ QUY TẮC:
   giá khác", "bỏ giới hạn ngân sách") -> "clear_fields": ["budget"], KHÔNG
   điền budget (số trong câu là mức CŨ). Nếu khách nêu khung giá MỚI kèm số
   ("đổi sang tầm 20-25 triệu") -> điền budget mới, KHÔNG cần clear_fields.
+- Tương tự: "hãng nào cũng được" -> clear_fields ["brands"]; "bỏ ưu tiên" ->
+  ["priorities"]; "gợi ý bình thường, đừng chỉ rẻ nhất" -> ["roles"].
+- clear_fields CHỈ về ràng buộc mua sắm (giá/hãng/ưu tiên/vai). "Bỏ qua chính
+  sách X"/"bỏ qua điều khoản" là yêu cầu VI PHẠM chính sách -> "policy_question",
+  KHÔNG BAO GIỜ là clear_fields.
+- "trên/hơn/tối thiểu X triệu" là mức SÀN (budget_min); "dưới/tối đa X" là
+  mức TRẦN (budget_max); "X triệu đổ lại" -> budget_max, "X trở lên" -> budget_min.
 - Khách muốn mẫu đắt nhất/cao cấp nhất -> requested_roles ["most_expensive"],
   intent "more_recommendations" nếu đang tư vấn dở.
 - Đang tư vấn dở một ngành (xem bối cảnh) thì câu nói ngắn mơ hồ về "máy/mẫu/cái đó"
@@ -189,7 +196,12 @@ def _coerce_types(payload: dict) -> dict:
             payload["confidence"] = 0.5
     clear_fields = payload.get("clear_fields")
     if isinstance(clear_fields, str):
-        payload["clear_fields"] = [clear_fields]
+        clear_fields = [clear_fields]
+    if isinstance(clear_fields, list):
+        payload["clear_fields"] = [
+            v for v in clear_fields
+            if v in ("budget", "brands", "priorities", "roles")
+        ]
     return payload
 
 

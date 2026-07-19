@@ -86,12 +86,18 @@ Update modes:
    explicit null is not deletion (US-104 semantics).
 2. **Rewrite on change-of-mind** — a correction replaces the stated value
    immediately ("nâng lên tầm 20-25 triệu" overrides the old window).
-3. **Explicit clear** (round 4) — removals travel on
-   `AgentUnderstanding.clear_fields` because merge semantics cannot delete:
-   "không tra trong mức đó nữa"/"bỏ giới hạn giá"/"khoảng giá khác" clears
-   budget_min+budget_max and un-answers the budget question so the bot asks
-   for the new range; numbers inside old-reference phrases are never
-   re-parsed as a new budget.
+3. **Explicit clear** (round 4, generalized round 5) — removals travel on
+   `AgentUnderstanding.clear_fields ⊆ {budget, brands, priorities, roles}`
+   because merge semantics cannot delete: "không tra trong mức đó nữa"
+   clears the budget and un-answers the budget question; "hãng nào cũng
+   được" clears brand_prefs; "bỏ ưu tiên" clears priorities; "gợi ý bình
+   thường, đừng chỉ rẻ nhất" releases an explicit role lock. Numbers inside
+   old-reference phrases are never re-parsed as a new budget. A stale role
+   lock ALSO releases automatically when a new preference (purpose or
+   priorities) arrives without a restated role. Money bounds parse by
+   context: "trên/hơn/tối thiểu/…trở lên" = floor (budget_min),
+   "dưới/tối đa/…đổ lại" = ceiling; compact forms "1tr5"/"3 triệu rưỡi"
+   are understood.
 4. **Reset on category/shopping-intent switch** — the current need is archived
    to `previous_needs[]` (recoverable when the user returns to that category),
    a fresh need starts for the new category and re-triggers that category's
@@ -117,7 +123,12 @@ re-ask an answered or already-asked question, and proceed with tools as soon
 as the material minimum (category + one narrowing fact) is known. A plain
 reply to the pending question is captured verbatim into the fixed-format need
 (`attribute_constraints[question_key]`) as per-category filter memory, and a
-materially new search reopens the clarification cycle. Per-category domain
+materially new search reopens a SPENT clarification cycle. Capture only
+fires for continuation intents (new_search/change_constraints/
+more_recommendations/unsupported) — an interrupt (policy question, small
+talk, promotions, deep QA…) is served without being stored as the answer,
+and the question stays pending so the flow resumes afterwards (audit round
+5). Per-category domain
 rules (`conversation/domain_rules.py`) turn captured answers into concrete
 deterministic filters where the data supports it (household size → capacity
 band, room area → coverage range, screen size → inches).
@@ -207,6 +218,14 @@ pair (cheapest / priciest / deepest-discount qualifiers, budget-aware) and
 compares immediately; the pair becomes `last_presented_ids` so deep
 follow-ups chain. Bare agreements ("ok", "ừ") are exact-match small talk —
 no message-length limit exists at any layer (frontend or backend).
+
+Round-5 note (2026-07-19 audit): the detail tool is wired —
+`product_detail` renders a spec sheet (price/promotion, dimension rows
+placeholder-filtered, notable attributes) for the referenced model. A shared
+reference resolver maps ordinals ("mẫu thứ hai", "cái cuối"), name/brand/
+model fragments, and the extractor's `product_refs` onto the presented
+products, powering both detail and ordinal comparison ("so sánh mẫu 1 với
+mẫu 3"); a lone digit is an ordinal, a long number is a model code.
 
 Routing notes (2026-07-19 live-test round): price-range and running-promotion
 questions are catalog questions answered from the aggregate tool (never

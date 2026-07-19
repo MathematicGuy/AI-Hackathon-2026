@@ -277,6 +277,8 @@ When the user corrects your approach, append a one-line rule here before ending 
 - E02 suggestion/comparison must be dimension-driven per category (catalog/dimensions.py) according to the user's preference — never a fixed generic trio; every spec claim must filter placeholder values ("Hãng không công bố", "Đang cập nhật") first.
 - Updates must never break parts of the system that already work: additive changes behind the existing behavior, full suite green BEFORE and AFTER as proof.
 - Never gate chat messages on length at any layer (no "tin nhắn quá ngắn" checks); bare agreements like "ok"/"ừ" must flow as small talk.
+- Cold-start answer capture fires only for continuation intents; interrupts (policy/smalltalk/QA...) must never be stored as the pending answer and must keep the question pending.
+- Every sticky preference (budget, brands, priorities, role locks) must have a clear path (clear_fields) and role locks release automatically on new preference signals.
 
 ---
 

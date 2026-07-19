@@ -36,6 +36,7 @@ from backend.app.agent.policies.corpus import PolicyCorpus
 from backend.app.agent.respond import format_trieu, format_vnd, render_suggestions
 from backend.app.agent.tools.aggregate import category_overview
 from backend.app.agent.tools.compare import compare_products
+from backend.app.agent.tools.detail import product_detail
 from backend.app.agent.tools.search import search_products
 from backend.app.agent.tools.suggest import suggest_products
 from backend.app.agent.validate import degrade_to_facts, validate_response
@@ -669,10 +670,23 @@ def _unavailable_reply(low: str, registry: CategoryRegistry) -> str | None:
     return None
 
 
+# Only these intents CONTINUE the consultation — a pending cold-start answer
+# may be captured from them. Everything else (policy, small talk, promotions,
+# deep QA...) is an INTERRUPT: never store it as the answer, and keep the
+# question pending so the flow resumes after the interrupt is served (audit
+# round 5: "khoan đã, chính sách bảo hành thế nào?" became the household
+# constraint).
+_CAPTURE_INTENTS = {
+    "new_search", "change_constraints", "more_recommendations", "unsupported",
+}
+
+
 def _capture_pending_answer(state, message: str, understanding):
     key = state.pending_question_key
     if not key:
         return understanding
+    if understanding.intent not in _CAPTURE_INTENTS:
+        return understanding  # interrupt: keep the question pending
     patch = understanding.need_patch
     switching = patch.category_code not in (None, state.need.category_code)
     if switching:
@@ -983,6 +997,9 @@ async def _product_flow(
     if intent == "compare_products":
         return _compare_flow(state, deps, flags, observer, low)
 
+    if intent == "product_detail":
+        return await _detail_flow(state, deps, flags, observer, low)
+
     if intent == "check_availability":
         return _observed_response(
             observer,
@@ -1187,6 +1204,69 @@ async def _product_flow(
     return reply
 
 
+# Mirror keys never belong in a customer-facing spec sheet.
+_DETAIL_SKIP_KEYS = {
+    "model_code", "sku", "category_code", "brand", "brand_id", "productidweb",
+    "giá gốc", "giá khuyến mãi", "khuyến mãi quà",
+}
+
+# "(\d)(?!\d)": a lone digit only — "mẫu 172411" is a model code, not an
+# ordinal.
+_ORDINAL_REF = re.compile(
+    r"(?:mẫu|cái|con|sản phẩm|máy|màn)\s*(?:thứ\s*)?"
+    r"(\d(?!\d)|nhất|hai|ba|tư|bốn|năm|đầu(?:\s*tiên)?|cuối(?:\s*cùng)?)",
+)
+_ORDINAL_WORDS = {
+    "nhất": 1, "đầu": 1, "đầu tiên": 1, "hai": 2, "ba": 3, "tư": 4,
+    "bốn": 4, "năm": 5, "cuối": -1, "cuối cùng": -1,
+}
+
+
+def _resolve_referenced_products(
+    state: AgentState, low: str, deps: AgentDependencies, understanding=None
+) -> list[GenericProduct]:
+    """Resolve which presented products the customer means: ordinals ("mẫu
+    thứ hai"), name/brand/model fragments, or the extractor's product_refs.
+    Order follows the mention order in the message where possible."""
+    presented = [
+        p
+        for pid in state.last_presented_ids
+        for p in deps.products
+        if p.productidweb == pid
+    ]
+    if not presented:
+        return []
+    resolved: list[GenericProduct] = []
+
+    def add(product: GenericProduct) -> None:
+        if product not in resolved:
+            resolved.append(product)
+
+    for match in _ORDINAL_REF.finditer(low):
+        token = " ".join(match.group(1).split())
+        index = int(token) if token.isdigit() else _ORDINAL_WORDS.get(token, 0)
+        if index == -1:
+            add(presented[-1])
+        elif 1 <= index <= len(presented):
+            add(presented[index - 1])
+    for product in presented:
+        fragments = [
+            str(product.model_code or "").lower(),
+            str(product.brand or "").lower(),
+        ]
+        if any(fragment and fragment in low for fragment in fragments):
+            add(product)
+    for ref in getattr(understanding, "product_refs", None) or []:
+        ref_low = str(ref).lower()
+        for product in presented:
+            if (
+                ref_low == product.productidweb.lower()
+                or ref_low in product.name.lower()
+            ):
+                add(product)
+    return resolved
+
+
 def _pick_comparison_pair(
     state: AgentState, deps: AgentDependencies, low: str
 ) -> tuple[str, ...]:
@@ -1222,6 +1302,104 @@ def _pick_comparison_pair(
     return tuple(p.productidweb for p in pair)
 
 
+async def _detail_flow(
+    state: AgentState,
+    deps: AgentDependencies,
+    flags: list[str],
+    observer: AgentObserver,
+    low: str,
+) -> AgentReply:
+    """Single-product spec sheet over the detail tool: dimension rows first
+    (placeholder-filtered), then other notable attributes."""
+    referenced = _resolve_referenced_products(state, low, deps)
+    presented_ids = state.last_presented_ids
+    target: GenericProduct | None = None
+    if referenced:
+        target = referenced[0]
+    elif len(presented_ids) == 1:
+        target = next(
+            (p for p in deps.products if p.productidweb == presented_ids[0]),
+            None,
+        )
+    if target is None:
+        names = [
+            p.name
+            for pid in presented_ids[:3]
+            for p in deps.products
+            if p.productidweb == pid
+        ]
+        listing = (
+            " / ".join(names)
+            if names
+            else "— em gợi ý vài mẫu trước rồi mình xem kỹ nhé ạ"
+        )
+        return _observed_response(
+            observer,
+            AgentReply(
+                text=(
+                    f"Dạ anh/chị muốn xem chi tiết mẫu nào ạ ({listing})?"
+                ),
+                intent="product_detail",
+                flags=flags,
+            ),
+            outcome="detail_clarification",
+        )
+    detail = product_detail(deps.products, target.productidweb)
+    lines = [f"Dạ thông tin chi tiết {target.name} ạ:"]
+    price = (
+        format_vnd(target.effective_price)
+        if target.effective_price is not None
+        else "giá đang cập nhật"
+    )
+    price_line = f"• Giá: {price}"
+    if target.promotion.discount_percent and target.sale_price is not None:
+        price_line += (
+            f" (giá gốc {format_vnd(target.list_price)}, giảm "
+            f"{target.promotion.discount_percent:.0f}%)"
+        )
+    lines.append(price_line)
+    if target.gift_promotion:
+        gift = target.gift_promotion
+        if len(gift) > 160:
+            gift = re.sub(r"[\d.,]*$", "", gift[:157]).rstrip() + "…"
+        lines.append(f"• Quà tặng kèm: {gift}")
+    shown_keys: set[str] = set()
+    for dim in dimensions_for(target.category_code):
+        value = dimension_display(target, dim)
+        if value is not None:
+            lines.append(f"• {dim.label}: {value}")
+            shown_keys.add(dim.key)
+    extra_count = 0
+    for key, value in (detail.attributes if detail else {}).items():
+        if extra_count >= 6:
+            break
+        if key in shown_keys or key in _DETAIL_SKIP_KEYS:
+            continue
+        if len(value) > 80 or value.lower() in ("không", "không có"):
+            continue
+        lines.append(f"• {key}: {value}")
+        extra_count += 1
+    lines.append("")
+    lines.append(
+        "Anh/chị cần em so mẫu này với mẫu nào khác không ạ?"
+    )
+    text = "\n".join(lines)
+    validation = validate_response(text, allowed_products=[target])
+    if not validation.ok:
+        text = degrade_to_facts([target])
+    state.last_presented_ids = [target.productidweb]
+    return _observed_response(
+        observer,
+        AgentReply(
+            text=text,
+            intent="product_detail",
+            flags=flags,
+            presented_ids=[target.productidweb],
+        ),
+        outcome="detail",
+    )
+
+
 def _compare_flow(
     state: AgentState,
     deps: AgentDependencies,
@@ -1229,7 +1407,11 @@ def _compare_flow(
     observer: AgentObserver,
     low: str = "",
 ) -> AgentReply:
-    ids = tuple(state.last_presented_ids[:2])
+    referenced = _resolve_referenced_products(state, low, deps)
+    if len(referenced) >= 2:
+        ids = tuple(p.productidweb for p in referenced[:2])
+    else:
+        ids = tuple(state.last_presented_ids[:2])
     if len(ids) < 2:
         ids = _pick_comparison_pair(state, deps, low)
     if len(ids) < 2:

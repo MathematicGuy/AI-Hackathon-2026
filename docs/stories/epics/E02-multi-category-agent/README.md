@@ -68,6 +68,15 @@ window and re-opens the range question, old-reference numbers never
 re-parsed), introduced JSON write-through session memory
 (`AGENT_SESSION_DIR`, inspectable + restart-safe), and pinned a determinism
 test (same scripted conversation twice → byte-identical replies); golden
-AGENT-G-044…048, suite 228. Deferred: policy retrieval over pgvector (the
-platform has no knowledge-base tables yet); Langfuse judge wiring (keys not
-configured).
+AGENT-G-044…048, suite 228. The audit round (round 5, same day) probed the
+whole pipeline and fixed five reproduced flaws with general fixes: money
+bounds parse by context ("trên/hơn/tối thiểu X" is a floor — the old parser
+read it as a ceiling; "từ X" had the same latent bug; compact "1tr5"/"X
+triệu rưỡi" understood), cold-start capture is whitelisted to continuation
+intents (interrupts are served without polluting memory and the question
+stays pending), the detail tool is wired with a shared ordinal/name/
+product_refs reference resolver (also powering "so sánh mẫu 1 với mẫu 3"),
+explicit role locks release on new preferences, and clear_fields
+generalized to brands/priorities/roles (golden AGENT-G-049…054, suite 258).
+Deferred: policy retrieval over pgvector (the platform has no knowledge-base
+tables yet); Langfuse judge wiring (keys not configured).

@@ -53,6 +53,22 @@ def apply_turn(state: AgentState, understanding: AgentUnderstanding) -> AgentSta
             asked = state.asked_questions.get(current_category)
             if asked and "budget" in asked:
                 asked.remove("budget")
+    if "brands" in understanding.clear_fields:
+        state.need = state.need.model_copy(update={"brand_prefs": []})
+    if "priorities" in understanding.clear_fields:
+        state.need = state.need.model_copy(update={"priorities": []})
+    if "roles" in understanding.clear_fields:
+        state.need = state.need.model_copy(update={"requested_roles": []})
+
+    # Release a stale explicit role lock ("rẻ nhất") when the customer states
+    # a NEW preference without restating a role — dimension roles take over
+    # (audit round 5: the lock had no release condition).
+    if (
+        state.need.requested_roles
+        and not patch.requested_roles
+        and (patch.usage_purpose or patch.priorities)
+    ):
+        state.need = state.need.model_copy(update={"requested_roles": []})
 
     if (
         new_category is not None

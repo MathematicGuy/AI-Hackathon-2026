@@ -62,6 +62,14 @@ _BUDGET_CLEAR = _BUDGET_CLEAR_OLDREF + (
     "khoảng giá khác", "tầm giá khác", "đừng lọc giá",
 )
 
+# Same clear semantics for the other sticky preferences (audit round 5).
+_BRAND_CLEAR = ("hãng nào cũng được", "bỏ hãng", "không cần hãng", "hãng gì cũng được")
+_PRIORITY_CLEAR = ("bỏ ưu tiên", "không cần ưu tiên", "ưu tiên gì cũng được")
+_ROLE_CLEAR = (
+    "gợi ý bình thường", "tư vấn bình thường", "đừng chỉ rẻ nhất",
+    "đủ các lựa chọn", "như ban đầu", "đầy đủ các vai",
+)
+
 # Money units tolerate live-chat typos: "trịu", "trieu", bare "tr", "củ".
 _MILLION_UNIT = r"triệu|trịu|trieu|tr\b|củ\b"
 _BUDGET = re.compile(
@@ -101,9 +109,36 @@ class ExtractorError(Exception):
     """Raised by extractors on provider/transport failure."""
 
 
+# Bound direction from context: "trên 10 triệu" is a FLOOR, "dưới"/no prefix
+# a ceiling; suffixes "trở lên"/"đổ lại" flip likewise (audit round 5 — the
+# old parser only knew "từ" and read "trên 10 triệu" as a maximum).
+_MIN_PREFIXES = ("từ", "trên", "hơn", "tối thiểu", "ít nhất", "khởi điểm")
+_MIN_SUFFIXES = ("trở lên", "đổ lên")
+_MAX_SUFFIXES = ("đổ lại", "trở xuống", "đổ xuống")
+# Compact forms: "1tr5" = 1.5 triệu; "3 triệu rưỡi" = 3.5 triệu.
+_COMPACT_TR = re.compile(r"(\d{1,3})\s*tr\s*(\d)\b")
+_HALF = re.compile(rf"(\d{{1,3}})\s*(?:{_MILLION_UNIT})\s*rưỡi")
+
+
+def _bound_from_context(low: str, start: int, end: int, value: int):
+    # The window includes the match itself: _BUDGET's optional prefix group
+    # consumes "từ/dưới..." so a before-start window would never see it
+    # (latent since round 1 — "từ 8 triệu" parsed as a ceiling).
+    prefix = low[max(0, start - 14): end]
+    suffix = low[end: end + 14]
+    if any(s in suffix for s in _MIN_SUFFIXES):
+        return value, None
+    if any(s in suffix for s in _MAX_SUFFIXES):
+        return None, value
+    if any(p in prefix for p in _MIN_PREFIXES):
+        return value, None
+    return None, value
+
+
 def _parse_budget_vnd(text: str) -> tuple[int | None, int | None]:
     """Deterministic budget parse for the fallback path only; understands
-    'dưới 20 triệu', 'tầm 15tr', '18-20 triệu'. Returns (min, max)."""
+    'dưới 20 triệu', 'trên 10 triệu' (floor), 'tầm 15tr', '18-20 triệu',
+    '1tr5', '3 triệu rưỡi'. Returns (min, max)."""
     low = text.lower()
     range_match = re.search(
         rf"(\d{{1,3}})\s*[-–đến\s]+\s*(\d{{1,3}})\s*({_MILLION_UNIT})", low
@@ -112,6 +147,19 @@ def _parse_budget_vnd(text: str) -> tuple[int | None, int | None]:
         a, b = int(range_match.group(1)), int(range_match.group(2))
         lo, hi = min(a, b), max(a, b)
         return lo * 1_000_000, hi * 1_000_000
+    half_match = _HALF.search(low)
+    if half_match:
+        value = int(half_match.group(1)) * 1_000_000 + 500_000
+        return _bound_from_context(low, half_match.start(), half_match.end(), value)
+    compact_match = _COMPACT_TR.search(low)
+    if compact_match:
+        value = (
+            int(compact_match.group(1)) * 1_000_000
+            + int(compact_match.group(2)) * 100_000
+        )
+        return _bound_from_context(
+            low, compact_match.start(), compact_match.end(), value
+        )
     match = _BUDGET.search(low)
     if not match:
         return None, None
@@ -122,10 +170,7 @@ def _parse_budget_vnd(text: str) -> tuple[int | None, int | None]:
         if unit.startswith(("tr", "củ")) or unit in ("triệu", "trịu", "trieu")
         else amount * 1_000
     )
-    prefix = low[max(0, match.start() - 12): match.start()]
-    if "từ" in prefix:
-        return value, None
-    return None, value
+    return _bound_from_context(low, match.start(), match.end(), value)
 
 
 def fallback_understanding(
@@ -186,6 +231,14 @@ def fallback_understanding(
         and budget_max is None
     ):
         clear_fields.append("budget")
+    if any(k in low for k in _BRAND_CLEAR):
+        clear_fields.append("brands")
+    if any(k in low for k in _PRIORITY_CLEAR):
+        clear_fields.append("priorities")
+    if any(k in low for k in _ROLE_CLEAR) and not need_kwargs.get(
+        "requested_roles"
+    ):
+        clear_fields.append("roles")
 
     # Price/promotion questions are catalog questions, never policy — even if
     # the LLM route is down (Cường's live-test finding).

@@ -46,3 +46,9 @@
 {"id": "AGENT-G-046", "name": "compare_two_cheapest_fetches_pair", "turns": [{"user": "tư vấn máy lạnh"}, {"user": "So sánh 2 mẫu rẻ nhất đi", "expect": {"intent": "compare_products", "has_products": true, "not_contains": ["muốn so sánh hai mẫu nào"]}}]}
 {"id": "AGENT-G-047", "name": "budget_clear_reopens_range", "turns": [{"user": "tư vấn tủ lạnh tầm 10-15 triệu cho nhà 4 người"}, {"user": "cho anh xem khoảng giá khác, không tra trong mức đó nữa", "expect": {"need_budget_max": null}}]}
 {"id": "AGENT-G-048", "name": "budget_update_overrides", "turns": [{"user": "tư vấn tủ lạnh tầm 10-15 triệu cho nhà 4 người"}, {"user": "nâng lên tầm 20-25 triệu đi", "expect": {"need_budget_max": 25000000}}]}
+{"id": "AGENT-G-049", "name": "floor_budget_understood_as_min", "turns": [{"user": "tư vấn tủ lạnh trên 10 triệu", "expect": {"has_products": true}}]}
+{"id": "AGENT-G-050", "name": "policy_interrupt_keeps_pending_clean", "turns": [{"user": "tôi muốn mua tủ lạnh"}, {"user": "khoan đã, chính sách bảo hành thế nào?", "expect": {"intent": "policy_question", "not_contains": ["mấy người"]}}, {"user": "nhà 4 người", "expect": {"need_constraint_key": "household"}}]}
+{"id": "AGENT-G-051", "name": "detail_second_model", "turns": [{"user": "tủ lạnh tầm 15 triệu"}, {"user": "cho anh xem chi tiết mẫu thứ hai", "expect": {"intent": "product_detail", "contains": ["thông tin chi tiết"], "not_contains": ["em gợi ý mấy mẫu"]}}]}
+{"id": "AGENT-G-052", "name": "compare_ordinal_first_and_third", "turns": [{"user": "tủ lạnh tầm 15 triệu"}, {"user": "so sánh mẫu 1 với mẫu 3", "expect": {"intent": "compare_products", "has_products": true}}]}
+{"id": "AGENT-G-053", "name": "role_lock_released_by_clear", "turns": [{"user": "tìm tủ lạnh rẻ nhất giúp mình"}, {"user": "gợi ý bình thường đi em", "expect": {"need_roles": []}}]}
+{"id": "AGENT-G-054", "name": "compact_budget_1tr5", "turns": [{"user": "tư vấn micro karaoke tầm 1tr5", "expect": {"need_budget_max": 1500000}}]}
