@@ -12,7 +12,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from backend.app.agent.contracts import AgentState
+from backend.app.agent.contracts import AgentPresentation, AgentState
 from backend.app.agent.graph import AgentDependencies, run_turn
 
 
@@ -26,8 +26,9 @@ class AgentResponse(BaseModel):
     request_id: str
     intent: str
     text: str
-    flags: list[str] = []
-    presented_ids: list[str] = []
+    flags: list[str] = Field(default_factory=list)
+    presented_ids: list[str] = Field(default_factory=list)
+    presentation: AgentPresentation | None = None
 
 
 def create_agent_router(
@@ -55,6 +56,7 @@ def create_agent_router(
             text=reply.text,
             flags=reply.flags,
             presented_ids=reply.presented_ids,
+            presentation=reply.presentation,
         )
 
     return router

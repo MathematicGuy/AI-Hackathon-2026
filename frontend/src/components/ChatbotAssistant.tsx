@@ -11,13 +11,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { SafeImage } from "@/components/SafeImage";
 import { ChatComparisonResult } from "@/components/chat/ChatComparisonResult";
 import { useToast } from "@/components/ToastProvider";
+import { requestAgentReply } from "@/lib/agent-api";
+import type { AgentResponse } from "@/types/agent";
 
 interface ChatMessage {
   id: number;
   role: "assistant" | "user";
   text: string;
   time: string;
-  kind?: "comparison";
+  response?: AgentResponse;
 }
 
 const QUICK_QUESTIONS = [
@@ -25,21 +27,6 @@ const QUICK_QUESTIONS = [
   "Phòng 18m² nên chọn mấy HP?",
   "Máy lạnh có khuyến mãi gì?",
 ];
-
-function normalizeChatQuery(query: string) {
-  return query
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase("vi-VN")
-    .replace(/đ/g, "d");
-}
-
-function isComparisonQuery(query: string) {
-  const normalized = normalizeChatQuery(query);
-  return (
-    /so sanh/.test(normalized) && /may lanh|dieu hoa/.test(normalized)
-  );
-}
 
 function formatChatTime(date: Date) {
   return new Intl.DateTimeFormat("vi-VN", {
@@ -88,7 +75,7 @@ export function ChatbotAssistant() {
   const closeButton = useRef<HTMLButtonElement>(null);
   const replyTimer = useRef<number | null>(null);
   const conversationScroller = useRef<HTMLDivElement>(null);
-  const latestComparison = useRef<HTMLDivElement>(null);
+  const latestPresentation = useRef<HTMLDivElement>(null);
 
   const closeChat = useCallback(() => {
     setIsOpen(false);
@@ -120,12 +107,19 @@ export function ChatbotAssistant() {
       scroller.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
-    if (latestMessage?.kind === "comparison" && latestComparison.current) {
-      const comparisonTop =
-        latestComparison.current.getBoundingClientRect().top -
+    const latestPresentationData = latestMessage?.response?.presentation;
+    const latestHasPresentation =
+      latestMessage?.role === "assistant" &&
+      latestPresentationData &&
+      (latestPresentationData.type !== "text" ||
+        latestPresentationData.warnings.length > 0 ||
+        latestPresentationData.follow_up_questions.length > 0);
+    if (latestHasPresentation && latestPresentation.current) {
+      const presentationTop =
+        latestPresentation.current.getBoundingClientRect().top -
         scroller.getBoundingClientRect().top +
         scroller.scrollTop;
-      scroller.scrollTo({ top: Math.max(0, comparisonTop - 12), behavior });
+      scroller.scrollTo({ top: Math.max(0, presentationTop - 12), behavior });
       return;
     }
     scroller.scrollTo({ top: scroller.scrollHeight, behavior });
@@ -206,15 +200,10 @@ export function ChatbotAssistant() {
     setFailedQuery("");
 
     try {
-      const response = await fetch("/api/v1/agent/respond", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId.current, message: query }),
+      const data = await requestAgentReply({
+        session_id: sessionId.current,
+        message: query,
       });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const data: { session_id: string; text: string } = await response.json();
       sessionId.current = data.session_id;
       setMessages((current) => [
         ...current,
@@ -223,7 +212,7 @@ export function ChatbotAssistant() {
           role: "assistant",
           text: data.text,
           time: formatChatTime(new Date()),
-          kind: isComparisonQuery(query) ? "comparison" : undefined,
+          response: data,
         },
       ]);
     } catch {
@@ -390,19 +379,29 @@ export function ChatbotAssistant() {
           aria-busy={isSending}
         >
           {messages.map((message) => {
-            const isComparison =
-              message.role === "assistant" && message.kind === "comparison";
+            const presentation =
+              message.role === "assistant"
+                ? message.response?.presentation
+                : undefined;
+            const isRichPresentation =
+              presentation?.type === "recommendation" ||
+              presentation?.type === "comparison";
+            const shouldRenderPresentation =
+              presentation &&
+              (presentation.type !== "text" ||
+                presentation.warnings.length > 0 ||
+                presentation.follow_up_questions.length > 0);
 
             return (
               <div
                 key={message.id}
                 ref={
-                  isComparison &&
+                  shouldRenderPresentation &&
                   message.id === messages[messages.length - 1]?.id
-                    ? latestComparison
+                    ? latestPresentation
                     : undefined
                 }
-                className={`scroll-mt-3 flex gap-1.5 ${isComparison ? "items-start" : "items-end"} ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`scroll-mt-3 flex gap-1.5 ${isRichPresentation ? "items-start" : "items-end"} ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {message.role === "assistant" ? (
                   <SafeImage
@@ -414,7 +413,7 @@ export function ChatbotAssistant() {
                 ) : null}
                 <div
                   className={
-                    isComparison
+                    isRichPresentation
                       ? "min-w-0 flex-1 text-left"
                       : `max-w-[84%] ${message.role === "user" ? "text-right" : "text-left"}`
                   }
@@ -424,9 +423,16 @@ export function ChatbotAssistant() {
                   >
                     {message.text}
                   </div>
-                  {isComparison ? (
-                    <div className="-ml-[42px] w-[calc(100%+42px)]">
+                  {shouldRenderPresentation ? (
+                    <div
+                      className={
+                        isRichPresentation
+                          ? "-ml-[42px] w-[calc(100%+42px)]"
+                          : undefined
+                      }
+                    >
                       <ChatComparisonResult
+                        presentation={presentation}
                         disabled={isSending}
                         onNavigate={closeChat}
                         onSuggestion={sendQuery}

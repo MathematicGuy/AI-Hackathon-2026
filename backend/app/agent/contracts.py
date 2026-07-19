@@ -7,9 +7,9 @@ category/shopping-intent switch (recoverable via `previous_needs`).
 """
 
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 AgentIntent = Literal[
     "new_search",
@@ -27,6 +27,8 @@ AgentIntent = Literal[
 # performance — unless the user explicitly requests otherwise.
 SuggestionRole = Literal["best_price", "best_value", "best_performance"]
 DEFAULT_ROLES: tuple[str, ...] = ("best_price", "best_value", "best_performance")
+PresentationType = Literal["text", "recommendation", "comparison"]
+PresentationMessage = Annotated[str, Field(min_length=1, max_length=500)]
 
 
 class GenericNeed(BaseModel):
@@ -50,6 +52,91 @@ class AgentUnderstanding(BaseModel):
     confidence: float = Field(ge=0, le=1)
     need_patch: GenericNeed = Field(default_factory=GenericNeed)
     product_refs: list[str] = Field(default_factory=list)
+
+
+class PresentationBadge(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    code: str = Field(min_length=1, max_length=64)
+    label: str = Field(min_length=1, max_length=120)
+
+
+class PresentationHighlight(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    label: str = Field(min_length=1, max_length=120)
+    value: str | None = Field(default=None, max_length=500)
+
+
+class PresentedProduct(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    sku: str = Field(min_length=1, max_length=128)
+    productidweb: str | None = Field(default=None, min_length=1, max_length=128)
+    name: str = Field(min_length=1, max_length=300)
+    brand: str | None = Field(default=None, max_length=120)
+    effective_price_vnd: int | None = Field(default=None, ge=0)
+    list_price_vnd: int | None = Field(default=None, ge=0)
+    discount_percent: float | None = Field(default=None, ge=0, le=100)
+    promotion_text: str | None = Field(default=None, max_length=500)
+    badges: list[PresentationBadge] = Field(default_factory=list, max_length=10)
+    highlights: list[PresentationHighlight] = Field(default_factory=list, max_length=3)
+    image_url: str | None = Field(default=None, max_length=2048)
+    product_url: str | None = Field(default=None, max_length=2048)
+    rating: float | None = Field(default=None, ge=0, le=5)
+    sold_count: int | None = Field(default=None, ge=0)
+
+
+class ComparisonValue(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    sku: str = Field(min_length=1, max_length=128)
+    value: str | None = Field(default=None, max_length=500)
+
+
+class ComparisonRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    label: str = Field(min_length=1, max_length=120)
+    values: list[ComparisonValue] = Field(default_factory=list, max_length=10)
+
+
+class AgentPresentation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    type: PresentationType = "text"
+    products: list[PresentedProduct] = Field(default_factory=list, max_length=10)
+    comparison_rows: list[ComparisonRow] = Field(default_factory=list, max_length=7)
+    follow_up_questions: list[PresentationMessage] = Field(
+        default_factory=list, max_length=1
+    )
+    warnings: list[PresentationMessage] = Field(default_factory=list, max_length=10)
+
+    @model_validator(mode="after")
+    def validate_shape(self) -> "AgentPresentation":
+        skus = [product.sku for product in self.products]
+        if len(skus) != len(set(skus)):
+            raise ValueError("presentation product SKUs must be unique")
+        if self.type == "text":
+            if self.products or self.comparison_rows:
+                raise ValueError("text presentation cannot contain products or rows")
+            return self
+        if self.type == "recommendation":
+            if not self.products:
+                raise ValueError("recommendation presentation requires products")
+            if self.comparison_rows:
+                raise ValueError("recommendation presentation cannot contain rows")
+            return self
+        if len(self.products) < 2:
+            raise ValueError("comparison presentation requires at least two products")
+        expected_skus = set(skus)
+        for row in self.comparison_rows:
+            row_skus = [value.sku for value in row.values]
+            if len(row_skus) != len(skus) or set(row_skus) != expected_skus:
+                raise ValueError(
+                    "comparison rows require exactly one value per product SKU"
+                )
+        return self
 
 
 @dataclass

@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 
 from backend.app.agent.catalog.dataset_adapter import GenericProduct
 from backend.app.agent.catalog.registry import CategoryRegistry
-from backend.app.agent.contracts import AgentState, DEFAULT_ROLES
+from backend.app.agent.contracts import AgentPresentation, AgentState, DEFAULT_ROLES
 from backend.app.agent.conversation import coldstart, memory
 from backend.app.agent.conversation.domain_rules import apply_domain_filters
 from backend.app.agent.conversation.understand import (
@@ -23,10 +23,14 @@ from backend.app.agent.policies.answer import (
     degradation_response,
 )
 from backend.app.agent.policies.corpus import PolicyCorpus
+from backend.app.agent.presentation import (
+    build_comparison_presentation,
+    build_recommendation_presentation,
+)
 from backend.app.agent.respond import format_vnd, render_suggestions
 from backend.app.agent.tools.compare import compare_products
 from backend.app.agent.tools.search import search_products
-from backend.app.agent.tools.suggest import suggest_products
+from backend.app.agent.tools.suggest import Suggestions, suggest_products
 from backend.app.agent.validate import degrade_to_facts, validate_response
 from backend.app.guardrails.input_rules import evaluate_input
 
@@ -74,6 +78,14 @@ STOP_REPLY = (
     "anh/chị cứ nhắn em nhé ạ!"
 )
 
+_AMBIGUOUS_PRODUCT_IDENTITY_REPLY = (
+    "Dạ em chưa thể xác định an toàn từng phiên bản sản phẩm để hiển thị ạ. "
+    "Anh/chị vui lòng chọn lại model hoặc SKU cụ thể để em tư vấn chính xác nhé?"
+)
+_AMBIGUOUS_PRODUCT_IDENTITY_WARNING = (
+    "Không thể hiển thị sản phẩm vì nhiều phiên bản dùng chung một mã web."
+)
+
 
 @dataclass
 class AgentDependencies:
@@ -107,6 +119,7 @@ class AgentReply:
     intent: str
     flags: list[str] = field(default_factory=list)
     presented_ids: list[str] = field(default_factory=list)
+    presentation: AgentPresentation = field(default_factory=AgentPresentation)
 
 
 def _agent_scope_markers(registry: CategoryRegistry) -> tuple[str, ...]:
@@ -238,6 +251,13 @@ def _capture_pending_answer(state, message: str, understanding):
     return understanding
 
 
+def _has_ambiguous_winner_identity(suggestions: Suggestions) -> bool:
+    records_by_web_id: dict[str, set[int]] = {}
+    for product in suggestions.winners.values():
+        records_by_web_id.setdefault(product.productidweb, set()).add(id(product))
+    return any(len(record_ids) > 1 for record_ids in records_by_web_id.values())
+
+
 def _policy_flow(message: str, deps: AgentDependencies, flags: list[str]) -> AgentReply:
     answer = build_policy_answer(deps.corpus, message)
     low = message.lower()
@@ -350,6 +370,17 @@ async def _product_flow(
     pool = apply_domain_filters(result.items, need)
     roles = tuple(need.requested_roles) or DEFAULT_ROLES
     suggestions = suggest_products(pool, category_code=category, roles=roles)
+    if _has_ambiguous_winner_identity(suggestions):
+        state.last_presented_ids = []
+        return AgentReply(
+            text=_AMBIGUOUS_PRODUCT_IDENTITY_REPLY,
+            intent=intent,
+            flags=[*flags, "ambiguous_product_identity"],
+            presentation=AgentPresentation(
+                type="text",
+                warnings=[_AMBIGUOUS_PRODUCT_IDENTITY_WARNING],
+            ),
+        )
     winner_ids = {p.productidweb for p in suggestions.distinct_products}
     also_consider = [
         p for p in pool if p.productidweb not in winner_ids
@@ -389,14 +420,48 @@ async def _product_flow(
     for pid in presented:
         if pid not in shown:
             shown.append(pid)
-    return AgentReply(text=text, intent=intent, flags=flags, presented_ids=presented)
+    presentation = build_recommendation_presentation(
+        suggestions,
+        also_consider=also_consider,
+        follow_up_question=response.question,
+    )
+    return AgentReply(
+        text=text,
+        intent=intent,
+        flags=flags,
+        presented_ids=presented,
+        presentation=presentation,
+    )
 
 
 def _compare_flow(
     state: AgentState, deps: AgentDependencies, flags: list[str]
 ) -> AgentReply:
     ids = tuple(state.last_presented_ids[:2])
-    if len(ids) < 2:
+    selected: list[GenericProduct] = []
+    if len(ids) == 2 and len(set(ids)) == 2 and state.need.category_code is not None:
+        for product_id in ids:
+            matches = [
+                product
+                for product in deps.products
+                if product.category_code == state.need.category_code
+                and product.productidweb == product_id
+            ]
+            if len(matches) != 1:
+                selected = []
+                break
+            selected.append(matches[0])
+    skus = [
+        product.sku.strip()
+        for product in selected
+        if product.sku is not None and product.sku.strip()
+    ]
+    if (
+        len(selected) != 2
+        or len(skus) != 2
+        or len(set(skus)) != 2
+        or any(len(sku) > 128 for sku in skus)
+    ):
         return AgentReply(
             text=(
                 "Dạ anh/chị muốn so sánh hai mẫu nào ạ? Em có thể gợi ý vài mẫu "
@@ -405,7 +470,7 @@ def _compare_flow(
             intent="compare_products",
             flags=flags,
         )
-    comparison = compare_products(deps.products, ids)
+    comparison = compare_products(selected, ids)
     lines = ["Dạ em so sánh nhanh hai mẫu anh/chị đang xem ạ:", ""]
     for item in comparison.items:
         price = format_vnd(item.effective_price) if item.effective_price else "giá đang cập nhật"
@@ -424,10 +489,22 @@ def _compare_flow(
         rendered = " / ".join(values[pid] for pid in ids if pid in values)
         lines.append(f"• {key}: {rendered}")
     lines.append("")
-    lines.append("Anh/chị nghiêng về mẫu nào hơn để em tư vấn sâu thêm ạ?")
+    follow_up_question = "Anh/chị nghiêng về mẫu nào hơn để em tư vấn sâu thêm ạ?"
+    lines.append(follow_up_question)
     text = "\n".join(lines)
-    allowed = [p for p in deps.products if p.productidweb in ids]
+    allowed = selected
     validation = validate_response(text, allowed_products=allowed)
     if not validation.ok:
         text = degrade_to_facts(allowed)
-    return AgentReply(text=text, intent="compare_products", flags=flags)
+    presentation = build_comparison_presentation(
+        allowed,
+        comparison,
+        follow_up_question=follow_up_question,
+    )
+    return AgentReply(
+        text=text,
+        intent="compare_products",
+        flags=flags,
+        presented_ids=list(ids),
+        presentation=presentation,
+    )
