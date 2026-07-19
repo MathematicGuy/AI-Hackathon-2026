@@ -1,0 +1,450 @@
+{
+  "snapshot": "dmx-golden-fixture-2026-07-18",
+  "rubric": "dmx-sales-advisor-rubric-v1",
+  "full": {
+    "cases": 147,
+    "conversations": 39,
+    "axes": 48
+  },
+  "sample": {
+    "cases": 39,
+    "conversations": 24,
+    "axes": 45
+  },
+  "by_capability": {
+    "recommend": 78,
+    "compare": 29,
+    "support": 26,
+    "guardrail": 1,
+    "property": 13
+  },
+  "by_category": {
+    "Máy lạnh": 22,
+    "Tủ Lạnh": 18,
+    "Máy giặt": 18,
+    "Màn hình máy tính": 18,
+    "Máy tính để bàn": 13,
+    "Máy tính bảng": 15,
+    "Máy nước nóng": 13,
+    "Đồng hồ thông minh": 15,
+    "mixed": 2,
+    "atomic": 13
+  },
+  "by_severity": {
+    "P0": 66,
+    "P1": 81
+  },
+  "coverage_axes": {
+    "anti-hallucination": [
+      "CONV-EDGE-NOMATCH#t1",
+      "CONV-EDGE-BRAND#t1",
+      "CONV-EDGE-VOUCHER#t1",
+      "ATOM-DISCLOSE#t1"
+    ],
+    "compare/edge-cross-category": [
+      "CONV-EDGE-GUARD#t1"
+    ],
+    "compare/edge-only-one": [
+      "CONV-EDGE-ONE#t1"
+    ],
+    "compare/energy-dimension": [
+      "CONV-EDGE-ROBUST#t3"
+    ],
+    "compare/output-tradeoff": [
+      "CONV-AC-01#t3",
+      "CONV-FR-01#t3",
+      "CONV-FR-01#t6",
+      "CONV-WM-01#t3",
+      "CONV-MN-01#t3",
+      "CONV-MN-01#t6",
+      "CONV-PC-01#t3",
+      "CONV-TB-01#t3",
+      "CONV-WH-01#t3",
+      "CONV-WH-01#t6",
+      "CONV-SW-01#t3",
+      "CONV-SW-01#t6",
+      "CONV-AC-02#t3",
+      "CONV-AC-02#t6",
+      "CONV-FR-02#t3",
+      "CONV-WM-02#t3",
+      "CONV-WM-02#t6",
+      "CONV-MN-02#t3",
+      "CONV-PC-02#t3",
+      "CONV-PC-02#t6",
+      "CONV-TB-02#t3",
+      "CONV-TB-02#t6",
+      "CONV-WH-02#t3",
+      "CONV-SW-02#t3"
+    ],
+    "compare/two-products": [
+      "CONV-AC-01#t3",
+      "CONV-FR-01#t3",
+      "CONV-FR-01#t6",
+      "CONV-WM-01#t3",
+      "CONV-MN-01#t3",
+      "CONV-MN-01#t6",
+      "CONV-PC-01#t3",
+      "CONV-TB-01#t3",
+      "CONV-WH-01#t3",
+      "CONV-WH-01#t6",
+      "CONV-SW-01#t3",
+      "CONV-SW-01#t6",
+      "CONV-AC-02#t3",
+      "CONV-AC-02#t6",
+      "CONV-FR-02#t3",
+      "CONV-WM-02#t3",
+      "CONV-WM-02#t6",
+      "CONV-MN-02#t3",
+      "CONV-PC-02#t3",
+      "CONV-PC-02#t6",
+      "CONV-TB-02#t3",
+      "CONV-TB-02#t6",
+      "CONV-WH-02#t3",
+      "CONV-SW-02#t3",
+      "CONV-EDGE-GUARD#t3",
+      "CONV-EDGE-ONE#t2"
+    ],
+    "conflict-handling": [
+      "ATOM-CONFLICT#t1"
+    ],
+    "disclose-missing": [
+      "CONV-AC-01#t2",
+      "CONV-AC-01#t4",
+      "CONV-FR-01#t2",
+      "CONV-FR-01#t4",
+      "CONV-WM-01#t2",
+      "CONV-WM-01#t4",
+      "CONV-MN-01#t2",
+      "CONV-MN-01#t4",
+      "CONV-PC-01#t2",
+      "CONV-PC-01#t4",
+      "CONV-TB-01#t2",
+      "CONV-TB-01#t4",
+      "CONV-WH-01#t2",
+      "CONV-WH-01#t4",
+      "CONV-SW-01#t2",
+      "CONV-SW-01#t4",
+      "CONV-AC-02#t2",
+      "CONV-AC-02#t4",
+      "CONV-FR-02#t2",
+      "CONV-FR-02#t4",
+      "CONV-WM-02#t2",
+      "CONV-WM-02#t4",
+      "CONV-MN-02#t2",
+      "CONV-MN-02#t4",
+      "CONV-PC-02#t2",
+      "CONV-PC-02#t4",
+      "CONV-TB-02#t2",
+      "CONV-TB-02#t4",
+      "CONV-WH-02#t2",
+      "CONV-WH-02#t4",
+      "CONV-SW-02#t2",
+      "CONV-SW-02#t4",
+      "ATOM-DISCLOSE#t1"
+    ],
+    "filter-brand": [
+      "CONV-FR-01#t7",
+      "CONV-MN-01#t7",
+      "CONV-PC-01#t7",
+      "CONV-WH-01#t7",
+      "CONV-SW-01#t7",
+      "CONV-AC-02#t7",
+      "CONV-WM-02#t7",
+      "CONV-PC-02#t7",
+      "CONV-TB-02#t7",
+      "CONV-WH-02#t7"
+    ],
+    "filter-budget": [
+      "CONV-AC-01#t1",
+      "CONV-FR-01#t1",
+      "CONV-FR-01#t5",
+      "CONV-WM-01#t1",
+      "CONV-MN-01#t1",
+      "CONV-MN-01#t5",
+      "CONV-PC-01#t1",
+      "CONV-PC-01#t5",
+      "CONV-TB-01#t1",
+      "CONV-WH-01#t1",
+      "CONV-WH-01#t5",
+      "CONV-SW-01#t1",
+      "CONV-SW-01#t5",
+      "CONV-AC-02#t1",
+      "CONV-AC-02#t5",
+      "CONV-FR-02#t1",
+      "CONV-WM-02#t1",
+      "CONV-WM-02#t5",
+      "CONV-MN-02#t1",
+      "CONV-PC-02#t1",
+      "CONV-PC-02#t5",
+      "CONV-TB-02#t1",
+      "CONV-TB-02#t5",
+      "CONV-WH-02#t1",
+      "CONV-WH-02#t5",
+      "CONV-SW-02#t1",
+      "CONV-EDGE-NOMATCH#t2",
+      "CONV-EDGE-BOUNDARY#t1"
+    ],
+    "filter-region": [
+      "CONV-EDGE-ROBUST#t1"
+    ],
+    "filter-stock": [
+      "CONV-EDGE-STOCK#t2"
+    ],
+    "funnel/delivery": [
+      "CONV-AC-01#t5",
+      "CONV-WM-01#t5",
+      "CONV-TB-01#t5",
+      "CONV-FR-02#t5",
+      "CONV-MN-02#t5",
+      "CONV-SW-02#t5"
+    ],
+    "funnel/delivery-unavailable": [
+      "CONV-EDGE-DELIVERY#t1"
+    ],
+    "funnel/greeting": [
+      "ATOM-GREETING#t1"
+    ],
+    "funnel/order-create": [
+      "CONV-AC-01#t8",
+      "CONV-WM-01#t8",
+      "CONV-TB-01#t8",
+      "CONV-FR-02#t8",
+      "CONV-MN-02#t8",
+      "CONV-SW-02#t8"
+    ],
+    "funnel/payment-COD": [
+      "CONV-AC-01#t7",
+      "CONV-WM-01#t7",
+      "CONV-TB-01#t7",
+      "CONV-FR-02#t7",
+      "CONV-MN-02#t7",
+      "CONV-SW-02#t7"
+    ],
+    "funnel/slot-filling": [
+      "CONV-AC-01#t6",
+      "CONV-WM-01#t6",
+      "CONV-TB-01#t6",
+      "CONV-FR-02#t6",
+      "CONV-MN-02#t6",
+      "CONV-SW-02#t6"
+    ],
+    "funnel/stop": [
+      "ATOM-STOP#t1"
+    ],
+    "funnel/voucher-applicability": [
+      "CONV-EDGE-VOUCHER#t1"
+    ],
+    "grounding": [
+      "CONV-AC-01#t1",
+      "CONV-AC-01#t2",
+      "CONV-AC-01#t3",
+      "CONV-FR-01#t1",
+      "CONV-FR-01#t2",
+      "CONV-FR-01#t3",
+      "CONV-WM-01#t1",
+      "CONV-WM-01#t2",
+      "CONV-WM-01#t3",
+      "CONV-MN-01#t1",
+      "CONV-MN-01#t2",
+      "CONV-MN-01#t3",
+      "CONV-PC-01#t1",
+      "CONV-PC-01#t2",
+      "CONV-PC-01#t3",
+      "CONV-TB-01#t1",
+      "CONV-TB-01#t2",
+      "CONV-TB-01#t3",
+      "CONV-WH-01#t1",
+      "CONV-WH-01#t2",
+      "CONV-WH-01#t3",
+      "CONV-SW-01#t1",
+      "CONV-SW-01#t2",
+      "CONV-SW-01#t3",
+      "CONV-AC-02#t1",
+      "CONV-AC-02#t2",
+      "CONV-AC-02#t3",
+      "CONV-FR-02#t1",
+      "CONV-FR-02#t2",
+      "CONV-FR-02#t3",
+      "CONV-WM-02#t1",
+      "CONV-WM-02#t2",
+      "CONV-WM-02#t3",
+      "CONV-MN-02#t1",
+      "CONV-MN-02#t2",
+      "CONV-MN-02#t3",
+      "CONV-PC-02#t1",
+      "CONV-PC-02#t2",
+      "CONV-PC-02#t3",
+      "CONV-TB-02#t1",
+      "CONV-TB-02#t2",
+      "CONV-TB-02#t3",
+      "CONV-WH-02#t1",
+      "CONV-WH-02#t2",
+      "CONV-WH-02#t3",
+      "CONV-SW-02#t1",
+      "CONV-SW-02#t2",
+      "CONV-SW-02#t3"
+    ],
+    "grounding-promo": [
+      "CONV-AC-01#t4",
+      "CONV-FR-01#t4",
+      "CONV-WM-01#t4",
+      "CONV-MN-01#t4",
+      "CONV-PC-01#t4",
+      "CONV-TB-01#t4",
+      "CONV-WH-01#t4",
+      "CONV-SW-01#t4",
+      "CONV-AC-02#t4",
+      "CONV-FR-02#t4",
+      "CONV-WM-02#t4",
+      "CONV-MN-02#t4",
+      "CONV-PC-02#t4",
+      "CONV-TB-02#t4",
+      "CONV-WH-02#t4",
+      "CONV-SW-02#t4"
+    ],
+    "grounding-stock": [
+      "CONV-EDGE-STOCK#t1"
+    ],
+    "guardrail/hate": [
+      "ATOM-GUARD-HATE#t1"
+    ],
+    "guardrail/no-over-promise": [
+      "ATOM-OVERPROMISE#t1"
+    ],
+    "guardrail/secret-probe": [
+      "ATOM-GUARD-APIKEY#t1"
+    ],
+    "guardrail/source-code": [
+      "ATOM-GUARD-CODE#t1"
+    ],
+    "guardrail/system-prompt": [
+      "CONV-EDGE-GUARD#t2"
+    ],
+    "language-mirroring": [
+      "ATOM-LANG-EN#t1"
+    ],
+    "multi-turn-state": [
+      "CONV-FR-01#t5",
+      "CONV-MN-01#t5",
+      "CONV-PC-01#t5",
+      "CONV-WH-01#t5",
+      "CONV-SW-01#t5",
+      "CONV-AC-02#t5",
+      "CONV-WM-02#t5",
+      "CONV-PC-02#t5",
+      "CONV-TB-02#t5",
+      "CONV-WH-02#t5",
+      "CONV-EDGE-NOMATCH#t2"
+    ],
+    "order-integrity": [
+      "CONV-AC-01#t8",
+      "CONV-WM-01#t8",
+      "CONV-TB-01#t8",
+      "CONV-FR-02#t8",
+      "CONV-MN-02#t8",
+      "CONV-SW-02#t8"
+    ],
+    "pagination-exclude-shown": [
+      "CONV-EDGE-MORE#t2"
+    ],
+    "recommend/brand-filter": [
+      "CONV-FR-01#t7",
+      "CONV-MN-01#t7",
+      "CONV-PC-01#t7",
+      "CONV-WH-01#t7",
+      "CONV-SW-01#t7",
+      "CONV-AC-02#t7",
+      "CONV-WM-02#t7",
+      "CONV-PC-02#t7",
+      "CONV-TB-02#t7",
+      "CONV-WH-02#t7"
+    ],
+    "recommend/change-constraints": [
+      "CONV-FR-01#t5",
+      "CONV-MN-01#t5",
+      "CONV-PC-01#t5",
+      "CONV-WH-01#t5",
+      "CONV-SW-01#t5",
+      "CONV-AC-02#t5",
+      "CONV-WM-02#t5",
+      "CONV-PC-02#t5",
+      "CONV-TB-02#t5",
+      "CONV-WH-02#t5"
+    ],
+    "recommend/edge-brand-not-carried": [
+      "CONV-EDGE-BRAND#t1"
+    ],
+    "recommend/edge-budget-boundary": [
+      "CONV-EDGE-BOUNDARY#t1"
+    ],
+    "recommend/edge-no-match": [
+      "CONV-EDGE-NOMATCH#t1"
+    ],
+    "recommend/edge-out-of-stock": [
+      "CONV-EDGE-STOCK#t1",
+      "CONV-EDGE-STOCK#t2"
+    ],
+    "recommend/need-input": [
+      "CONV-AC-01#t1",
+      "CONV-FR-01#t1",
+      "CONV-WM-01#t1",
+      "CONV-MN-01#t1",
+      "CONV-PC-01#t1",
+      "CONV-TB-01#t1",
+      "CONV-WH-01#t1",
+      "CONV-SW-01#t1",
+      "CONV-AC-02#t1",
+      "CONV-FR-02#t1",
+      "CONV-WM-02#t1",
+      "CONV-MN-02#t1",
+      "CONV-PC-02#t1",
+      "CONV-TB-02#t1",
+      "CONV-WH-02#t1",
+      "CONV-SW-02#t1",
+      "CONV-EDGE-MORE#t1"
+    ],
+    "recommend/show-more": [
+      "CONV-EDGE-MORE#t2"
+    ],
+    "recovery-after-guardrail": [
+      "CONV-EDGE-GUARD#t3"
+    ],
+    "refuse-on-uncertainty": [
+      "ATOM-INSUFF#t1"
+    ],
+    "robustness/empty-message": [
+      "ATOM-EMPTY#t1"
+    ],
+    "robustness/no-diacritics": [
+      "CONV-EDGE-ROBUST#t1",
+      "CONV-EDGE-ROBUST#t3"
+    ],
+    "robustness/terse-reply": [
+      "CONV-EDGE-ROBUST#t2"
+    ],
+    "scope/off-topic": [
+      "ATOM-OFFTOPIC#t1"
+    ],
+    "tool-discipline/no-double-call": [
+      "ATOM-NO-DOUBLE-TOOL#t1"
+    ],
+    "tool-selection": [
+      "CONV-AC-01#t1",
+      "CONV-FR-01#t1",
+      "CONV-WM-01#t1",
+      "CONV-MN-01#t1",
+      "CONV-PC-01#t1",
+      "CONV-TB-01#t1",
+      "CONV-WH-01#t1",
+      "CONV-SW-01#t1",
+      "CONV-AC-02#t1",
+      "CONV-FR-02#t1",
+      "CONV-WM-02#t1",
+      "CONV-MN-02#t1",
+      "CONV-PC-02#t1",
+      "CONV-TB-02#t1",
+      "CONV-WH-02#t1",
+      "CONV-SW-02#t1"
+    ]
+  }
+}
