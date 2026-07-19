@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useState, useSyncExternalStore } from "react";
+import { DemoNotice } from "@/components/DemoNotice";
 import { SafeImage } from "@/components/SafeImage";
 import { useToast } from "@/components/ToastProvider";
 import { getProductSlug } from "@/lib/catalog";
@@ -241,6 +242,10 @@ export function AccountOrdersScreen({ products }: AccountOrdersScreenProps) {
         <section className="min-w-0">
           {activePanel === "orders" ? (
             <>
+              <DemoNotice>
+                danh sách đơn hàng dưới đây là dữ liệu mẫu để minh hoạ giao
+                diện, không phải lịch sử mua hàng thật.
+              </DemoNotice>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <h1 className="text-[22px] font-medium text-slate-800 md:text-2xl">Đơn hàng đã mua</h1>
                 <span className="text-sm font-medium text-slate-800 md:text-base">

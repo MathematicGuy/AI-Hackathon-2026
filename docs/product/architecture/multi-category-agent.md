@@ -317,6 +317,14 @@ so the chat embeds a real table under the bubble — present only on
 `compare_products` with two models; the UI renders exclusively this
 backend payload, never client-side guesses.
 
+US-126 adds a presentation-only image projection to the JSON response and the
+stream `done` event: nullable `image_url`, `image_type`, and `mapping_version`.
+The projection anchors to the first presented product and selects from a
+versioned category-brand mapping with SHA-256 over its SKU. Missing mappings
+use the shared product placeholder; non-product turns carry null fields. The
+chatbot labels every rendered figure “Hình ảnh minh họa”. This does not add a
+product image fact to the catalog or change deterministic ranking/grounding.
+
 Stories: `docs/stories/epics/E02-multi-category-agent/` (US-201 catalog,
 US-202 tools, US-203 policy, US-204 conversation, US-205 salesman, US-206
 graph/API/demo).
