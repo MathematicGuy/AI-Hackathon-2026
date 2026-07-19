@@ -1,30 +1,18 @@
 {
-  "name": "ai-website-clone-template",
+  "name": "advisor-frontend",
   "version": "0.3.1",
   "private": true,
-  "description": "Clone any website into a clean, modern Next.js codebase using AI coding agents",
-  "author": "JCodesMore",
+  "description": "Storefront and E02 sales-agent chat UI for the AI Product Comparison Advisor",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/JCodesMore/ai-website-cloner-template.git"
-  },
-  "homepage": "https://github.com/JCodesMore/ai-website-cloner-template",
-  "bugs": {
-    "url": "https://github.com/JCodesMore/ai-website-cloner-template/issues"
-  },
   "keywords": [
-    "claude-code",
-    "website-clone",
-    "reverse-engineering",
     "nextjs",
     "ai",
-    "template",
+    "sales-agent",
     "tailwindcss",
     "shadcn-ui"
   ],
   "engines": {
-    "node": ">=24"
+    "node": ">=24 <25"
   },
   "scripts": {
     "dev": "next dev",

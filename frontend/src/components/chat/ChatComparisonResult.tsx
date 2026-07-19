@@ -1,134 +1,61 @@
 "use client";
 
-import { ArrowUpRight, MoveHorizontal, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { SafeImage } from "@/components/SafeImage";
+import { Check, MoveHorizontal, Sparkles } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 
-type ComparisonBadge =
-  | "lowest_price"
-  | "most_popular"
-  | "highest_capacity"
-  | "new_model";
-
-interface ComparisonProduct {
+// Shape of the `comparison` block on the agent response. The agent builds it
+// from the same dimension registry its reply text is built from, so the table
+// can never contradict the answer above it. It is absent on every turn that is
+// not a comparison.
+export interface AgentComparisonProduct {
   id: string;
   name: string;
-  image: string;
-  price: number;
-  href: string;
-  badges: ComparisonBadge[];
-  power: string;
-  technology: string;
-  noteworthy: string;
-  rating: number;
-  soldLabel: string;
+  brand: string | null;
+  effective_price: number | null;
+  list_price: number | null;
+  discount_percent: number | null;
+  gift: string | null;
 }
 
-const comparisonProducts: ComparisonProduct[] = [
-  {
-    id: "featured-1",
-    name: "Casper Inverter 1 HP JC-09IU36X",
-    image: "https://cdn.tgdd.vn/2026/05/timerseo/363971.jpg",
-    price: 5990000,
-    href: "/san-pham/casper-inverter-1-hp-jc-09iu36x",
-    badges: ["new_model"],
-    power: "1 HP",
-    technology: "Inverter",
-    noteworthy: "Mẫu 2026",
-    rating: 4.9,
-    soldLabel: "Đã bán 18,7k",
-  },
-  {
-    id: "featured-2",
-    name: "Midea Inverter 1 HP MAFA-09CDN8",
-    image: "https://cdn.tgdd.vn/2026/07/timerseo/320893.png",
-    price: 5190000,
-    href: "/san-pham/midea-inverter-1-hp-mafa-09cdn8",
-    badges: ["lowest_price", "most_popular"],
-    power: "1 HP",
-    technology: "Inverter",
-    noteworthy: "Điều khiển dễ dùng",
-    rating: 4.9,
-    soldLabel: "Đã bán 64,1k",
-  },
-  {
-    id: "featured-5",
-    name: "Nagakawa Inverter 1.5 HP NIS-C12R2T62",
-    image: "https://cdn.tgdd.vn/2026/07/timerseo/361677.png",
-    price: 6190000,
-    href: "/san-pham/nagakawa-inverter-15-hp-nis-c12r2t62",
-    badges: ["highest_capacity"],
-    power: "1.5 HP",
-    technology: "Inverter",
-    noteworthy: "Mẫu 2026",
-    rating: 4.9,
-    soldLabel: "Đã bán 5,7k",
-  },
-];
+export interface AgentComparisonRow {
+  label: string;
+  unit: string;
+  explain: string;
+  values: Record<string, string>;
+  winner_id: string | null;
+}
 
-const badgeContent: Record<
-  ComparisonBadge,
-  { label: string; className: string }
-> = {
-  lowest_price: {
-    label: "Giá thấp nhất",
-    className: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  },
-  most_popular: {
-    label: "Bán nhiều nhất",
-    className: "border-violet-200 bg-violet-50 text-violet-700",
-  },
-  highest_capacity: {
-    label: "Công suất cao nhất",
-    className: "border-amber-200 bg-amber-50 text-amber-800",
-  },
-  new_model: {
-    label: "Mẫu 2026",
-    className: "border-blue-200 bg-blue-50 text-blue-700",
-  },
-};
-
-const comparisonRows = [
-  {
-    label: "Công suất",
-    value: (product: ComparisonProduct) => product.power,
-  },
-  {
-    label: "Công nghệ",
-    value: (product: ComparisonProduct) => product.technology,
-  },
-  {
-    label: "Điểm đáng chú ý",
-    value: (product: ComparisonProduct) => product.noteworthy,
-  },
-  {
-    label: "Đánh giá",
-    value: (product: ComparisonProduct) =>
-      `★ ${product.rating.toFixed(1)} · ${product.soldLabel}`,
-  },
-];
+export interface AgentComparison {
+  products: AgentComparisonProduct[];
+  rows: AgentComparisonRow[];
+  price_delta: number | null;
+}
 
 const followUpQuestions = [
-  "Máy lạnh có khuyến mãi gì?",
-  "Phòng 18m² chọn máy lạnh nào?",
-  "Tra cứu bảo hành máy lạnh",
+  "Mẫu nào tiết kiệm điện hơn?",
+  "Có khuyến mãi gì không?",
+  "Phòng 18m² nên chọn mẫu nào?",
 ];
 
 export function ChatComparisonResult({
+  comparison,
   disabled,
-  onNavigate,
   onSuggestion,
 }: {
+  comparison: AgentComparison;
   disabled: boolean;
-  onNavigate: () => void;
   onSuggestion: (question: string) => void;
 }) {
+  const { products, rows } = comparison;
+  if (products.length < 2) {
+    return null;
+  }
+
   return (
     <section
       data-testid="chat-comparison-result"
       className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
-      aria-label="Bảng so sánh máy lạnh"
+      aria-label="Bảng so sánh sản phẩm"
     >
       <div className="flex items-start justify-between gap-3 border-b border-slate-100 bg-[linear-gradient(135deg,#eff6ff,#ffffff)] px-3 py-3 sm:px-4">
         <div className="min-w-0">
@@ -137,11 +64,13 @@ export function ChatComparisonResult({
               <Sparkles className="size-4" aria-hidden="true" />
             </span>
             <h3 className="text-sm font-bold sm:text-base">
-              {comparisonProducts.length} lựa chọn dễ cân nhắc
+              So sánh {products.length} mẫu
             </h3>
           </div>
           <p className="mt-1 text-xs leading-5 text-slate-600 sm:text-sm">
-            So sánh nhanh theo giá và điểm mạnh nổi bật.
+            {comparison.price_delta
+              ? `Chênh lệch giá ${formatMoney(comparison.price_delta)}.`
+              : "So sánh theo các thông số của ngành hàng này."}
           </p>
         </div>
         <span className="hidden shrink-0 items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 shadow-sm md:flex">
@@ -162,22 +91,25 @@ export function ChatComparisonResult({
         tabIndex={0}
         aria-label="Bảng có thể cuộn ngang"
       >
-        <table className="min-w-[656px] table-fixed border-separate border-spacing-0 text-left sm:min-w-[640px]">
+        <table className="min-w-[560px] table-fixed border-separate border-spacing-0 text-left">
           <caption className="sr-only">
-            So sánh giá, công suất, công nghệ và đánh giá của ba máy lạnh
+            So sánh giá và thông số của {products.length} sản phẩm
           </caption>
           <colgroup>
-            <col className="w-[104px] sm:w-[112px]" />
-            {comparisonProducts.map((product) => (
-              <col key={product.id} className="w-[184px] sm:w-[176px]" />
+            <col className="w-[128px]" />
+            {products.map((product) => (
+              <col key={product.id} className="w-[200px]" />
             ))}
           </colgroup>
           <thead>
             <tr>
-              <th scope="col" className="sticky left-0 z-20 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 align-top text-xs font-bold text-slate-600">
+              <th
+                scope="col"
+                className="sticky left-0 z-20 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 align-top text-xs font-bold text-slate-600"
+              >
                 Sản phẩm
               </th>
-              {comparisonProducts.map((product) => (
+              {products.map((product) => (
                 <th
                   key={product.id}
                   data-testid={`chat-comparison-product-${product.id}`}
@@ -185,86 +117,76 @@ export function ChatComparisonResult({
                   className="border-b border-r border-slate-200 bg-white px-3 py-3 align-top last:border-r-0"
                 >
                   <div className="flex h-full flex-col">
-                    <div className="mb-2 flex min-h-12 flex-wrap content-start gap-1">
-                      {product.badges.map((badge) => (
-                        <span
-                          key={badge}
-                          className={`inline-flex h-fit rounded-full border px-2 py-1 text-[11px] font-bold leading-4 ${badgeContent[badge].className}`}
-                        >
-                          {badgeContent[badge].label}
+                    <div className="mb-2 flex flex-wrap gap-1">
+                      {product.discount_percent ? (
+                        <span className="inline-flex h-fit rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-bold leading-4 text-emerald-700">
+                          Giảm {Math.round(product.discount_percent)}%
                         </span>
-                      ))}
+                      ) : null}
+                      {product.gift ? (
+                        <span className="inline-flex h-fit rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-bold leading-4 text-amber-800">
+                          Có quà tặng
+                        </span>
+                      ) : null}
                     </div>
-                    <div className="mb-2 flex h-24 items-center justify-center rounded-xl bg-white">
-                      <SafeImage
-                        src={product.image}
-                        alt=""
-                        className="h-full w-full object-contain p-1"
-                        fallbackLabel={product.name}
-                        loading="lazy"
-                      />
-                    </div>
-                    <p className="line-clamp-2 min-h-10 text-[13px] font-semibold leading-5 text-slate-800">
+                    <p className="line-clamp-3 min-h-10 text-[13px] font-semibold leading-5 text-slate-800">
                       {product.name}
                     </p>
-                    <strong className="mt-1 text-base text-[#d70018]">
-                      {formatMoney(product.price)}
-                    </strong>
+                    {product.effective_price ? (
+                      <strong className="mt-1 text-base text-[#d70018]">
+                        {formatMoney(product.effective_price)}
+                      </strong>
+                    ) : (
+                      <span className="mt-1 text-[13px] text-slate-500">
+                        Giá đang cập nhật
+                      </span>
+                    )}
                   </div>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {comparisonRows.map((row) => (
+            {rows.map((row) => (
               <tr key={row.label}>
                 <th
                   scope="row"
-                   className="sticky left-0 z-10 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
+                  className="sticky left-0 z-10 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
                 >
-                  {row.label}
+                  <span title={row.explain || undefined}>{row.label}</span>
                 </th>
-                {comparisonProducts.map((product) => (
-                  <td
-                    key={product.id}
-                    className="border-b border-r border-slate-200 bg-white px-3 py-3 text-[13px] leading-5 text-slate-700 last:border-r-0"
-                  >
-                    {row.value(product)}
-                  </td>
-                ))}
+                {products.map((product) => {
+                  const isWinner = row.winner_id === product.id;
+                  return (
+                    <td
+                      key={product.id}
+                      className={`border-b border-r border-slate-200 px-3 py-3 text-[13px] leading-5 last:border-r-0 ${
+                        isWinner
+                          ? "bg-emerald-50 font-semibold text-emerald-800"
+                          : "bg-white text-slate-700"
+                      }`}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        {row.values[product.id] ?? "—"}
+                        {isWinner ? (
+                          <Check
+                            className="size-3.5 shrink-0"
+                            aria-label="Nhỉnh hơn ở tiêu chí này"
+                          />
+                        ) : null}
+                      </span>
+                    </td>
+                  );
+                })}
               </tr>
             ))}
-            <tr>
-              <th
-                scope="row"
-                className="sticky left-0 z-10 border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
-              >
-                Xem chi tiết
-              </th>
-              {comparisonProducts.map((product) => (
-                <td
-                  key={product.id}
-                  className="border-r border-slate-200 bg-white px-3 py-3 last:border-r-0"
-                >
-                  <Link
-                    href={product.href}
-                    onClick={onNavigate}
-                    aria-label={`Xem sản phẩm ${product.name}`}
-                    className="inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-[#0754ad] transition hover:border-blue-300 hover:bg-blue-100"
-                  >
-                    Xem {product.name.split(" ")[0]}
-                    <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                  </Link>
-                </td>
-              ))}
-            </tr>
           </tbody>
         </table>
       </div>
 
       <div className="border-t border-slate-100 px-3 py-3 sm:px-4">
         <p className="mb-2 text-xs font-bold text-slate-700">
-          Bạn muốn hỏi tiếp điều gì?
+          Anh/chị muốn hỏi tiếp điều gì ạ?
         </p>
         <div className="grid gap-2 sm:flex sm:flex-wrap">
           {followUpQuestions.map((question) => (

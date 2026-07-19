@@ -12,6 +12,7 @@ candidates live in [`backlog.md`](backlog.md).
 - `E04-ai-session-logging`: repository-native AI logging.
 - `E05-repository-governance`: documentation authority and repository
   governance.
+- `E06-delivery-automation`: CI/CD validation and Ubuntu deployment automation.
 
 Query the active Harness matrix for current status rather than inferring status
 from directory presence.

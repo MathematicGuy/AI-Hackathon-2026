@@ -97,10 +97,14 @@ async def test_understanding_records_prompts_raw_output_and_fallback() -> None:
     assert first["kind"] == "generation"
     assert first["model"] == "primary"
     assert first["model_parameters"] == {"temperature": 0}
+    # `attempt` records which try produced this span, so a transient-error
+    # retry on the same candidate is visible in the trace rather than hidden
+    # (US-125 added the retry; US-207 asks for provider-attempt visibility).
     assert first["metadata"] == {
         "candidate_index": 0,
         "provider": "openrouter",
         "role": "understanding",
+        "attempt": 1,
     }
     assert first["input"]["user"] == "mua tủ lạnh tầm 15 triệu"
     assert first["input"]["system"]

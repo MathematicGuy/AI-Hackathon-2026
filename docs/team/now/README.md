@@ -11,6 +11,7 @@ contracts and not substitutes for Harness proof.
 | THANH | dinh-nhat-thanh | [`THANH-NOW.md`](THANH-NOW.md) | Assigned by a human |
 | USER1 | luu-thien-viet-cuong | [`USER1-NOW.md`](USER1-NOW.md) | Assigned by Cường (Lưu Thiện Việt Cường) on 2026-07-18; direction recorded in the member session log |
 | USER2 | luu-thien-viet-cuong | [`USER2-NOW.md`](USER2-NOW.md) | Assigned by Cường (Lưu Thiện Việt Cường) on 2026-07-18; direction recorded in the member session log |
+| DUY | luu-tien-duy | [`DUY-NOW.md`](DUY-NOW.md) | Assigned by Duy (Lưu Tiến Duy) on 2026-07-19; direction recorded in the member session log |
 
 Aliases are not identities. An agent must never infer an alias owner from Git
 configuration, operating-system usernames, earlier chat, or task content. A

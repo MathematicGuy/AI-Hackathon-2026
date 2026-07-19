@@ -8,10 +8,14 @@ shared by variants, so the agent-level id falls back to sku when the web id is
 missing. Credentials are never logged.
 """
 
+import logging
+import os
 from typing import Any, Callable
 
 from backend.app.agent.catalog.dataset_adapter import GenericProduct, _as_text
 from backend.app.agent.catalog.promotions import extract_promotion
+
+logger = logging.getLogger(__name__)
 
 _PRODUCTS_QUERY = """
     SELECT sku, productidweb, model_code, category_code, brand, brand_id,
@@ -62,14 +66,42 @@ class PostgresDatasetAdapter:
         return products
 
 
+class PostgresRequiredError(RuntimeError):
+    """REQUIRE_POSTGRES is set but the catalog database is not reachable."""
+
+
+def _require_postgres() -> bool:
+    return os.environ.get("REQUIRE_POSTGRES", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+
+
 def postgres_available() -> bool:
     """Cheap availability probe: settings loadable and one row reachable.
-    Any failure (missing config, container down) means unavailable."""
+
+    A failure is always logged with its cause, so a silent downgrade to the
+    Excel workbook can never look like a healthy start. When REQUIRE_POSTGRES
+    is set the failure is fatal instead: production must not serve a parallel
+    dataset because the database was misconfigured.
+    """
     try:
         from backend.app.db.connection import connect
 
         with connect() as conn:
             conn.execute("SELECT 1 FROM products LIMIT 1").fetchone()
         return True
-    except Exception:
+    except Exception as exc:
+        if _require_postgres():
+            logger.error("catalog.postgres_unavailable required=true error=%s", exc)
+            raise PostgresRequiredError(
+                "REQUIRE_POSTGRES is set but the catalog database is not "
+                f"reachable: {exc}"
+            ) from exc
+        logger.warning(
+            "catalog.postgres_unavailable required=false error=%s "
+            "— falling back to the read-only workbook",
+            exc,
+        )
         return False

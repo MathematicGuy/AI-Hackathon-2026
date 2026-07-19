@@ -7,13 +7,40 @@ today. API keys are never logged. Tests inject a fake transport; no network in
 the test suite.
 """
 
+import asyncio
 import json
+import logging
 import os
 import re
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlparse
+
+logger = logging.getLogger(__name__)
+
+# Transient provider conditions worth one retry before moving to the next
+# candidate: rate limits, upstream overload, and timeouts.
+_TRANSIENT_MARKERS = (
+    "429",
+    "rate limit",
+    "ratelimit",
+    "timeout",
+    "timed out",
+    "overloaded",
+    "502",
+    "503",
+    "504",
+    "temporarily unavailable",
+)
+
+
+def _is_transient(exc: Exception) -> bool:
+    status = getattr(exc, "status_code", None)
+    if isinstance(status, int):
+        return status == 429 or 500 <= status < 600
+    text = str(exc).lower()
+    return any(marker in text for marker in _TRANSIENT_MARKERS)
 
 from backend.app.agent.catalog.registry import CategoryRegistry
 from backend.app.agent.contracts import AgentUnderstanding
@@ -238,12 +265,14 @@ class LLMUnderstandingExtractor:
         transport=None,
         timeout: float = 25.0,
         observer: AgentObserver | None = None,
+        retry_backoff: float = 0.5,
     ) -> None:
         if not candidates:
             raise ValueError("no LLM candidates configured")
         self.candidates = candidates
         self.registry = registry or CategoryRegistry()
         self.timeout = timeout
+        self.retry_backoff = retry_backoff
         self._transport = transport
         self.observer = observer or noop_agent_observer()
 
@@ -275,37 +304,61 @@ class LLMUnderstandingExtractor:
             categories=_category_table(self.registry), state_summary=summary_note
         )
         last_error: Exception | None = None
+        # Each attempt gets its own generation span, so a retry is visible in
+        # the trace rather than hidden inside one span.
         for index, candidate in enumerate(self.candidates):
-            generation = _SilentObservation()
-            try:
-                with _generation_span(
-                    self.observer,
-                    "understanding_model_call",
-                    kind="generation",
-                    model=candidate.model,
-                    model_parameters={"temperature": 0},
-                    input={"system": system, "user": message},
-                    metadata={
-                        "candidate_index": index,
-                        "provider": _provider_name(candidate.base_url),
-                        "role": "understanding",
-                    },
-                ) as generation:
-                    try:
-                        raw = await self._call(candidate, system, message)
-                        _safe_update(generation, output=raw)
-                        result = AgentUnderstanding.model_validate(_extract_json(raw))
-                    except Exception as exc:
-                        last_error = exc
-                        _safe_update(
-                            generation,
-                            error={"type": type(exc).__name__},
-                            output={"fallback": True},
-                        )
-                        continue
-                return result
-            except Exception as exc:  # provider, parse, or validation failure
-                last_error = exc
+            for attempt in (1, 2):
+                result: AgentUnderstanding | None = None
+                retry = False
+                generation = _SilentObservation()
+                try:
+                    with _generation_span(
+                        self.observer,
+                        "understanding_model_call",
+                        kind="generation",
+                        model=candidate.model,
+                        model_parameters={"temperature": 0},
+                        input={"system": system, "user": message},
+                        metadata={
+                            "candidate_index": index,
+                            "provider": _provider_name(candidate.base_url),
+                            "role": "understanding",
+                            "attempt": attempt,
+                        },
+                    ) as generation:
+                        try:
+                            raw = await self._call(candidate, system, message)
+                            _safe_update(generation, output=raw)
+                            result = AgentUnderstanding.model_validate(
+                                _extract_json(raw)
+                            )
+                        except Exception as exc:
+                            last_error = exc
+                            transient = _is_transient(exc)
+                            # Never log the message or the key, only the route
+                            # and the cause.
+                            logger.warning(
+                                "llm.extract_failed model=%s attempt=%d "
+                                "transient=%s error=%s",
+                                candidate.model,
+                                attempt,
+                                transient,
+                                exc,
+                            )
+                            _safe_update(
+                                generation,
+                                error={"type": type(exc).__name__},
+                                output={"fallback": True},
+                            )
+                            retry = transient and attempt == 1
+                except Exception as exc:  # span machinery failure
+                    last_error = exc
+                if result is not None:
+                    return result
+                if retry:
+                    await asyncio.sleep(self.retry_backoff)
+                    continue
+                break  # non-transient: fall through to the next candidate
         raise ExtractorError(str(last_error))
 
 
@@ -389,14 +442,23 @@ class LLMPolisher:
                         polished = raw.strip()
                         if polished:
                             return polished
+                        logger.warning("llm.polish_empty model=%s", candidate.model)
                         _safe_update(generation, output={"fallback": True, "reason": "empty"})
                     except Exception as exc:
+                        logger.warning(
+                            "llm.polish_failed model=%s error=%s",
+                            candidate.model,
+                            exc,
+                        )
                         _safe_update(
                             generation,
                             error={"type": type(exc).__name__},
                             output={"fallback": True},
                         )
-            except Exception as exc:
+            except Exception as exc:  # span machinery failure
+                logger.warning(
+                    "llm.polish_span_failed model=%s error=%s", candidate.model, exc
+                )
                 continue
         return text
 

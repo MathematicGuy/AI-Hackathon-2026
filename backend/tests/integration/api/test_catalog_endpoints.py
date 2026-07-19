@@ -157,3 +157,26 @@ def test_compare_same_category(client):
     assert body["category_code"] == MAYLANH
     assert len(body["products"]) == len(skus)
     assert len(body["attributes"]) > 0
+
+
+def test_search_by_category_term_returns_products(client):
+    """A shopper-style term must return products.
+
+    The dataset has no product-name column, so `query` matches sku,
+    productidweb, model_code, brand and the category sheet_name. Without
+    sheet_name this returned zero rows for every plain-language query.
+    """
+    body = client.post(
+        "/api/v1/products/search", json={"query": "tủ lạnh", "page_size": 5}
+    ).json()
+    assert body["total"] == 1692
+    assert body["items"]
+    assert all(item["category_name"] == "Tủ Lạnh" for item in body["items"])
+
+
+def test_search_by_brand_still_matches(client):
+    body = client.post(
+        "/api/v1/products/search", json={"query": "Samsung", "page_size": 5}
+    ).json()
+    assert body["total"] > 0
+    assert all(item["brand"] == "Samsung" for item in body["items"])

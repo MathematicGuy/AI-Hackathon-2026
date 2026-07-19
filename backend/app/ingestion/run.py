@@ -7,12 +7,15 @@ ingestion are intentionally not wired here yet.
 from __future__ import annotations
 
 import argparse
-import sys
+import logging
 from pathlib import Path
 
 from backend.app.config.db_settings import load_data_platform_settings
 from backend.app.db.connection import connect
 from backend.app.ingestion.catalog import CATALOG_FILENAME, CatalogStats, ingest_catalog
+from backend.app.logging_config import configure_logging
+
+logger = logging.getLogger(__name__)
 
 
 def _start_run(conn, source_label: str) -> int:
@@ -70,30 +73,36 @@ def _details_json(stats: CatalogStats):
 
 
 def _print_summary(stats: CatalogStats) -> None:
-    print("\n=== catalog ingestion summary ===")
-    print(
-        f"inserted={stats.inserted} updated={stats.updated} "
-        f"skipped={stats.skipped} errors={stats.errors}"
+    logger.info(
+        "ingest.summary inserted=%d updated=%d skipped=%d errors=%d",
+        stats.inserted,
+        stats.updated,
+        stats.skipped,
+        stats.errors,
     )
     for sheet, counts in stats.per_sheet.items():
-        print(
-            f"  {sheet}: inserted={counts['inserted']} updated={counts['updated']} "
-            f"skipped={counts['skipped']} errors={counts['errors']}"
+        logger.info(
+            "ingest.sheet name=%s inserted=%d updated=%d skipped=%d errors=%d",
+            sheet,
+            counts["inserted"],
+            counts["updated"],
+            counts["skipped"],
+            counts["errors"],
         )
-    if stats.error_samples:
-        print("  error samples:")
-        for sample in stats.error_samples:
-            print(f"    - {sample}")
+    for sample in stats.error_samples:
+        logger.warning("ingest.error_sample %s", sample)
 
 
 def run_catalog(source_dir: Path) -> int:
     xlsx = source_dir / CATALOG_FILENAME
     if not xlsx.exists():
-        print(f"catalog file not found: {xlsx}", file=sys.stderr)
+        logger.error("ingest.catalog_missing path=%s", xlsx)
         return 2
 
     settings = load_data_platform_settings()
-    print(f"ingesting catalog from {xlsx} into {settings.safe_target()}")
+    logger.info(
+        "ingest.start source=%s target=%s", xlsx, settings.safe_target()
+    )
 
     with connect() as conn:
         run_id = _start_run(conn, f"catalog:{xlsx.name}")
@@ -103,7 +112,7 @@ def run_catalog(source_dir: Path) -> int:
             )
         except Exception as exc:  # noqa: BLE001 - record failure then re-raise
             _finish_run(conn, run_id, "failed", None)
-            print(f"ingestion failed: {exc}", file=sys.stderr)
+            logger.error("ingest.failed error=%s", exc)
             raise
         _finish_run(conn, run_id, "completed", stats)
 
@@ -112,6 +121,7 @@ def run_catalog(source_dir: Path) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    configure_logging()
     parser = argparse.ArgumentParser(description="Ingest data/dataset into Postgres.")
     parser.add_argument(
         "--source",
