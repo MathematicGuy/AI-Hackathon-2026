@@ -1,0 +1,66 @@
+{
+  "mapping_version": 1,
+  "generated_at": "2026-07-19T00:50:18.103632+00:00",
+  "groups": {
+    "38:2": {
+      "category_code": "38",
+      "brand_id": "2",
+      "brand": "Samsung",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/335158/TimerThumb/335158-600x600-4.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/220325/TimerThumb/220326-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/358151-600x600-5.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-samsung"
+    },
+    "36:7": {
+      "category_code": "36",
+      "brand_id": "7",
+      "brand": "Panasonic",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/321382.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/321383.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/334298/panasonic-inverter-1-hp-cu-cs-u9bkh-8-thumb-639112105271935504-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-panasonic"
+    },
+    "115:315": {
+      "category_code": "115",
+      "brand_id": "315",
+      "brand": "Electrolux",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/329610-600x600-1.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/329605-600x600-1.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/316217-600x600-1.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-electrolux"
+    },
+    "39:133": {
+      "category_code": "39",
+      "brand_id": "133",
+      "brand": "Bosch",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/5475/318121/may-rua-chen-doc-lap-bosch-sms4eki06e-pop-0-639147111653198884-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/5475/259981/doc-lap-bosch-sms8yci01e-pop-0-639147103206671536-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/5475/367197/may-rua-chen-doc-lap-bosch-sms6zmb00p-pop-0-639147108361032868-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-bosch"
+    },
+    "41:355": {
+      "category_code": "41",
+      "brand_id": "355",
+      "brand": "Stiebel Eltron",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1962/299643/may-nuoc-nong-truc-tiep-stiebel-eltron-4500w-xgp-45-ec-thumb-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/330775/gian-tiep-stiebel-eltron-15-lit-esh-15-b-trend-vn-thumb-638645903969123768-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/344397/may-nuoc-nong-truc-tiep-stiebel-eltron-4500w-xp-45-ec-thumb-638925162830685611-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-stiebel-eltron"
+    }
+  }
+}

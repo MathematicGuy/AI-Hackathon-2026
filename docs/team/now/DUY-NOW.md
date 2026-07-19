@@ -95,17 +95,23 @@ US-126 edits after those existing changes.
 Started 2026-07-19. Baseline recorded before implementation: backend suite
 410 passed / 17 skipped; frontend `npm run check` baseline captured.
 
-US-126 pilot status (2026-07-19): implementation and bounded live run complete;
-five configured category-brand pages produced three representative image URLs
-each (15 total, 5 ready, 0 not_found, 0 error). Mapping and review files are
-under the ignored `data/processed/representative-images/pilot-5/` directory.
-The work is intentionally paused for review; no catalog rows or application
-runtime paths were updated.
+US-126 pilot baseline (2026-07-19): the bounded live run completed; five
+configured category-brand pages produced three representative image URLs each
+(15 total, 5 ready, 0 not_found, 0 error). Mapping and review files are under
+the ignored `data/processed/representative-images/pilot-5/` directory. The
+subsequent promotion below adds the runtime projection and guarded collector;
+the pilot itself never wrote catalog rows.
 
-US-126 promotion status (2026-07-19): human review accepted the pilot direction
-and explicitly authorized all-group collection support plus additive Agent API
-and chatbot integration. No all-group crawl or catalog/database write is
-implicit; the CLI must require `--all-groups`.
+US-126 promotion status (2026-07-19): implementation is complete for explicit
+all-group collection, versioned runtime mapping, stable SKU projection, Agent
+API fields, common placeholder, and disclosed chatbot rendering. Focused tests
+are 63 passed; the full backend suite is 500 passed / 17 skipped; frontend lint,
+typecheck, and production build pass. The pilot resume reports 5 ready groups
+and 15 images. The catalog derives 238 unique groups (234 source-backed and 4
+placeholder-only). The all-group crawl has not been invoked because the CLI
+requires an explicit `--all-groups`; no catalog/database write is implicit.
+Browser screenshot proof is still pending after the local dev/CDP session was
+interrupted.
 
 ## Definition of Done
 
