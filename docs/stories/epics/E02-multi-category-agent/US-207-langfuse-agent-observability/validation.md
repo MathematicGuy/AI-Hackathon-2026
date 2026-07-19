@@ -65,3 +65,34 @@ inputs, outputs, and metadata without any credential leakage.
 Secret redaction: grep for `sk-lf-*`, `sk-or-*`, and other known secret
 values found zero matches in observation payloads. Only the public key
 (`pk-lf-*`) appears in SDK scope metadata as designed.
+
+## Completion (archived)
+
+**Status:** DoD satisfied. Tracker `docs/team/now/THANH-NOW.md` was overwritten
+with a new mission on 2026-07-19; this section preserves the final state.
+
+- **Full backend suite green** (2026-07-19, `AGENT_DATA_BACKEND=excel`,
+  `OPENAI_API_KEY=""`): observability/graph/models 79 passed; agent + contract
+  163 passed; other unit + eval 269 passed; integration 8 passed. Exclusions:
+  `integration/api/test_catalog_endpoints.py` (live Postgres — see below) and
+  the pre-existing env-sensitive `test_refinements.py::test_resolve_candidates_from_minimal_env`
+  (also fails on `main`; unrelated to observability).
+- **Re-instrumented after `main` refactor** (commit `3068a66`): main added new
+  intents (smalltalk, product_qa, catalog_overview, price_range_query,
+  promotion_inquiry, question_clarification) and restructured flows. The
+  observability layer was re-applied on top of main's refactored
+  `backend/app/agent/graph.py` (conflict resolved by taking main's whole file
+  and re-adding the 4 helpers + per-node spans). Span names are frozen; the
+  span-order contract in `backend/tests/unit/agent/test_observation_paths.py`
+  still passes.
+- **Observability tracking doc created:**
+  `docs/team/now/OBSERVIBILITY-NOW.md` — single source of truth for the
+  Langfuse instrumentation map, adapter invariants, test contract, and the
+  re-instrumentation procedure for future `main` syncs. Owned by
+  dinh-nhat-thanh (delegated in `docs/team/now/README.md`).
+- **Live-Postgres integration test resolved** (2026-07-19): stood up Postgres
+  via the dev override and ran the previously-deferred
+  `backend/tests/integration/api/test_catalog_endpoints.py` — 13/13 passed.
+  Full reproduction: `docs/reports/local-postgres-setup-report.md`.
+- **Landed on `main`** (2026-07-19): `observation` fast-forwarded to contain
+  `main`, then merged back. Remote commit `09ca0d5`.

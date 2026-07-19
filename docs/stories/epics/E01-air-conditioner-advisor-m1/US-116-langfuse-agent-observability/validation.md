@@ -121,3 +121,26 @@ values (`sk-lf-*`, `sk-or-*`, `MISTRAL_API_KEY`, `AI_LOG_API_KEY`,
 hit was the `pk-lf-*` public key in the SDK scope metadata (expected and safe).
 Both redaction layers (`_is_secret_key` key-based + `_secret_values` env-value
 substring, ≥ 8 chars) are confirmed active.
+
+## Completion (archived)
+
+**Status:** DoD satisfied. Tracker `docs/team/now/THANH-NOW.md` was overwritten
+with a new mission on 2026-07-19; this section preserves the final state.
+
+- **Focused suite green** (2026-07-19): `backend/tests/unit/observability
+  backend/tests/unit/graph backend/tests/unit/models
+  backend/tests/contract/test_m1_contracts.py` — 70 passed.
+- **Full backend suite green** (`AGENT_DATA_BACKEND=excel`): 354 passed, 1
+  skipped. Only `integration/api/test_catalog_endpoints.py` excluded (live
+  Postgres — see below).
+- **M1 node spans wired** under `backend/app/graph/nodes/`:
+  `input_guard_node`, `classify_and_extract` (`intent_classifier` +
+  `deterministic_fallback`), `merge_state`; and
+  `backend/app/models/openai_intent.py::OpenAIIntentExtractor.extract`
+  (`intent_model_call` GENERATION). All default to the US-207 no-op adapter;
+  the focused suite asserts output-equivalence with and without an observer.
+- **Live-Postgres integration test resolved** (2026-07-19): same reproduction
+  as US-207; 13/13 passed. Full reproduction:
+  `docs/reports/local-postgres-setup-report.md`.
+- **Landed on `main`** (2026-07-19): merged together with US-207 via the
+  `observation` branch. Remote commit `09ca0d5`.
