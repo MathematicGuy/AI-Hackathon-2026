@@ -75,8 +75,12 @@ function formatChatTime(date: Date) {
 
 // Live E02 sales agent (backend/app/agent). Falls back to the retry UI when
 // the API is unreachable.
-const AGENT_API_BASE =
-  process.env.NEXT_PUBLIC_AGENT_API_URL ?? "http://127.0.0.1:8000";
+// Same origin by default. `next.config.ts` rewrites /api/* to the backend in
+// development, and nginx routes /api/ to it in production, so a relative path
+// is correct in both. An absolute default would be inlined into the client
+// bundle at build time and point every VISITOR's browser at their own machine
+// — which is exactly how this broke on the server before.
+const AGENT_API_BASE = process.env.NEXT_PUBLIC_AGENT_API_URL ?? "";
 
 // Natural progress line while waiting, picked from the query (replaces "...").
 function statusForQuery(query: string) {
