@@ -30,6 +30,9 @@ interface ChatMessage {
   // Set from the agent's own `comparison` block, never inferred from the
   // query text: the table and the answer come from one source.
   comparison?: AgentComparison;
+  imageUrl?: string;
+  imageType?: "representative";
+  mappingVersion?: number;
 }
 
 const QUICK_QUESTIONS = [
@@ -297,6 +300,9 @@ export function ChatbotAssistant() {
             text?: string;
             session_id?: string;
             comparison?: AgentComparison | null;
+            image_url?: string | null;
+            image_type?: "representative" | null;
+            mapping_version?: number | null;
           };
           if (event.type === "chunk" && event.text !== undefined) {
             if (!started) {
@@ -332,6 +338,22 @@ export function ChatbotAssistant() {
                 current.map((message) =>
                   message.id === assistantId
                     ? { ...message, comparison: table }
+                    : message,
+                ),
+              );
+            }
+            if (event.image_url && event.image_type === "representative") {
+              const imageUrl = event.image_url;
+              const mappingVersion = event.mapping_version ?? undefined;
+              setMessages((current) =>
+                current.map((message) =>
+                  message.id === assistantId
+                    ? {
+                        ...message,
+                        imageUrl,
+                        imageType: "representative",
+                        mappingVersion,
+                      }
                     : message,
                 ),
               );
@@ -619,6 +641,23 @@ export function ChatbotAssistant() {
                   >
                     {message.text}
                   </div>
+                  {message.imageUrl && message.imageType === "representative" ? (
+                    <figure
+                      data-testid="chat-representative-image"
+                      data-mapping-version={message.mappingVersion}
+                      className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"
+                    >
+                      <SafeImage
+                        src={message.imageUrl}
+                        alt="Hình ảnh minh họa cho sản phẩm được tư vấn"
+                        className="mx-auto aspect-square max-h-52 w-full rounded-xl object-contain"
+                        fallbackLabel="Hình ảnh minh họa"
+                      />
+                      <figcaption className="mt-1.5 text-center text-xs font-medium text-slate-500">
+                        Hình ảnh minh họa
+                      </figcaption>
+                    </figure>
+                  ) : null}
                   {message.comparison ? (
                     <div className="-ml-[42px] w-[calc(100%+42px)]">
                       <ChatComparisonResult

@@ -24,6 +24,7 @@ from pydantic import BaseModel, Field
 
 from backend.app.agent.contracts import AgentState
 from backend.app.agent.graph import AgentDependencies, run_turn
+from backend.app.catalog_images import RepresentativeImageMapping, load_default_mapping
 from backend.app.observability import noop_agent_observer
 
 logger = logging.getLogger(__name__)
@@ -121,6 +122,11 @@ class AgentResponse(BaseModel):
     # Present only on comparison turns. Additive: a client that ignores it
     # sees exactly the pre-US-125 envelope.
     comparison: ComparisonView | None = None
+    # Presentation-only imagery for the first product in the turn (US-126).
+    # Null on non-product turns; never persisted to a catalog row.
+    image_url: str | None = None
+    image_type: str | None = None
+    mapping_version: int | None = None
 
 
 class FeedbackRequest(BaseModel):
@@ -131,6 +137,8 @@ class FeedbackRequest(BaseModel):
 
 def create_agent_router(
     deps: AgentDependencies | Callable[[], AgentDependencies],
+    *,
+    image_mapping: RepresentativeImageMapping | None = None,
 ) -> APIRouter:
     """Mount POST /api/v1/agent/respond.
 
@@ -144,6 +152,7 @@ def create_agent_router(
     sessions: OrderedDict[str, AgentState] = OrderedDict()
     feedback_log: deque[dict] = deque(maxlen=1000)
     resolve = deps if callable(deps) else lambda: deps
+    representative_images = image_mapping or load_default_mapping()
 
     max_message_chars = _env_int("AGENT_MAX_MESSAGE_CHARS", DEFAULT_MAX_MESSAGE_CHARS)
     max_sessions = _env_int("AGENT_MAX_SESSIONS", DEFAULT_MAX_SESSIONS)
@@ -219,6 +228,29 @@ def create_agent_router(
             "price_delta": view.price_delta,
         }
 
+    def serialize_representative_image(reply, agent_deps: AgentDependencies) -> dict:
+        """Project one disclosed image without changing the agent graph reply."""
+        product_ids = list(getattr(reply, "presented_ids", []) or [])
+        comparison = getattr(reply, "comparison", None)
+        if not product_ids and comparison is not None:
+            product_ids = [product.productidweb for product in comparison.products]
+        product = next(
+            (
+                candidate
+                for product_id in product_ids[:1]
+                for candidate in agent_deps.products
+                if candidate.productidweb == product_id
+            ),
+            None,
+        )
+        if product is None:
+            return {
+                "image_url": None,
+                "image_type": None,
+                "mapping_version": None,
+            }
+        return representative_images.projection_for(product)
+
     @router.post("/api/v1/agent/respond", response_model=AgentResponse)
     async def respond(http_request: Request, request: AgentRequest) -> AgentResponse:
         guard(http_request, request)
@@ -250,6 +282,7 @@ def create_agent_router(
                 observer.flush()
             except Exception:
                 pass
+        image = serialize_representative_image(reply, agent_deps)
         return AgentResponse(
             session_id=session_id,
             request_id=request_id,
@@ -259,6 +292,7 @@ def create_agent_router(
             flags=reply.flags,
             presented_ids=reply.presented_ids,
             comparison=serialize_comparison(reply),
+            **image,
         )
 
     @router.post("/api/v1/agent/respond/stream")
@@ -274,7 +308,8 @@ def create_agent_router(
         state = session_state(session_id)
 
         async def generate():
-            reply = await run_turn(state, request.message, resolve())
+            agent_deps = resolve()
+            reply = await run_turn(state, request.message, agent_deps)
             text = reply.text
             step = 28
             for start in range(0, len(text), step):
@@ -283,6 +318,7 @@ def create_agent_router(
                     {"type": "chunk", "text": chunk}, ensure_ascii=False
                 ) + "\n"
                 await asyncio.sleep(0.025)
+            image = serialize_representative_image(reply, agent_deps)
             yield json.dumps(
                 {
                     "type": "done",
@@ -291,6 +327,7 @@ def create_agent_router(
                     "flags": reply.flags,
                     "presented_ids": reply.presented_ids,
                     "comparison": serialize_comparison(reply),
+                    **image,
                 },
                 ensure_ascii=False,
             ) + "\n"

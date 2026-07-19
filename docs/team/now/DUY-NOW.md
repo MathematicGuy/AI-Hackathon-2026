@@ -13,12 +13,21 @@ from backend structured data instead of hardcoded frontend rows.
 Lưu Tiến Duy owns US-125 — production readiness hardening, registered at
 `docs/stories/epics/E06-delivery-automation/US-125-production-readiness-hardening/`.
 
+Lưu Tiến Duy also owns US-126 — the isolated representative category-brand
+image pilot, registered at
+`docs/stories/epics/E05-dmx-catalog/US-126-representative-category-brand-images/`.
+This second story was explicitly directed by Duy on 2026-07-19 after replacing
+the earlier SKU-level image-search design. After the five-group review passed,
+Duy explicitly promoted US-126 to the all-group mapping, Agent API projection,
+and disclosed chatbot rendering on the same date.
+
 Assigned by Duy (Lưu Tiến Duy) on 2026-07-19 after a repository audit of the
 `deploy` branch found blocker-level deployment defects with no registered owner.
 
 ## Story Packet
 
 - `docs/stories/epics/E06-delivery-automation/US-125-production-readiness-hardening/`
+- `docs/stories/epics/E05-dmx-catalog/US-126-representative-category-brand-images/`
 
 Contains `overview.md`, `design.md`, `execplan.md`, and `validation.md`.
 
@@ -56,19 +65,47 @@ US-125 owns only:
   `frontend/src/components/AccountOrdersScreen.tsx`
 - `frontend/package.json` metadata only
 
+US-126 owns only:
+
+- `backend/app/catalog_images/`
+- `backend/tests/unit/catalog_images/`
+- `scripts/collect_representative_images.py`
+- `backend/app/agent/api.py` (representative-image projection only)
+- `backend/tests/contract/test_agent_api_contract.py` (image contract only)
+- `frontend/src/components/ChatbotAssistant.tsx` (image rendering only)
+- `frontend/public/images/products/representative-placeholder.svg`
+- `docs/product/architecture/multi-category-agent.md` (image projection only)
+- `docs/decisions/0018-versioned-representative-category-brand-images.md`
+- its own story packet and local git-ignored operational output under
+  `data/processed/representative-images/`
+
 Do not edit E01 decision-engine files, Langfuse observability wiring owned by
 THANH's US-207, another member's NOW file, or accepted product contracts.
 
 ## Coordination risk
 
-`backend/app/agent/api.py` is also in scope for THANH's US-207 (root/API
-lifecycle observability). Confirm with Thành before merging changes to that
-file, or land US-125's changes first and let US-207 rebase.
+`backend/app/agent/api.py` retains THANH's completed US-207 root/API lifecycle
+observability. US-126 changes only the response projection after that work and
+must keep the observer calls and flush behavior intact. The same file and
+chatbot component also contain Lưu Tiến Duy's US-125 hardening; serialize the
+US-126 edits after those existing changes.
 
 ## Current Status
 
 Started 2026-07-19. Baseline recorded before implementation: backend suite
 410 passed / 17 skipped; frontend `npm run check` baseline captured.
+
+US-126 pilot status (2026-07-19): implementation and bounded live run complete;
+five configured category-brand pages produced three representative image URLs
+each (15 total, 5 ready, 0 not_found, 0 error). Mapping and review files are
+under the ignored `data/processed/representative-images/pilot-5/` directory.
+The work is intentionally paused for review; no catalog rows or application
+runtime paths were updated.
+
+US-126 promotion status (2026-07-19): human review accepted the pilot direction
+and explicitly authorized all-group collection support plus additive Agent API
+and chatbot integration. No all-group crawl or catalog/database write is
+implicit; the CLI must require `--all-groups`.
 
 ## Definition of Done
 
