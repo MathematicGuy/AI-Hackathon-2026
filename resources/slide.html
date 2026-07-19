@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Product Advisor Pitch Deck</title>
+  <style>
+    :root {
+      --navy: #10182f;
+      --blue: #1769ff;
+      --cyan: #20d2ff;
+      --yellow: #ffd429;
+      --mint: #48f0b4;
+      --red: #ff4d6d;
+      --ink: #172033;
+      --muted: #697386;
+      --paper: #f7f9fc;
+      --white: #ffffff;
+      --line: rgba(23,32,51,.12);
+      --shadow: 0 24px 80px rgba(16,24,47,.18);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at 10% 10%, rgba(32,210,255,.20), transparent 35%),
+                  radial-gradient(circle at 90% 90%, rgba(255,212,41,.28), transparent 35%),
+                  #eef3f9;
+      overflow: hidden;
+    }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }
+
+    .slide {
+      display: none;
+      width: min(1280px, 100%);
+      aspect-ratio: 16 / 9;
+      min-height: 640px;
+      max-height: calc(100vh - 56px);
+      background: var(--white);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
+      padding: 64px 72px;
+    }
+
+    .slide.active { display: block; }
+
+    .slide.dark {
+      color: white;
+      background: linear-gradient(145deg, #0e1530 0%, #112255 55%, #1769ff 140%);
+    }
+
+    .slide.blue {
+      color: white;
+      background: linear-gradient(145deg, #1047c4 0%, #1769ff 56%, #20d2ff 145%);
+    }
+
+    .slide:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(23,32,51,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(23,32,51,.05) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+      opacity: .5;
+      z-index: -1;
+    }
+    .slide.dark:before, .slide.blue:before { background-image: linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px); }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 18px;
+    }
+    .dark .kicker, .blue .kicker { color: var(--yellow); }
+
+    h1, h2, h3 { margin: 0; letter-spacing: -0.055em; line-height: .98; }
+    h1 { font-size: clamp(64px, 8vw, 108px); max-width: 980px; }
+    h2 { font-size: clamp(44px, 5.7vw, 74px); max-width: 1050px; }
+    h3 { font-size: 30px; letter-spacing: -.03em; line-height: 1.12; }
+    p { margin: 0; font-size: 24px; line-height: 1.42; color: var(--muted); }
+    .dark p, .blue p { color: rgba(255,255,255,.82); }
+
+    .subtitle { font-size: 30px; max-width: 850px; margin-top: 24px; }
+    .small { font-size: 18px; line-height: 1.45; }
+    .tiny { font-size: 14px; line-height: 1.35; }
+    .muted { color: var(--muted); }
+    .dark .muted, .blue .muted { color: rgba(255,255,255,.65); }
+    .em { color: var(--blue); font-weight: 850; }
+    .dark .em, .blue .em { color: var(--yellow); }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 54px;
+      align-items: center;
+      height: calc(100% - 32px);
+    }
+    .two-col.wide-left { grid-template-columns: 1.25fr .75fr; }
+    .two-col.wide-right { grid-template-columns: .82fr 1.18fr; }
+
+    .row { display: flex; gap: 18px; align-items: center; }
+    .stack { display: grid; gap: 22px; }
+    .stack-lg { display: grid; gap: 34px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 9px 15px;
+      background: rgba(23,105,255,.10);
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: .01em;
+      white-space: nowrap;
+    }
+    .dark .pill, .blue .pill { background: rgba(255,255,255,.13); color: white; }
+    .pill.yellow { background: rgba(255,212,41,.18); color: #7a5b00; }
+
+    .big-number {
+      font-size: 108px;
+      font-weight: 950;
+      letter-spacing: -.08em;
+      line-height: .85;
+      color: var(--blue);
+    }
+
+    .card {
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 16px 48px rgba(16,24,47,.08);
+      backdrop-filter: blur(12px);
+    }
+    .dark .card, .blue .card { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.18); box-shadow: none; color: white; }
+    .card h3 { margin-bottom: 10px; }
+
+    .quote {
+      font-size: 42px;
+      line-height: 1.12;
+      letter-spacing: -.045em;
+      font-weight: 850;
+      padding-left: 28px;
+      border-left: 8px solid var(--yellow);
+    }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .metric { padding: 28px; min-height: 170px; display: flex; flex-direction: column; justify-content: space-between; }
+    .metric b { display: block; font-size: 42px; letter-spacing: -.05em; }
+    .metric span { color: var(--muted); font-size: 17px; line-height: 1.35; }
+    .dark .metric span, .blue .metric span { color: rgba(255,255,255,.70); }
+
+    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; align-items: stretch; }
+    .node {
+      min-height: 132px;
+      padding: 20px;
+      border-radius: 20px;
+      background: #f5f8ff;
+      border: 1px solid var(--line);
+      position: relative;
+    }
+    .node:after {
+      content: "→";
+      position: absolute;
+      right: -18px;
+      top: 44px;
+      font-size: 30px;
+      color: var(--blue);
+      font-weight: 900;
+    }
+    .node:last-child:after { display: none; }
+    .node b { display: block; font-size: 20px; margin-bottom: 8px; letter-spacing: -.02em; }
+    .node span { display: block; color: var(--muted); font-size: 16px; line-height: 1.35; }
+
+    .demo-box {
+      background: #071022;
+      color: white;
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 26px 70px rgba(7,16,34,.35);
+    }
+    .chat { display: grid; gap: 14px; }
+    .bubble { padding: 16px 18px; border-radius: 18px; font-size: 18px; line-height: 1.35; }
+    .bubble.user { background: rgba(255,255,255,.12); border-bottom-left-radius: 4px; }
+    .bubble.ai { background: linear-gradient(135deg, var(--blue), #0aa1ff); border-bottom-right-radius: 4px; }
+    .bubble.good { background: rgba(72,240,180,.18); border: 1px solid rgba(72,240,180,.35); }
+
+    .compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .product { background: #f5f8ff; border-radius: 22px; border: 1px solid var(--line); padding: 20px; min-height: 250px; position: relative; overflow: hidden; }
+    .product:before { content: ""; position: absolute; inset: 0; height: 7px; background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+    .product h3 { font-size: 24px; margin: 16px 0 8px; }
+    .product .price { font-size: 28px; font-weight: 950; color: var(--blue); letter-spacing: -.04em; margin-bottom: 12px; }
+    .product p { font-size: 15px; line-height: 1.38; }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-top: 34px;
+    }
+    .arch-box { border-radius: 22px; padding: 22px; background: #f4f7ff; border: 1px solid var(--line); min-height: 154px; }
+    .arch-box b { font-size: 22px; display: block; margin-bottom: 12px; }
+    .arch-box span { font-size: 16px; color: var(--muted); line-height: 1.35; display: block; }
+    .arch-box.highlight { background: linear-gradient(135deg, #1769ff, #20d2ff); color: white; border: none; }
+    .arch-box.highlight span { color: rgba(255,255,255,.82); }
+
+    .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 42px; }
+    .milestone { position: relative; padding: 26px; border-radius: 22px; background: #fff; border: 1px solid var(--line); min-height: 230px; }
+    .milestone .day { color: var(--blue); font-weight: 950; font-size: 20px; margin-bottom: 24px; }
+    .milestone h3 { font-size: 24px; margin-bottom: 10px; }
+    .milestone p { font-size: 16px; line-height: 1.4; }
+
+    .outcome-list { display: grid; gap: 16px; margin-top: 30px; }
+    .outcome { display: grid; grid-template-columns: 58px 1fr; gap: 18px; align-items: start; }
+    .badge { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: var(--yellow); color: #3b2a00; font-weight: 950; }
+    .outcome b { font-size: 23px; display: block; margin-bottom: 4px; }
+    .outcome span { color: var(--muted); font-size: 17px; line-height: 1.38; }
+    .dark .outcome span, .blue .outcome span { color: rgba(255,255,255,.74); }
+
+    .controls {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(23,32,51,.12);
+      border-radius: 999px;
+      padding: 8px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 12px 32px rgba(16,24,47,.15);
+    }
+    button {
+      border: 0;
+      border-radius: 999px;
+      background: var(--navy);
+      color: white;
+      padding: 10px 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .4; cursor: not-allowed; }
+    .counter { min-width: 74px; text-align: center; font-weight: 850; color: var(--ink); }
+
+    .progress {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--yellow));
+      z-index: 101;
+      width: 0%;
+      transition: width .2s ease;
+    }
+
+    .footer {
+      position: absolute;
+      left: 72px;
+      right: 72px;
+      bottom: 38px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: rgba(23,32,51,.45);
+    }
+    .dark .footer, .blue .footer { color: rgba(255,255,255,.48); }
+
+    .hero-shape {
+      position: absolute;
+      right: -100px;
+      bottom: -100px;
+      width: 560px;
+      height: 560px;
+      border-radius: 42% 58% 61% 39% / 44% 31% 69% 56%;
+      background: radial-gradient(circle at 35% 35%, var(--yellow), transparent 38%), linear-gradient(135deg, rgba(32,210,255,.85), rgba(23,105,255,.15));
+      opacity: .75;
+      filter: blur(.2px);
+      z-index: -1;
+    }
+    .dots {
+      display: grid;
+      grid-template-columns: repeat(6, 14px);
+      gap: 10px;
+      opacity: .65;
+    }
+    .dots span { width: 14px; height: 14px; border-radius: 999px; background: currentColor; }
+
+    @media print {
+      body { overflow: visible; background: white; }
+      .deck { display: block; padding: 0; height: auto; }
+      .slide { display: block !important; width: 100vw; height: 56.25vw; min-height: 0; max-height: none; border-radius: 0; box-shadow: none; page-break-after: always; }
+      .controls, .progress { display: none; }
+    }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .deck { height: auto; padding: 12px; }
+      .slide { min-height: 0; aspect-ratio: auto; height: auto; max-height: none; padding: 42px 28px 84px; }
+      .two-col, .two-col.wide-left, .two-col.wide-right, .metric-grid, .flow, .compare, .architecture, .timeline { grid-template-columns: 1fr; }
+      h1 { font-size: 56px; }
+      h2 { font-size: 42px; }
+      p, .subtitle { font-size: 20px; }
+      .controls { position: sticky; bottom: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <main class="deck" id="deck">
+
+    <section class="slide dark active">
+      <div class="hero-shape"></div>
+      <div class="kicker">Vietnam Innovation Challenge 2026 · SME Productivity</div>
+      <h1>AI Product Advisor for Real Customer Needs</h1>
+      <p class="subtitle">A decision-layer assistant that turns vague shopping needs into a trusted Top 3 shortlist with clear trade-offs.</p>
+      <div class="row" style="margin-top:42px">
+        <span class="pill">Retail AI</span>
+        <span class="pill">Vietnamese natural language</span>
+        <span class="pill">Grounded recommendations</span>
+      </div>
+      <div class="footer"><span>Pitch deck</span><span>AI Advisor MVP</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="two-col wide-left">
+        <div>
+          <div class="kicker">The problem</div>
+          <h2>Customers do not want more specs. They want confidence.</h2>
+          <p class="subtitle">Electronics shopping forces everyday buyers to translate life context into technical filters: BTU, inverter, noise level, capacity, stock, warranty, delivery and promotion rules.</p>
+        </div>
+        <div class="stack">
+          <div class="card"><h3>Too many SKU choices</h3><p class="small">Users compare long lists but still do not know which difference matters.</p></div>
+          <div class="card"><h3>Spec literacy gap</h3><p class="small">“Room 18m², quiet, save electricity” must become product constraints.</p></div>
+          <div class="card"><h3>Low decision trust</h3><p class="small">Price, promotion and stock change by region; advice must be grounded.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>01 · Problem</span><span>From comparison to decision</span></div>
+    </section>
+
+    <section class="slide blue">
+      <div class="two-col">
+        <div>
+          <div class="kicker">First-principle JTBD</div>
+          <div class="quote">“Help me turn a fuzzy need into a suitable, feasible, easy-to-understand buying decision.”</div>
+          <p class="subtitle">The job is not “use AI to compare products.” The job is “know which product fits my situation and why.”</p>
+        </div>
+        <div class="demo-box">
+          <div class="chat">
+            <div class="bubble user">Em muốn mua máy lạnh dưới 20 triệu cho phòng ngủ 18m², tiết kiệm điện, ít ồn.</div>
+            <div class="bubble ai">Mình đã hiểu ngân sách, diện tích và ưu tiên. Để chọn đúng hơn, phòng có bị nắng trực tiếp không?</div>
+            <div class="bubble good">Outcome: fewer choices, clearer reasons, no invented price or stock.</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer"><span>02 · JTBD</span><span>Decision confidence</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Market gap</div>
+      <h2>Retail websites already have information, navigation and transaction. The missing layer is decision.</h2>
+      <div class="metric-grid" style="margin-top:46px">
+        <div class="card metric"><b>Info</b><span>Specs, descriptions, reviews, policies and product pages.</span></div>
+        <div class="card metric"><b>Nav</b><span>Search, category browsing, filters and comparison tables.</span></div>
+        <div class="card metric"><b>Txn</b><span>Price, promotion, stock, delivery, installment and checkout.</span></div>
+      </div>
+      <div class="card" style="margin-top:24px; background:linear-gradient(135deg, rgba(255,212,41,.30), rgba(32,210,255,.20));">
+        <h3>Decision Layer</h3>
+        <p class="small">Understand context → ask only important questions → create a shortlist → explain trade-offs → verify with data sources.</p>
+      </div>
+      <div class="footer"><span>03 · Opportunity</span><span>The decision layer</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="two-col wide-right">
+        <div>
+          <div class="kicker">Solution</div>
+          <h2>One AI advisor, three jobs.</h2>
+          <p class="subtitle">The assistant behaves like a careful product consultant, not a generic chatbot.</p>
+        </div>
+        <div class="outcome-list">
+          <div class="outcome"><div class="badge">1</div><div><b>Understand</b><span>Extract category, budget, usage context, hard constraints and soft preferences from Vietnamese input.</span></div></div>
+          <div class="outcome"><div class="badge">2</div><div><b>Clarify</b><span>Ask only 2–3 questions that materially change filtering or ranking.</span></div></div>
+          <div class="outcome"><div class="badge">3</div><div><b>Recommend</b><span>Return Top 3 options with why-fit, weakness, trade-off, source and next action.</span></div></div>
+        </div>
+      </div>
+      <div class="footer"><span>04 · Solution</span><span>Understand · clarify · recommend</span></div>
+    </section>
+
+    <section class="slide dark">
+      <div class="kicker">Product flow</div>
+      <h2>From natural language to a grounded recommendation.</h2>
+      <div class="flow" style="margin-top:48px">
+        <div class="node" style="background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.18)"><b>User need</b><span>Vietnamese request with budget, room size, preferences or ambiguity.</span></div>
+        <div class="node" style="background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.18)"><b>Need extraction</b><span>Identify intent, hard constraints, missing info and buying context.</span></div>
+        <div class="node" style="background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.18)"><b>Catalog search</b><span>Retrieve product specs, price, promotion, stock and policy data.</span></div>
+        <div class="node" style="background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.18)"><b>Top 3 answer</b><span>Explain benefits, trade-offs, source confidence and next steps.</span></div>
+      </div>
+      <div class="card" style="margin-top:34px">
+        <p>Core behavior: ask when uncertainty is important; act when confidence is high; refuse to invent when data is missing.</p>
+      </div>
+      <div class="footer"><span>05 · Workflow</span><span>Ask · act · verify</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">MVP wedge</div>
+      <h2>Start with air conditioners because the recommendation logic is clear and testable.</h2>
+      <div class="two-col" style="height:auto; margin-top:42px">
+        <div class="card">
+          <h3>Why air conditioners?</h3>
+          <p class="small">Need maps naturally to decision rules: room area, sunlight, bedroom use, BTU/HP range, inverter, electricity cost, noise, installation region and stock.</p>
+        </div>
+        <div class="card">
+          <h3>MVP input example</h3>
+          <p class="small">“Tôi cần máy lạnh dưới 20 triệu cho phòng ngủ 18 m², muốn tiết kiệm điện và chạy êm.”</p>
+        </div>
+      </div>
+      <div class="metric-grid" style="margin-top:26px">
+        <div class="card metric"><b>1</b><span>Category: air conditioner only.</span></div>
+        <div class="card metric"><b>3</b><span>Top 3 products with trade-offs.</span></div>
+        <div class="card metric"><b>48h</b><span>Hackathon-ready web prototype.</span></div>
+      </div>
+      <div class="footer"><span>06 · MVP scope</span><span>Air conditioner advisor</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Demo output</div>
+      <h2>The answer should feel like advice, not a spec table.</h2>
+      <div class="compare" style="margin-top:36px">
+        <div class="product"><span class="pill">Best overall</span><h3>Model A Inverter 1.5HP</h3><div class="price">18.9M VND</div><p>Best balance for 18m² bedroom: suitable capacity, quiet mode, inverter savings. Weakness: not the cheapest.</p></div>
+        <div class="product"><span class="pill yellow">Best budget</span><h3>Model B 1.5HP</h3><div class="price">15.7M VND</div><p>Good core fit under budget. Trade-off: slightly higher noise and less premium energy-saving features.</p></div>
+        <div class="product"><span class="pill">Quietest</span><h3>Model C Premium Inverter</h3><div class="price">19.8M VND</div><p>Stronger fit if sleep comfort matters most. Trade-off: highest price and may require stock check by region.</p></div>
+      </div>
+      <p class="small" style="margin-top:22px">Every factual claim must map back to catalog, price, stock, promotion or policy data.</p>
+      <div class="footer"><span>07 · Experience</span><span>Explain the trade-off</span></div>
+    </section>
+
+    <section class="slide dark">
+      <div class="kicker">AI architecture</div>
+      <h2>AI where it helps, deterministic logic where it protects trust.</h2>
+      <div class="architecture">
+        <div class="arch-box"><b>Input guardrail</b><span>Scope, language, word limit, unsafe input and basic validation.</span></div>
+        <div class="arch-box highlight"><b>Intent + need extractor</b><span>Classify category, extract budget, constraints, preferences and missing variables.</span></div>
+        <div class="arch-box"><b>State merge</b><span>Session memory, confirmed assumptions, prior products and clarification history.</span></div>
+        <div class="arch-box"><b>Catalog retrieval</b><span>Search product data, price, stock, promotion, review and policy sources.</span></div>
+        <div class="arch-box highlight"><b>Hard filter + ranking</b><span>Filter by must-have constraints, then rank by fit-to-need and trade-off role.</span></div>
+        <div class="arch-box"><b>Grounded answer</b><span>Top 3, explanation, sources, uncertainty and next action.</span></div>
+      </div>
+      <div class="footer"><span>08 · Architecture</span><span>Grounded by design</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="two-col">
+        <div>
+          <div class="kicker">Trust design</div>
+          <h2>Trust is earned through expectation, explainability and control.</h2>
+          <p class="subtitle">The system should never pretend to know what the data does not show.</p>
+        </div>
+        <div class="stack">
+          <div class="card"><h3>Expectation</h3><p class="small">Make clear: this is a shopping advisor, not a guarantee of availability or final pricing.</p></div>
+          <div class="card"><h3>Explainability</h3><p class="small">Show why each product is recommended and which input factors mattered.</p></div>
+          <div class="card"><h3>Control</h3><p class="small">Let users change priorities, relax constraints, see sources, or hand off to a human consultant.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>09 · Human-centered AI</span><span>Calibrated trust</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">Evaluation</div>
+      <h2>Quality gate: measure the AI task, not just product usage.</h2>
+      <div class="metric-grid" style="margin-top:44px">
+        <div class="card metric"><b>≥90%</b><span>Need extraction accuracy for category, budget, room size and priority.</span></div>
+        <div class="card metric"><b>0</b><span>Critical hallucinations on price, promotion, stock or specs.</span></div>
+        <div class="card metric"><b>&lt;5s</b><span>Top 3 comparison response time on demo data.</span></div>
+      </div>
+      <div class="outcome-list">
+        <div class="outcome"><div class="badge">✓</div><div><b>Code checks</b><span>Schema, enum, source IDs, price bounds, latency and forbidden claims.</span></div></div>
+        <div class="outcome"><div class="badge">✓</div><div><b>Human review</b><span>Domain experts judge helpfulness, trade-off quality and customer-friendly language.</span></div></div>
+        <div class="outcome"><div class="badge">✓</div><div><b>LLM judge</b><span>Scale semantic checks after rubric calibration against human labels.</span></div></div>
+      </div>
+      <div class="footer"><span>10 · Evals</span><span>Application-level quality</span></div>
+    </section>
+
+    <section class="slide blue">
+      <div class="kicker">Pilot pathway</div>
+      <h2>Three-month pilot on one website/app or one product category.</h2>
+      <div class="metric-grid" style="margin-top:44px">
+        <div class="card metric"><b>1K–10K</b><span>Trial conversations with anonymized/demo customer contexts.</span></div>
+        <div class="card metric"><b>3 mo</b><span>Post-hackathon pilot with catalog, price, stock and policy data.</span></div>
+        <div class="card metric"><b>KPI</b><span>Correctness, no serious hallucination, usability, traceability and API readiness.</span></div>
+      </div>
+      <p class="subtitle">Partner support: cleaned/anonymized product data, domain expert review, test environment and business feedback.</p>
+      <div class="footer"><span>11 · Pilot</span><span>From demo to deployment</span></div>
+    </section>
+
+    <section class="slide">
+      <div class="kicker">48-hour build plan</div>
+      <h2>Ship a believable slice, not a full retail platform.</h2>
+      <div class="timeline">
+        <div class="milestone"><div class="day">0–6h</div><h3>Dataset + scenarios</h3><p>Prepare catalog sample, policy snippets and 20–30 customer need cases.</p></div>
+        <div class="milestone"><div class="day">6–18h</div><h3>Core agent</h3><p>Build extraction, clarification, deterministic filtering and ranker.</p></div>
+        <div class="milestone"><div class="day">18–34h</div><h3>Web demo</h3><p>Implement chat UI, Top 3 comparison, source display and fallback states.</p></div>
+        <div class="milestone"><div class="day">34–48h</div><h3>Evals + pitch</h3><p>Run test suite, log traces, polish demo story and pilot plan.</p></div>
+      </div>
+      <div class="footer"><span>12 · Execution</span><span>Focused MVP</span></div>
+    </section>
+
+    <section class="slide dark">
+      <div class="hero-shape"></div>
+      <div class="two-col wide-left">
+        <div>
+          <div class="kicker">Closing</div>
+          <h2>The winning product is not a chatbot. It is a trustworthy decision engine for retail.</h2>
+          <p class="subtitle">Start with air conditioners, prove decision quality, then expand across high-consideration electronics categories.</p>
+        </div>
+        <div class="stack-lg">
+          <div class="card"><h3>Build</h3><p class="small">Demo-ready AI advisor with Top 3 recommendations.</p></div>
+          <div class="card"><h3>Measure</h3><p class="small">Groundedness, need understanding, trade-off quality and conversion signals.</p></div>
+          <div class="card"><h3>Scale</h3><p class="small">Category-by-category rollout with trace-driven eval flywheel.</p></div>
+        </div>
+      </div>
+      <div class="footer"><span>Thank you</span><span>AI Product Advisor</span></div>
+    </section>
+
+  </main>
+  <div class="controls">
+    <button id="prev">← Prev</button>
+    <div class="counter" id="counter">1 / 13</div>
+    <button id="next">Next →</button>
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    const counter = document.getElementById('counter');
+    const progress = document.getElementById('progress');
+    let current = 0;
+
+    function show(index) {
+      current = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, i) => slide.classList.toggle('active', i === current));
+      prev.disabled = current === 0;
+      next.disabled = current === slides.length - 1;
+      counter.textContent = `${current + 1} / ${slides.length}`;
+      progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+      const hash = `slide-${current + 1}`;
+      history.replaceState(null, '', `#${hash}`);
+    }
+
+    prev.addEventListener('click', () => show(current - 1));
+    next.addEventListener('click', () => show(current + 1));
+    document.addEventListener('keydown', (e) => {
+      if (['ArrowRight', 'PageDown', ' '].includes(e.key)) show(current + 1);
+      if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) show(current - 1);
+      if (e.key === 'Home') show(0);
+      if (e.key === 'End') show(slides.length - 1);
+    });
+
+    const match = location.hash.match(/slide-(\d+)/);
+    if (match) show(Number(match[1]) - 1); else show(0);
+  </script>
+</body>
+</html>
