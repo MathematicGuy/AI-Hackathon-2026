@@ -86,7 +86,7 @@ def test_recommendation_uses_stable_sku_and_merges_server_badges():
     }
     assert presentation.products[0].productidweb == "web-1"
     assert presentation.products[0].image_url is None
-    assert presentation.products[0].product_url == "https://www.dienmayxanh.com/p/web-1"
+    assert presentation.products[0].product_url is None
     assert presentation.products[0].rating is None
     assert presentation.products[0].sold_count is None
     assert presentation.comparison_rows == []

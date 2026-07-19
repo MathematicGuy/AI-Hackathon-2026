@@ -128,17 +128,6 @@ def _comparison_attribute_labels(
     return labels[:3]
 
 
-def _product_url(product: GenericProduct) -> str | None:
-    """Construct the canonical DMX product URL from productidweb when valid."""
-    pid = product.productidweb
-    if not pid or not isinstance(pid, str):
-        return None
-    pid = pid.strip()
-    if not pid or len(pid) > 128:
-        return None
-    return _DMX_PRODUCT_URL_PREFIX + pid
-
-
 def _present_product(
     product: GenericProduct,
     *,
@@ -161,7 +150,7 @@ def _present_product(
         badges=_badges(badge_codes),
         highlights=_highlights(product),
         image_url=None,
-        product_url=_product_url(product),
+        product_url=None,
         rating=None,
         sold_count=None,
     )
