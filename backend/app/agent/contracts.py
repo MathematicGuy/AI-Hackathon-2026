@@ -59,6 +59,9 @@ class AgentUnderstanding(BaseModel):
     confidence: float = Field(ge=0, le=1)
     need_patch: GenericNeed = Field(default_factory=GenericNeed)
     product_refs: list[str] = Field(default_factory=list)
+    # Explicit deletions ("bỏ giới hạn giá") — merge semantics treat None as
+    # "keep", so removals need their own channel. Currently: "budget".
+    clear_fields: list[str] = Field(default_factory=list)
 
 
 @dataclass
@@ -96,3 +99,46 @@ class AgentState:
 
     def shown_for(self, category_code: str) -> list[str]:
         return self.shown_product_ids.setdefault(category_code, [])
+
+    # --- durable session memory (JSON write-through; live-test 4) ---
+    # Only the fields that constitute the customer's memory persist; per-turn
+    # ephemera (guardrail flags, recent turns) stay in-process.
+
+    def to_json_dict(self) -> dict:
+        return {
+            "session_id": self.session_id,
+            "turn_number": self.turn_number,
+            "current_intent": self.current_intent,
+            "need": self.need.model_dump(),
+            "previous_needs": {
+                category: need.model_dump()
+                for category, need in self.previous_needs.items()
+            },
+            "asked_questions": dict(self.asked_questions),
+            "clarification_count": dict(self.clarification_count),
+            "shown_product_ids": dict(self.shown_product_ids),
+            "rejected_product_ids": dict(self.rejected_product_ids),
+            "last_presented_ids": list(self.last_presented_ids),
+            "pending_question_key": self.pending_question_key,
+            "pending_question_text": self.pending_question_text,
+        }
+
+    @classmethod
+    def from_json_dict(cls, payload: dict) -> "AgentState":
+        return cls(
+            session_id=payload.get("session_id", "local"),
+            turn_number=payload.get("turn_number", 0),
+            current_intent=payload.get("current_intent", "new_search"),
+            need=GenericNeed(**payload.get("need", {})),
+            previous_needs={
+                category: GenericNeed(**need)
+                for category, need in payload.get("previous_needs", {}).items()
+            },
+            asked_questions=dict(payload.get("asked_questions", {})),
+            clarification_count=dict(payload.get("clarification_count", {})),
+            shown_product_ids=dict(payload.get("shown_product_ids", {})),
+            rejected_product_ids=dict(payload.get("rejected_product_ids", {})),
+            last_presented_ids=list(payload.get("last_presented_ids", [])),
+            pending_question_key=payload.get("pending_question_key"),
+            pending_question_text=payload.get("pending_question_text"),
+        )

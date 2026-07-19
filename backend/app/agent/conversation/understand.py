@@ -42,6 +42,26 @@ _SMALLTALK = (
     "đồng ý", "ok em", "oke", "được đó", "hay đấy", "tốt quá", "ừ em",
 )
 
+# Bare agreement tokens — a whole-message exact match ("ok", "ừ") is small
+# talk agreement, never unsupported (live-test 4: short messages must flow).
+_AGREEMENT_TOKENS = {
+    "ok", "oke", "okê", "okie", "ừ", "uh", "ừm", "um", "dạ", "vâng",
+    "đồng ý", "yes", "được",
+}
+
+# The customer wants the stated price window GONE ("không tra trong mức đó
+# nữa") — merge semantics cannot delete, so this raises clear_fields.
+# OLDREF phrases reference the PREVIOUS window: any number in the sentence
+# ("không tra trong mức 15 triệu nữa") is the old value, never a new budget.
+_BUDGET_CLEAR_OLDREF = (
+    "không tra trong mức", "ngoài mức giá", "bỏ tầm giá", "bỏ khoảng giá",
+    "bỏ giới hạn giá", "bỏ giới hạn ngân sách",
+)
+_BUDGET_CLEAR = _BUDGET_CLEAR_OLDREF + (
+    "không giới hạn giá", "không giới hạn ngân sách", "thoải mái ngân sách",
+    "khoảng giá khác", "tầm giá khác", "đừng lọc giá",
+)
+
 # Money units tolerate live-chat typos: "trịu", "trieu", bare "tr", "củ".
 _MILLION_UNIT = r"triệu|trịu|trieu|tr\b|củ\b"
 _BUDGET = re.compile(
@@ -150,9 +170,30 @@ def fallback_understanding(
                 "room_area": area_match.group(0)
             }
 
+    # A budget-clear phrase lifts the price window. OLDREF phrases treat any
+    # number in the sentence as the OLD window ("không tra trong mức 15 triệu
+    # nữa" must not re-set 15tr); other clear phrases with a new number let
+    # the parsed budget override instead.
+    clear_fields: list[str] = []
+    if any(k in low for k in _BUDGET_CLEAR_OLDREF):
+        clear_fields.append("budget")
+        need_kwargs.pop("budget_min", None)
+        need_kwargs.pop("budget_max", None)
+        budget_min = budget_max = None
+    elif (
+        any(k in low for k in _BUDGET_CLEAR)
+        and budget_min is None
+        and budget_max is None
+    ):
+        clear_fields.append("budget")
+
     # Price/promotion questions are catalog questions, never policy — even if
     # the LLM route is down (Cường's live-test finding).
-    if any(k in low for k in _STOP):
+    if low.strip(" .!~") in _AGREEMENT_TOKENS:
+        intent = "smalltalk"
+    elif clear_fields:
+        intent = "change_constraints"
+    elif any(k in low for k in _STOP):
         intent = "stop"
     elif any(k in low for k in _PRICE_RANGE):
         intent = "price_range_query"
@@ -196,6 +237,7 @@ def fallback_understanding(
         intent=intent,
         confidence=FALLBACK_CONFIDENCE,
         need_patch=GenericNeed(**need_kwargs),
+        clear_fields=clear_fields,
     )
 
 
@@ -211,7 +253,15 @@ def _augment_understanding(
     patch = understanding.need_patch
     low = message.lower()
     updates: dict = {}
-    if patch.budget_min is None and patch.budget_max is None:
+    oldref_clear = any(k in low for k in _BUDGET_CLEAR_OLDREF)
+    if oldref_clear:
+        # Any number in an old-reference clear sentence is the OLD window —
+        # neutralize a budget the model may have re-parsed from it.
+        if patch.budget_min is not None:
+            updates["budget_min"] = None
+        if patch.budget_max is not None:
+            updates["budget_max"] = None
+    elif patch.budget_min is None and patch.budget_max is None:
         budget_min, budget_max = _parse_budget_vnd(message)
         if budget_min is not None:
             updates["budget_min"] = budget_min
@@ -229,10 +279,25 @@ def _augment_understanding(
             constraints["room_area"] = area_match.group(0)
     if constraints != dict(patch.attribute_constraints):
         updates["attribute_constraints"] = constraints
-    if not updates:
+    clear_fields = list(understanding.clear_fields)
+    if "budget" not in clear_fields and (
+        oldref_clear
+        or (
+            any(k in low for k in _BUDGET_CLEAR)
+            and patch.budget_min is None
+            and patch.budget_max is None
+            and "budget_min" not in updates
+            and "budget_max" not in updates
+        )
+    ):
+        clear_fields.append("budget")
+    if not updates and clear_fields == understanding.clear_fields:
         return understanding
     return understanding.model_copy(
-        update={"need_patch": patch.model_copy(update=updates)}
+        update={
+            "need_patch": patch.model_copy(update=updates),
+            "clear_fields": clear_fields,
+        }
     )
 
 

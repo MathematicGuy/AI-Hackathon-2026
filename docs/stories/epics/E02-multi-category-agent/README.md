@@ -59,6 +59,15 @@ with thang-đo transparency, multi-part cold-start replies are captured in
 full (monitor size ranges filter the pool), washer specs are live again
 (stale "no spec columns" note retired), and all placeholder spec values are
 filtered before any claim (golden AGENT-G-037…042; suite 186 with the
-36-case baseline intact). Deferred: policy retrieval over pgvector (the
+36-case baseline intact). Round 4 (2026-07-19) removed the short-message
+limit at every layer (bare "ok"/"ừ" are exact-match agreements), made
+comparison tool-driven ("So sánh 2 mẫu rẻ nhất/nổi bật" fetches its own
+budget-aware pair), added explicit budget clear
+(`AgentUnderstanding.clear_fields` — "không tra trong mức đó nữa" lifts the
+window and re-opens the range question, old-reference numbers never
+re-parsed), introduced JSON write-through session memory
+(`AGENT_SESSION_DIR`, inspectable + restart-safe), and pinned a determinism
+test (same scripted conversation twice → byte-identical replies); golden
+AGENT-G-044…048, suite 228. Deferred: policy retrieval over pgvector (the
 platform has no knowledge-base tables yet); Langfuse judge wiring (keys not
 configured).

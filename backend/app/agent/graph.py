@@ -489,7 +489,7 @@ async def _run_turn_core(
             outcome="unsupported",
         )
 
-    return await _product_flow(state, deps, intent, flags, observer)
+    return await _product_flow(state, deps, intent, flags, observer, low)
 
 
 def _state_summary(state: AgentState) -> str:
@@ -966,6 +966,7 @@ async def _product_flow(
     intent: str,
     flags: list[str],
     observer: AgentObserver,
+    low: str = "",
 ) -> AgentReply:
     need = state.need
     category = need.category_code
@@ -980,7 +981,7 @@ async def _product_flow(
     registry_category = deps.registry.by_code(category)
 
     if intent == "compare_products":
-        return _compare_flow(state, deps, flags, observer)
+        return _compare_flow(state, deps, flags, observer, low)
 
     if intent == "check_availability":
         return _observed_response(
@@ -1186,26 +1187,66 @@ async def _product_flow(
     return reply
 
 
+def _pick_comparison_pair(
+    state: AgentState, deps: AgentDependencies, low: str
+) -> tuple[str, ...]:
+    """No products presented yet: the compare tools ARE available — fetch two
+    candidates matching the ask ("2 mẫu rẻ nhất", "nổi bật") instead of
+    bouncing the question back (live-test 4 finding)."""
+    category = state.need.category_code
+    if category is None:
+        return ()
+    result = search_products(
+        deps.products,
+        category_code=category,
+        budget_min=state.need.budget_min,
+        budget_max=state.need.budget_max,
+        limit=20,
+        budget_slack=0.08,
+    )
+    priced = [p for p in result.items if p.effective_price is not None]
+    if len(priced) < 2:
+        return ()
+    if any(k in low for k in ("rẻ nhất", "giá thấp", "rẻ")):
+        pair = priced[:2]  # search sorts price-ascending
+    elif any(k in low for k in ("đắt nhất", "cao cấp", "xịn")):
+        pair = sorted(
+            priced, key=lambda p: (-p.effective_price, p.productidweb)
+        )[:2]
+    else:  # "nổi bật"/default: deepest promotions, cheapest as fallback
+        discounted = sorted(
+            (p for p in priced if p.promotion.discount_percent),
+            key=lambda p: (-p.promotion.discount_percent, p.productidweb),
+        )
+        pair = discounted[:2] if len(discounted) >= 2 else priced[:2]
+    return tuple(p.productidweb for p in pair)
+
+
 def _compare_flow(
     state: AgentState,
     deps: AgentDependencies,
     flags: list[str],
     observer: AgentObserver,
+    low: str = "",
 ) -> AgentReply:
     ids = tuple(state.last_presented_ids[:2])
+    if len(ids) < 2:
+        ids = _pick_comparison_pair(state, deps, low)
     if len(ids) < 2:
         return _observed_response(
             observer,
             AgentReply(
                 text=(
-                    "Dạ anh/chị muốn so sánh hai mẫu nào ạ? Em có thể gợi ý vài mẫu "
-                    "trước rồi mình so sánh chi tiết nhé ạ?"
+                    "Dạ anh/chị muốn so sánh sản phẩm thuộc ngành hàng nào ạ "
+                    "(máy lạnh, tủ lạnh, màn hình...)? Em chọn các mẫu đáng "
+                    "chú ý nhất rồi so sánh chi tiết ngay ạ."
                 ),
                 intent="compare_products",
                 flags=flags,
             ),
             outcome="comparison_clarification",
         )
+    state.last_presented_ids = list(ids)
     comparison = compare_products(deps.products, ids)
     lines = ["Dạ em so sánh hai mẫu anh/chị đang xem ạ:", ""]
     for item in comparison.items:
@@ -1305,7 +1346,12 @@ def _compare_flow(
         text = degrade_to_facts(allowed)
     reply = _observed_response(
         observer,
-        AgentReply(text=text, intent="compare_products", flags=flags),
+        AgentReply(
+            text=text,
+            intent="compare_products",
+            flags=flags,
+            presented_ids=list(ids),
+        ),
         outcome="comparison",
     )
     _observe_output_validation(

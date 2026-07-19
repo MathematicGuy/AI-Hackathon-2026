@@ -41,6 +41,19 @@ def apply_turn(state: AgentState, understanding: AgentUnderstanding) -> AgentSta
     new_category = patch.category_code
     current_category = state.need.category_code
 
+    # Explicit deletions first ("không tra trong mức đó nữa"): merge semantics
+    # treat None as "keep", so removals arrive via clear_fields. Clearing the
+    # budget also un-answers the budget question so the bot naturally asks for
+    # the new range.
+    if "budget" in understanding.clear_fields:
+        state.need = state.need.model_copy(
+            update={"budget_min": None, "budget_max": None}
+        )
+        if current_category is not None:
+            asked = state.asked_questions.get(current_category)
+            if asked and "budget" in asked:
+                asked.remove("budget")
+
     if (
         new_category is not None
         and current_category is not None

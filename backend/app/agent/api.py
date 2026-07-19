@@ -1,13 +1,17 @@
 """FastAPI endpoint for the E02 agent: POST /api/v1/agent/respond.
 
-Sessions are held in-process (demo-grade); durable checkpointer persistence is
-deferred and recorded on US-206. Separate from the M1 rig's advisor endpoint.
+Session memory is held in-process with a JSON write-through per session
+(`AGENT_SESSION_DIR`, default data/agent-sessions/): the fixed-format need,
+per-category archives, asked/shown lists. Inspectable on disk and it survives
+restarts. Separate from the M1 rig's advisor endpoint.
 """
 
 import asyncio
 import json
 import os
+import re
 import uuid
+from pathlib import Path
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,17 +44,57 @@ class FeedbackRequest(BaseModel):
     rating: str = Field(pattern="^(like|dislike)$")
 
 
+def _session_dir() -> Path:
+    return Path(os.environ.get("AGENT_SESSION_DIR") or Path("data") / "agent-sessions")
+
+
+def _session_path(session_id: str) -> Path:
+    safe = re.sub(r"[^A-Za-z0-9_-]", "_", session_id)[:80]
+    return _session_dir() / f"{safe}.json"
+
+
+def _load_session(session_id: str) -> AgentState | None:
+    try:
+        path = _session_path(session_id)
+        if not path.exists():
+            return None
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return AgentState.from_json_dict(payload)
+    except Exception:
+        return None  # a corrupt file must never break the turn
+
+
+def _persist_session(state: AgentState) -> None:
+    try:
+        directory = _session_dir()
+        directory.mkdir(parents=True, exist_ok=True)
+        path = _session_path(state.session_id)
+        path.write_text(
+            json.dumps(state.to_json_dict(), ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+    except Exception:
+        pass  # persistence is best-effort; the in-process state is primary
+
+
 def create_agent_router(deps: AgentDependencies) -> APIRouter:
     router = APIRouter()
     sessions: dict[str, AgentState] = {}
     feedback_log: list[dict] = []
+
+    def _session(session_id: str) -> AgentState:
+        state = sessions.get(session_id)
+        if state is None:
+            state = _load_session(session_id) or AgentState(session_id=session_id)
+            sessions[session_id] = state
+        return state
 
     @router.post("/api/v1/agent/respond", response_model=AgentResponse)
     async def respond(request: AgentRequest) -> AgentResponse:
         session_id = request.session_id or f"session-{uuid.uuid4().hex[:12]}"
         request_id = f"request-{uuid.uuid4().hex[:12]}"
         trace_id = uuid.uuid4().hex
-        state = sessions.setdefault(session_id, AgentState(session_id=session_id))
+        state = _session(session_id)
         observer = deps.observer or noop_agent_observer()
         try:
             with observer.start_turn(
@@ -66,6 +110,7 @@ def create_agent_router(deps: AgentDependencies) -> APIRouter:
             ) as turn:
                 reply = await run_turn(state, request.message, deps)
                 turn.update(output={"reply": reply, "state": state})
+            _persist_session(state)
         finally:
             try:
                 observer.flush()
@@ -88,10 +133,11 @@ def create_agent_router(deps: AgentDependencies) -> APIRouter:
         events). Token-level streaming arrives when the sell step itself runs
         on a streaming LLM."""
         session_id = request.session_id or f"session-{uuid.uuid4().hex[:12]}"
-        state = sessions.setdefault(session_id, AgentState(session_id=session_id))
+        state = _session(session_id)
 
         async def generate():
             reply = await run_turn(state, request.message, deps)
+            _persist_session(state)
             text = reply.text
             step = 28
             for start in range(0, len(text), step):

@@ -112,7 +112,8 @@ Schema:
     "location": khu vực hoặc null,
     "requested_roles": [] hoặc ["best_price"] nếu khách chỉ muốn rẻ nhất, ["most_expensive"] nếu khách muốn mẫu đắt/cao cấp nhất
   }},
-  "product_refs": []
+  "product_refs": [],
+  "clear_fields": [] hoặc ["budget"] khi khách muốn BỎ khung giá đã đặt
 }}
 
 Bảng mã ngành: {categories}
@@ -139,6 +140,10 @@ QUY TẮC:
   "làm việc, xem phim", budget_min 3000000, budget_max 5000000.
 - "trong range/tầm tiền anh vừa nói" -> giữ nguyên budget đã có trong bối cảnh,
   intent "new_search"; KHÔNG hỏi lại ngân sách đã trả lời.
+- Khách muốn BỎ/ĐỔI khung giá đã đặt ("không tra trong mức đó nữa", "khoảng
+  giá khác", "bỏ giới hạn ngân sách") -> "clear_fields": ["budget"], KHÔNG
+  điền budget (số trong câu là mức CŨ). Nếu khách nêu khung giá MỚI kèm số
+  ("đổi sang tầm 20-25 triệu") -> điền budget mới, KHÔNG cần clear_fields.
 - Khách muốn mẫu đắt nhất/cao cấp nhất -> requested_roles ["most_expensive"],
   intent "more_recommendations" nếu đang tư vấn dở.
 - Đang tư vấn dở một ngành (xem bối cảnh) thì câu nói ngắn mơ hồ về "máy/mẫu/cái đó"
@@ -182,6 +187,9 @@ def _coerce_types(payload: dict) -> dict:
             payload["confidence"] = float(confidence)
         except ValueError:
             payload["confidence"] = 0.5
+    clear_fields = payload.get("clear_fields")
+    if isinstance(clear_fields, str):
+        payload["clear_fields"] = [clear_fields]
     return payload
 
 

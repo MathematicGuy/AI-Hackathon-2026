@@ -393,15 +393,6 @@ export function ChatbotAssistant() {
     if (!query || isSending) {
       return;
     }
-    if (query.length < 2) {
-      showToast({
-        variant: "error",
-        title: "Tin nhắn quá ngắn",
-        description: "Vui lòng nhập ít nhất 2 ký tự.",
-      });
-      return;
-    }
-
     setMessages((current) => [
       ...current,
       {

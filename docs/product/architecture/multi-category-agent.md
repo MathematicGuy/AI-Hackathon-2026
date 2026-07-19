@@ -80,13 +80,19 @@ guard → understand → merge_need → route
 `category_code?, usage_purpose?, budget_min?, budget_max?, brand_prefs[],
 priorities[], attribute_constraints{}, location?`.
 
-Three update modes:
+Update modes:
 
 1. **Incremental patch-merge** — explicit values win, omitted fields persist,
    explicit null is not deletion (US-104 semantics).
 2. **Rewrite on change-of-mind** — a correction replaces the stated value
-   immediately.
-3. **Reset on category/shopping-intent switch** — the current need is archived
+   immediately ("nâng lên tầm 20-25 triệu" overrides the old window).
+3. **Explicit clear** (round 4) — removals travel on
+   `AgentUnderstanding.clear_fields` because merge semantics cannot delete:
+   "không tra trong mức đó nữa"/"bỏ giới hạn giá"/"khoảng giá khác" clears
+   budget_min+budget_max and un-answers the budget question so the bot asks
+   for the new range; numbers inside old-reference phrases are never
+   re-parsed as a new budget.
+4. **Reset on category/shopping-intent switch** — the current need is archived
    to `previous_needs[]` (recoverable when the user returns to that category),
    a fresh need starts for the new category and re-triggers that category's
    cold-start script; explicit session-wide preferences (brand, location)
@@ -195,6 +201,13 @@ không công bố" where data is missing. It takes precedence over
 question_clarification. Comparison (`_compare_flow`) gained the same
 dimension table with per-axis verdicts.
 
+Round-4 note (2026-07-19): comparison is tool-driven even with nothing
+presented yet — "So sánh 2 mẫu máy lạnh rẻ nhất"/"nổi bật" fetches its own
+pair (cheapest / priciest / deepest-discount qualifiers, budget-aware) and
+compares immediately; the pair becomes `last_presented_ids` so deep
+follow-ups chain. Bare agreements ("ok", "ừ") are exact-match small talk —
+no message-length limit exists at any layer (frontend or backend).
+
 Routing notes (2026-07-19 live-test round): price-range and running-promotion
 questions are catalog questions answered from the aggregate tool (never
 policy); catalog exploration ("bán cái gì", "có những loại hàng nào") returns
@@ -240,6 +253,11 @@ produces the full grounded text, which is then chunk-streamed as NDJSON
 streaming arrives when the sell step itself runs on a streaming LLM.
 `POST /api/v1/agent/feedback` records like/dislike per assistant message
 (in-memory + server log; Langfuse hookup deferred with the judge wiring).
+Session memory write-throughs to JSON per session (`AGENT_SESSION_DIR`,
+default `data/agent-sessions/`): the fixed-format need, per-category
+archives, asked/shown lists, pending question — inspectable on disk and it
+survives restarts; corrupt or missing files never break a turn (best-effort,
+in-process state stays primary).
 Frontend edit is replay-based: editing a user message cuts the conversation
 back to that point and silently replays the earlier user turns on a fresh
 session before sending the edited text — real edit semantics over the

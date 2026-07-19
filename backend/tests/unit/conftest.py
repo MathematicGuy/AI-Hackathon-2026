@@ -88,3 +88,10 @@ class RecordingObserver:
 @pytest.fixture
 def recording_observer() -> RecordingObserver:
     return RecordingObserver()
+
+
+@pytest.fixture(autouse=True)
+def _isolated_agent_sessions(tmp_path, monkeypatch):
+    """The agent API write-throughs session memory to AGENT_SESSION_DIR; tests
+    must never read or pollute the real data/agent-sessions directory."""
+    monkeypatch.setenv("AGENT_SESSION_DIR", str(tmp_path / "agent-sessions"))
