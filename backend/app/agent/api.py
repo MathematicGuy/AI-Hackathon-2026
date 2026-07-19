@@ -22,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from backend.app.agent.contracts import AgentState
+from backend.app.agent.contracts import AgentPresentation, AgentState
 from backend.app.agent.graph import AgentDependencies, run_turn
 from backend.app.catalog_images import RepresentativeImageMapping, load_default_mapping
 from backend.app.observability import noop_agent_observer
@@ -87,41 +87,17 @@ class AgentRequest(BaseModel):
     message: str = Field(min_length=1)
 
 
-class ComparisonProduct(BaseModel):
-    id: str
-    name: str
-    brand: str | None = None
-    effective_price: int | None = None
-    list_price: int | None = None
-    discount_percent: float | None = None
-    gift: str | None = None
-
-
-class ComparisonRow(BaseModel):
-    label: str
-    unit: str = ""
-    explain: str = ""
-    values: dict[str, str]
-    winner_id: str | None = None
-
-
-class ComparisonView(BaseModel):
-    products: list[ComparisonProduct]
-    rows: list[ComparisonRow] = []
-    price_delta: int | None = None
-
-
 class AgentResponse(BaseModel):
     session_id: str
     request_id: str
     trace_id: str
     intent: str
     text: str
-    flags: list[str] = []
-    presented_ids: list[str] = []
-    # Present only on comparison turns. Additive: a client that ignores it
-    # sees exactly the pre-US-125 envelope.
-    comparison: ComparisonView | None = None
+    flags: list[str] = Field(default_factory=list)
+    presented_ids: list[str] = Field(default_factory=list)
+    # Server-owned render-ready view (ADR-0017). Additive: a client that
+    # ignores it still gets the grounded prose through `text`.
+    presentation: AgentPresentation | None = None
     # Presentation-only imagery for the first product in the turn (US-126).
     # Null on non-product turns; never persisted to a catalog row.
     image_url: str | None = None
@@ -197,37 +173,6 @@ def create_agent_router(
             sessions.move_to_end(session_id)
         return state
 
-    def serialize_comparison(reply) -> dict | None:
-        """Structured comparison view, or None on a non-comparison turn."""
-        view = getattr(reply, "comparison", None)
-        if view is None:
-            return None
-        return {
-            "products": [
-                {
-                    "id": product.productidweb,
-                    "name": product.name,
-                    "brand": product.brand,
-                    "effective_price": product.effective_price,
-                    "list_price": product.list_price,
-                    "discount_percent": product.discount_percent,
-                    "gift": product.gift,
-                }
-                for product in view.products
-            ],
-            "rows": [
-                {
-                    "label": row.label,
-                    "unit": row.unit,
-                    "explain": row.explain,
-                    "values": row.values,
-                    "winner_id": row.winner_id,
-                }
-                for row in view.rows
-            ],
-            "price_delta": view.price_delta,
-        }
-
     def serialize_representative_image(reply, agent_deps: AgentDependencies) -> dict:
         """Project one disclosed image without changing the agent graph reply."""
         product_ids = list(getattr(reply, "presented_ids", []) or [])
@@ -291,7 +236,7 @@ def create_agent_router(
             text=reply.text,
             flags=reply.flags,
             presented_ids=reply.presented_ids,
-            comparison=serialize_comparison(reply),
+            presentation=reply.presentation,
             **image,
         )
 
@@ -326,7 +271,9 @@ def create_agent_router(
                     "intent": reply.intent,
                     "flags": reply.flags,
                     "presented_ids": reply.presented_ids,
-                    "comparison": serialize_comparison(reply),
+                    "presentation": (
+                        reply.presentation.model_dump() if reply.presentation else None
+                    ),
                     **image,
                 },
                 ensure_ascii=False,

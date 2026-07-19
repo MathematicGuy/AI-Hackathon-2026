@@ -2,15 +2,15 @@
 
 ## Outcome
 
-Make the existing chatbot in `frontend/` easier to scan and operate on desktop
-and mobile while preserving the server-owned recommendation contract.
+Replace the hard-coded chatbot comparison in `frontend/` with an additive,
+server-owned E02 presentation payload that matches the storefront renderer.
 
 ## Owner
 
 - Tracker alias: `FRONTEND`
 - Member identity: `nguyen-phuong-hoai-ngoc`
-- Story: `US-124` (`implemented`)
-- Branch: `frontend`
+- Story: `US-125` (`in_progress` after ownership and verification registration)
+- Branch: `deploy` (assigned by Ngọc's explicit human direction on 2026-07-19 for US-125 planning)
 - Worktree: `E:\VAI\AI-Hackathon-2026`
 
 ## Ownership Boundary
@@ -20,18 +20,41 @@ This lane owns only:
 - `frontend/src/components/ChatbotAssistant.tsx`
 - `frontend/src/components/chat/ChatComparisonResult.tsx`
 - `frontend/src/app/globals.css`
-- `docs/stories/epics/E01-air-conditioner-advisor-m1/US-124-independent-chatbot-ux.md`
+- `frontend/src/lib/agent-api.ts`
+- `frontend/src/types/agent.ts`
+- targeted US-125 tests and test setup under `frontend/src/`
+- `frontend/package.json`
+- `frontend/package-lock.json`
+- `frontend/vitest.config.ts`
+- `backend/app/agent/api.py`
+- `backend/app/agent/contracts.py`
+- `backend/app/agent/graph.py`
+- `backend/app/agent/respond.py`
+- `backend/app/agent/presentation.py`
+- `backend/tests/contract/test_agent_api_contract.py`
+- `backend/tests/unit/agent/test_presentation.py`
+- `backend/tests/integration/api/test_agent_endpoint.py` when cross-stack proof requires it
+- `scripts/verify-us125.ps1`
+- `scripts/verify-us125-ui.py`
+- `docs/decisions/0017-e02-structured-chatbot-presentation.md`
+- `docs/stories/epics/E02-multi-category-agent/US-125-structured-storefront-chatbot-presentation/`
 - `docs/team/now/FRONTEND-NOW.md`
 
-The explicit human assignment also authorizes the one-time `FRONTEND` identity
-row in `docs/team/now/README.md`. Do not edit another member's tracker, backend
-files, product contracts, ranking logic, or catalog data.
+Ngọc's explicit human direction on 2026-07-19 authorizes this tracker and its
+identity-map row to use branch `deploy` for US-125. The same direction assigns
+only the E02 presentation-contract backend files named above because the prior
+E02 contract had not been finalized. Cường retains all other E02 scope. Do not
+edit another member's tracker, ranking logic, catalog data, or unnamed backend
+files.
 
 ## Dependencies
 
-- The UX slice operates on the existing mock chatbot and has no backend dependency.
-- Real advisor API integration remains dependency-gated on M1.5-M1.7 and is out
-  of scope for this UI review.
+- ADR-0017 accepts an additive `presentation` payload on the shipped E02
+  `/api/v1/agent/respond` endpoint while retaining `text` as fallback.
+- Ngọc explicitly owns the named E02 presentation-contract slice on `deploy`;
+  backend contract/test work precedes frontend consumption.
+- The backend contract must ship before `frontend/` depends on `presentation`.
+- `frontend-mvp/` and the M1 `/api/v1/advisor/respond` path are out of scope.
 - The frontend must render supplied fields without recalculating eligibility,
   ranking, role badges, prices, or evidence.
 
@@ -39,21 +62,24 @@ files, product contracts, ranking logic, or catalog data.
 
 | Order | Work | Status |
 | ---: | --- | --- |
-| 1 | Register and align US-124 with current product authority | Complete |
-| 2 | Capture a visual and interaction baseline | Complete |
-| 3 | Apply bounded chatbot UX improvements | Complete |
-| 4 | Run lint, typecheck, build, and desktop/mobile visual checks | Complete |
+| 1 | Register intake, ADR-0017, and US-125 plan | Complete |
+| 2 | Assign E02 presentation files and register verification | Complete |
+| 3 | Add and prove the structured E02 presentation contract | Complete |
+| 4 | Replace frontend query heuristics/static comparison with typed rendering | In progress |
+| 5 | Run contract, cross-stack E2E, build, and desktop/mobile proof | Pending |
 
 ## Verification
 
 ```powershell
+uv run --no-project --isolated --python 3.12 --with-editable ".[test]" --no-env-file python -m pytest backend/tests/contract/test_agent_api_contract.py backend/tests/integration/api/test_agent_endpoint.py -q
 npm --prefix frontend run lint
 npm --prefix frontend run typecheck
 npm --prefix frontend run build
 ```
 
-Visual proof must cover desktop and mobile layouts, keyboard focus, readable
-message hierarchy, composer usability, and comparison-result scanning.
+The Harness verification command is `scripts/verify-us125.ps1`. Visual proof
+must cover desktop and mobile layouts, keyboard focus, text fallback,
+recommendation cards, and comparison-result scanning.
 
 ## Constraints
 
@@ -61,4 +87,6 @@ message hierarchy, composer usability, and comparison-result scanning.
 - Keep Vietnamese customer-facing copy concise and legible.
 - Missing product data remains visibly unknown; never infer it.
 - A product renders once even when it carries multiple role badges.
+- Never show comparison UI unless the server supplies a comparison presentation.
+- Never use `frontend-mvp/` as an implementation or runtime dependency.
 - Ignore `resources/`.

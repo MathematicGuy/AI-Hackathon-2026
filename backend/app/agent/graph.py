@@ -20,7 +20,7 @@ from backend.app.agent.catalog.dimensions import (
     rankable,
 )
 from backend.app.agent.catalog.registry import CategoryRegistry
-from backend.app.agent.contracts import AgentState
+from backend.app.agent.contracts import AgentPresentation, AgentState
 from backend.app.agent.conversation import coldstart, memory
 from backend.app.agent.conversation.domain_rules import apply_domain_filters
 from backend.app.agent.conversation.understand import (
@@ -33,6 +33,10 @@ from backend.app.agent.policies.answer import (
     display_source,
 )
 from backend.app.agent.policies.corpus import PolicyCorpus
+from backend.app.agent.presentation import (
+    build_comparison_presentation,
+    build_recommendation_presentation,
+)
 from backend.app.agent.respond import format_trieu, format_vnd, render_suggestions
 from backend.app.agent.tools.aggregate import category_overview
 from backend.app.agent.tools.compare import (
@@ -41,7 +45,7 @@ from backend.app.agent.tools.compare import (
     compare_products,
 )
 from backend.app.agent.tools.search import search_products
-from backend.app.agent.tools.suggest import suggest_products
+from backend.app.agent.tools.suggest import Suggestions, suggest_products
 from backend.app.agent.validate import degrade_to_facts, validate_response
 from backend.app.guardrails.input_rules import evaluate_input
 from backend.app.observability import AgentObserver, noop_agent_observer
@@ -121,6 +125,14 @@ STOP_REPLY = (
     "anh/chị cứ nhắn em nhé ạ!"
 )
 
+_AMBIGUOUS_PRODUCT_IDENTITY_REPLY = (
+    "Dạ em chưa thể xác định an toàn từng phiên bản sản phẩm để hiển thị ạ. "
+    "Anh/chị vui lòng chọn lại model hoặc SKU cụ thể để em tư vấn chính xác nhé?"
+)
+_AMBIGUOUS_PRODUCT_IDENTITY_WARNING = (
+    "Không thể hiển thị sản phẩm vì nhiều phiên bản dùng chung một mã web."
+)
+
 
 @dataclass
 class AgentDependencies:
@@ -161,6 +173,8 @@ class AgentReply:
     # Set only on comparison turns, so the client renders the same evidence
     # the text was built from (US-125). None everywhere else.
     comparison: ComparisonView | None = None
+    # Server-owned render-ready view the API exposes (ADR-0017).
+    presentation: AgentPresentation = field(default_factory=AgentPresentation)
 
 
 def _observer(deps: AgentDependencies) -> AgentObserver:
@@ -710,6 +724,13 @@ def _capture_pending_answer(state, message: str, understanding):
     return understanding
 
 
+def _has_ambiguous_winner_identity(suggestions: Suggestions) -> bool:
+    records_by_web_id: dict[str, set[int]] = {}
+    for product in suggestions.winners.values():
+        records_by_web_id.setdefault(product.productidweb, set()).add(id(product))
+    return any(len(record_ids) > 1 for record_ids in records_by_web_id.values())
+
+
 _COOLING_MARKERS = ("nóng", "oi bức", "nóng bức")
 _THANKS_MARKERS = ("cảm ơn", "cám ơn")
 _AGREE_MARKERS = ("đồng ý", "ok", "oke", "được đó", "ừ")
@@ -1121,6 +1142,17 @@ async def _product_flow(
             },
             metadata={"skipped_roles": list(suggestions.skipped_roles)},
         )
+    if _has_ambiguous_winner_identity(suggestions):
+        state.last_presented_ids = []
+        return AgentReply(
+            text=_AMBIGUOUS_PRODUCT_IDENTITY_REPLY,
+            intent=intent,
+            flags=[*flags, "ambiguous_product_identity"],
+            presentation=AgentPresentation(
+                type="text",
+                warnings=[_AMBIGUOUS_PRODUCT_IDENTITY_WARNING],
+            ),
+        )
     winner_ids = {p.productidweb for p in suggestions.distinct_products}
     also_consider = [
         p for p in pool if p.productidweb not in winner_ids
@@ -1173,9 +1205,20 @@ async def _product_flow(
     for pid in presented:
         if pid not in shown:
             shown.append(pid)
+    presentation = build_recommendation_presentation(
+        suggestions,
+        also_consider=also_consider,
+        follow_up_question=response.question,
+    )
     reply = _observed_response(
         observer,
-        AgentReply(text=text, intent=intent, flags=flags, presented_ids=presented),
+        AgentReply(
+            text=text,
+            intent=intent,
+            flags=flags,
+            presented_ids=presented,
+            presentation=presentation,
+        ),
         outcome={
             "more_recommendations": "more_products",
             "product_detail": "product_detail",
@@ -1200,7 +1243,34 @@ def _compare_flow(
     observer: AgentObserver,
 ) -> AgentReply:
     ids = tuple(state.last_presented_ids[:2])
-    if len(ids) < 2:
+    # Ground the pair before comparing: each id must resolve to exactly one
+    # record in the active category, and both must carry a distinct SKU. A
+    # collision means the catalog conflates versions, so we ask rather than
+    # render a table that cannot be trusted (US-125).
+    selected: list[GenericProduct] = []
+    if len(ids) == 2 and len(set(ids)) == 2 and state.need.category_code is not None:
+        for product_id in ids:
+            matches = [
+                product
+                for product in deps.products
+                if product.category_code == state.need.category_code
+                and product.productidweb == product_id
+            ]
+            if len(matches) != 1:
+                selected = []
+                break
+            selected.append(matches[0])
+    skus = [
+        product.sku.strip()
+        for product in selected
+        if product.sku is not None and product.sku.strip()
+    ]
+    if (
+        len(selected) != 2
+        or len(skus) != 2
+        or len(set(skus)) != 2
+        or any(len(sku) > 128 for sku in skus)
+    ):
         return _observed_response(
             observer,
             AgentReply(
@@ -1213,7 +1283,7 @@ def _compare_flow(
             ),
             outcome="comparison_clarification",
         )
-    comparison = compare_products(deps.products, ids)
+    comparison = compare_products(selected, ids)
     lines = ["Dạ em so sánh hai mẫu anh/chị đang xem ạ:", ""]
     for item in comparison.items:
         price = format_vnd(item.effective_price) if item.effective_price else "giá đang cập nhật"
@@ -1227,7 +1297,6 @@ def _compare_flow(
     # Dimension table: the category's registered dimensions with real data on
     # both sides, each with a verdict where rankable — the comparison explains
     # itself on the axes that matter for this product type (live-test 3).
-    selected = [p for pid in ids for p in deps.products if p.productidweb == pid]
     dim_lines: list[str] = []
     # The same loop feeds the text lines and the structured table the client
     # renders, so the two can never disagree. A row needs a real value on both
@@ -1327,24 +1396,32 @@ def _compare_flow(
                 "cân giữa mức chênh giá và ưu đãi kèm theo ở trên ạ."
             )
     lines.append("")
-    lines.append("Anh/chị nghiêng về mẫu nào hơn để em tư vấn sâu thêm ạ?")
+    follow_up_question = "Anh/chị nghiêng về mẫu nào hơn để em tư vấn sâu thêm ạ?"
+    lines.append(follow_up_question)
     text = "\n".join(lines)
-    allowed = [p for p in deps.products if p.productidweb in ids]
+    allowed = selected
     validation_input = text
     validation = validate_response(text, allowed_products=allowed)
     if not validation.ok:
         text = degrade_to_facts(allowed)
+    presentation = build_comparison_presentation(
+        allowed,
+        comparison,
+        follow_up_question=follow_up_question,
+    )
     reply = _observed_response(
         observer,
         AgentReply(
             text=text,
             intent="compare_products",
             flags=flags,
+            presented_ids=list(ids),
             comparison=ComparisonView(
                 products=comparison.items,
                 rows=rows,
                 price_delta=comparison.price_delta,
             ),
+            presentation=presentation,
         ),
         outcome="comparison",
     )
