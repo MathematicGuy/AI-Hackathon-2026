@@ -11,11 +11,8 @@ contracts and not substitutes for Harness proof.
 | THANH         | dinh-nhat-thanh      | [`THANH-NOW.md`](THANH-NOW.md) | Assigned by a human                                                                                  |
 | USER1         | luu-thien-viet-cuong | [`USER1-NOW.md`](USER1-NOW.md) | Assigned by Cường (Lưu Thiện Việt Cường) on 2026-07-18; direction recorded in the member session log |
 | USER2         | luu-thien-viet-cuong | [`USER2-NOW.md`](USER2-NOW.md) | Assigned by Cường (Lưu Thiện Việt Cường) on 2026-07-18; direction recorded in the member session log |
-<<<<<<< HEAD
 | FRONTEND | nguyen-phuong-hoai-ngoc | [`FRONTEND-NOW.md`](FRONTEND-NOW.md) | Reassigned by Ngọc's explicit human direction on 2026-07-19 to implement US-125 cross-stack presentation alignment on `deploy` |
-=======
 | DUY | luu-tien-duy | [`DUY-NOW.md`](DUY-NOW.md) | Assigned by Duy (Lưu Tiến Duy) on 2026-07-19; direction recorded in the member session log |
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
 
 Aliases are not identities. An agent must never infer an alias owner from Git
 configuration, operating-system usernames, earlier chat, or task content. A
@@ -25,12 +22,9 @@ single member may own multiple aliases when solo-driving parallel lanes.
 Conflict avoidance is enforced by each tracker's file boundary and serialized
 merges, not by requiring one member per alias.
 
-<<<<<<< HEAD
 `FRONTEND` owns the exact US-125 frontend and E02 presentation-contract files
 listed in its tracker. It does not inherit any other backend scope owned by
 `THANH`, `USER1`, or `USER2`.
-=======
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
 
 ## Mandatory Use
 

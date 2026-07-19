@@ -114,23 +114,15 @@ class AgentResponse(BaseModel):
     request_id: str
     intent: str
     text: str
-<<<<<<< HEAD
     flags: list[str] = Field(default_factory=list)
     presented_ids: list[str] = Field(default_factory=list)
     presentation: AgentPresentation | None = None
-=======
-    flags: list[str] = []
-    presented_ids: list[str] = []
-    # Present only on comparison turns. Additive: a client that ignores it
-    # sees exactly the pre-US-125 envelope.
-    comparison: ComparisonView | None = None
 
 
 class FeedbackRequest(BaseModel):
     session_id: str
     message_index: int = Field(ge=0)
     rating: str = Field(pattern="^(like|dislike)$")
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
 
 
 def create_agent_router(
@@ -236,11 +228,7 @@ def create_agent_router(
             text=reply.text,
             flags=reply.flags,
             presented_ids=reply.presented_ids,
-<<<<<<< HEAD
             presentation=reply.presentation,
-=======
-            comparison=serialize_comparison(reply),
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
         )
 
     @router.post("/api/v1/agent/respond/stream")
@@ -272,7 +260,7 @@ def create_agent_router(
                     "intent": reply.intent,
                     "flags": reply.flags,
                     "presented_ids": reply.presented_ids,
-                    "comparison": serialize_comparison(reply),
+                    "presentation": reply.presentation.model_dump() if reply.presentation else None,
                 },
                 ensure_ascii=False,
             ) + "\n"

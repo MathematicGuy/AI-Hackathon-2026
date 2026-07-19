@@ -49,7 +49,6 @@ def test_response_carries_the_fields_the_frontend_reads(client):
         "text",
         "flags",
         "presented_ids",
-<<<<<<< HEAD
         "presentation",
     } <= set(body)
     assert set(body["presentation"]) == {
@@ -165,18 +164,6 @@ def test_follow_up_comparison_uses_the_same_grounded_session_products():
         "10.000.000đ",
     ]
     assert comparison["presented_ids"] == ["web-1", "web-2"]
-=======
-        "comparison",
-    }
-
-
-def test_comparison_is_null_off_a_comparison_turn(client):
-    """The structured table is additive: absent unless the turn compares."""
-    body = client.post(
-        "/api/v1/agent/respond", json={"message": "tôi muốn mua tủ lạnh"}
-    ).json()
-    assert body["comparison"] is None
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
 
 
 def test_session_id_round_trips(client):

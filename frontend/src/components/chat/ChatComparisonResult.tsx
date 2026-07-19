@@ -9,7 +9,6 @@ import type {
   AgentPresentedProduct,
 } from "@/types/agent";
 
-<<<<<<< HEAD
 const numberFormatter = new Intl.NumberFormat("vi-VN", {
   maximumFractionDigits: 1,
 });
@@ -48,14 +47,14 @@ function ProductPrice({ product }: { product: AgentPresentedProduct }) {
       )}
       <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs">
         {product.list_price_vnd === null ||
-          product.discount_percent === null ||
-          product.discount_percent <= 0 ? null : (
+        product.discount_percent === null ||
+        product.discount_percent <= 0 ? null : (
           <span className="text-slate-500 line-through">
             {formatMoney(product.list_price_vnd)}
           </span>
         )}
         {product.discount_percent === null ||
-          product.discount_percent <= 0 ? null : (
+        product.discount_percent <= 0 ? null : (
           <span className="font-semibold text-rose-600">
             -{numberFormatter.format(product.discount_percent)}%
           </span>
@@ -185,47 +184,9 @@ function PresentationNotices({
 
 function RecommendationResult({
   presentation,
-=======
-// Shape of the `comparison` block on the agent response. The agent builds it
-// from the same dimension registry its reply text is built from, so the table
-// can never contradict the answer above it. It is absent on every turn that is
-// not a comparison.
-export interface AgentComparisonProduct {
-  id: string;
-  name: string;
-  brand: string | null;
-  effective_price: number | null;
-  list_price: number | null;
-  discount_percent: number | null;
-  gift: string | null;
-}
-
-export interface AgentComparisonRow {
-  label: string;
-  unit: string;
-  explain: string;
-  values: Record<string, string>;
-  winner_id: string | null;
-}
-
-export interface AgentComparison {
-  products: AgentComparisonProduct[];
-  rows: AgentComparisonRow[];
-  price_delta: number | null;
-}
-
-const followUpQuestions = [
-  "Mẫu nào tiết kiệm điện hơn?",
-  "Có khuyến mãi gì không?",
-  "Phòng 18m² nên chọn mẫu nào?",
-];
-
-export function ChatComparisonResult({
-  comparison,
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
   disabled,
+  onNavigate,
   onSuggestion,
-<<<<<<< HEAD
 }: ChatComparisonResultProps) {
   return (
     <section
@@ -285,13 +246,9 @@ export function ChatComparisonResult({
 
 interface ChatComparisonResultProps {
   presentation: AgentPresentation;
-=======
-}: {
-  comparison: AgentComparison;
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
   disabled: boolean;
+  onNavigate: () => void;
   onSuggestion: (question: string) => void;
-<<<<<<< HEAD
 }
 
 export function ChatComparisonResult(props: ChatComparisonResultProps) {
@@ -320,12 +277,6 @@ export function ChatComparisonResult(props: ChatComparisonResultProps) {
 
   if (presentation.type === "recommendation") {
     return <RecommendationResult {...props} />;
-=======
-}) {
-  const { products, rows } = comparison;
-  if (products.length < 2) {
-    return null;
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
   }
 
   return (
@@ -341,26 +292,15 @@ export function ChatComparisonResult(props: ChatComparisonResultProps) {
               <Sparkles className="size-4" aria-hidden="true" />
             </span>
             <h3 className="text-sm font-bold sm:text-base">
-<<<<<<< HEAD
-              So sánh { presentation.products.length } sản phẩm
-            </h3 >
-          </div >
-=======
-              So sánh {products.length} mẫu
+              So sánh {presentation.products.length} sản phẩm
             </h3>
           </div>
-          <p className="mt-1 text-xs leading-5 text-slate-600 sm:text-sm">
-            {comparison.price_delta
-              ? `Chênh lệch giá ${formatMoney(comparison.price_delta)}.`
-              : "So sánh theo các thông số của ngành hàng này."}
-          </p>
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
-        </div >
-    <span className="hidden shrink-0 items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 shadow-sm md:flex">
-      <MoveHorizontal className="size-3.5" aria-hidden="true" />
-      Cuộn bảng
-    </span>
-      </div >
+        </div>
+        <span className="hidden shrink-0 items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 shadow-sm md:flex">
+          <MoveHorizontal className="size-3.5" aria-hidden="true" />
+          Cuộn bảng
+        </span>
+      </div>
 
       <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50 px-3 py-2 text-[11px] font-medium text-slate-600 md:hidden">
         <MoveHorizontal className="size-4" aria-hidden="true" />
@@ -374,52 +314,35 @@ export function ChatComparisonResult(props: ChatComparisonResultProps) {
         tabIndex={0}
         aria-label="Bảng có thể cuộn ngang"
       >
-<<<<<<< HEAD
-  <table
-    className="table-fixed border-separate border-spacing-0 text-left"
-    style={{ minWidth: 112 + presentation.products.length * 184 }}
-  >
-    <caption className="sr-only">
-      So sánh các thông tin do trợ lý cung cấp cho sản phẩm
-    </caption>
-    <colgroup>
-      <col className="w-[112px]" />
-      {presentation.products.map((product) => (
-        <col key={product.sku} className="w-[184px]" />
-=======
-        <table className="min-w-[560px] table-fixed border-separate border-spacing-0 text-left">
+        <table
+          className="table-fixed border-separate border-spacing-0 text-left"
+          style={{ minWidth: 112 + presentation.products.length * 184 }}
+        >
           <caption className="sr-only">
-            So sánh giá và thông số của {products.length} sản phẩm
+            So sánh các thông tin do trợ lý cung cấp cho sản phẩm
           </caption>
           <colgroup>
-            <col className="w-[128px]" />
-            {products.map((product) => (
-              <col key={product.id} className="w-[200px]" />
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
-      ))}
-    </colgroup>
-    <thead>
-      <tr>
-        <th
-          scope="col"
-          className="sticky left-0 z-20 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 align-top text-xs font-bold text-slate-600"
-        >
-          Sản phẩm
-        </th>
-<<<<<<< HEAD
-  {
-    presentation.products.map((product) => (
-=======
-              {products.map((product) => (
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
-      <th
-        key={product.sku}
-        data-testid={`chat-presentation-product-${product.sku}`}
-        scope="col"
-        className="border-b border-r border-slate-200 bg-white px-3 py-3 align-top last:border-r-0"
-      >
-        <div className="flex h-full flex-col">
-<<<<<<< HEAD
+            <col className="w-[112px]" />
+            {presentation.products.map((product) => (
+              <col key={product.sku} className="w-[184px]" />
+            ))}
+          </colgroup>
+          <thead>
+            <tr>
+              <th
+                scope="col"
+                className="sticky left-0 z-20 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 align-top text-xs font-bold text-slate-600"
+              >
+                Sản phẩm
+              </th>
+              {presentation.products.map((product) => (
+                <th
+                  key={product.sku}
+                  data-testid={`chat-presentation-product-${product.sku}`}
+                  scope="col"
+                  className="border-b border-r border-slate-200 bg-white px-3 py-3 align-top last:border-r-0"
+                >
+                  <div className="flex h-full flex-col">
                     <ProductBadges product={product} />
                     <SafeImage
                       src={product.image_url ?? undefined}
@@ -428,16 +351,14 @@ export function ChatComparisonResult(props: ChatComparisonResultProps) {
                       fallbackLabel="Chưa có hình ảnh"
                       loading="lazy"
                     />
-                    {
-        product.brand === null ? null : (
-          <p className="text-[11px] font-semibold uppercase text-slate-500">
-            {product.brand}
-          </p>
-        )
-      }
-      < p className = "mt-1 text-[13px] font-semibold leading-5 text-slate-800" >
-      { product.name }
-                    </p >
+                    {product.brand === null ? null : (
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">
+                        {product.brand}
+                      </p>
+                    )}
+                    <p className="mt-1 text-[13px] font-semibold leading-5 text-slate-800">
+                      {product.name}
+                    </p>
                     <ProductPrice product={product} />
                     <div className="mt-2 text-xs leading-5 text-slate-600">
                       <p>
@@ -447,146 +368,60 @@ export function ChatComparisonResult(props: ChatComparisonResultProps) {
                         Đã bán: {product.sold_count === null ? <MissingValue /> : numberFormatter.format(product.sold_count)}
                       </p>
                     </div>
-=======
-                    <div className="mb-2 flex flex-wrap gap-1">
-                      {product.discount_percent ? (
-                        <span className="inline-flex h-fit rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[11px] font-bold leading-4 text-emerald-700">
-                          Giảm {Math.round(product.discount_percent)}%
-                        </span>
-                      ) : null}
-                      {product.gift ? (
-                        <span className="inline-flex h-fit rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-bold leading-4 text-amber-800">
-                          Có quà tặng
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="line-clamp-3 min-h-10 text-[13px] font-semibold leading-5 text-slate-800">
-                      {product.name}
-                    </p>
-                    {product.effective_price ? (
-                      <strong className="mt-1 text-base text-[#d70018]">
-                        {formatMoney(product.effective_price)}
-                      </strong>
-                    ) : (
-                      <span className="mt-1 text-[13px] text-slate-500">
-                        Giá đang cập nhật
-                      </span>
-                    )}
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
-                  </div >
-                </th >
-              ))
-  }
-            </tr >
-          </thead >
-    <tbody>
-<<<<<<< HEAD
-  {
-    presentation.comparison_rows.map((row, rowIndex) => {
-      const valuesBySku = new Map(
-        row.values.map((cell) => [cell.sku, cell.value]),
-      );
-      return (
-        <tr key={`${row.label}-${rowIndex}`}>
-          <th
-            scope="row"
-            className="sticky left-0 z-10 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
-          >
-            {row.label}
-          </th>
-          {presentation.products.map((product) => (
-            <td
-              key={product.sku}
-              className="border-b border-r border-slate-200 bg-white px-3 py-3 text-[13px] leading-5 text-slate-700 last:border-r-0"
-            >
-              {valuesBySku.get(product.sku) ?? <MissingValue />}
-            </td>
-          ))}
-        </tr>
-      );
-    })
-  }
-  <tr>
-    <th
-      scope="row"
-      className="sticky left-0 z-10 border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
-    >
-      Xem chi tiết
-    </th>
-    {presentation.products.map((product) => (
-      <td
-        key={product.sku}
-        className="border-r border-slate-200 bg-white px-3 py-3 last:border-r-0"
-      >
-        <ProductAction product={product} onNavigate={onNavigate} />
-      </td>
-    ))}
-  </tr>
-=======
-            {rows.map((row) => (
-              <tr key={row.label}>
-                <th
-                  scope="row"
-                  className="sticky left-0 z-10 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
-                >
-                  <span title={row.explain || undefined}>{row.label}</span>
+                  </div>
                 </th>
-                {products.map((product) => {
-                  const isWinner = row.winner_id === product.id;
-                  return (
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {presentation.comparison_rows.map((row, rowIndex) => {
+              const valuesBySku = new Map(
+                row.values.map((cell) => [cell.sku, cell.value]),
+              );
+              return (
+                <tr key={`${row.label}-${rowIndex}`}>
+                  <th
+                    scope="row"
+                    className="sticky left-0 z-10 border-b border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
+                  >
+                    {row.label}
+                  </th>
+                  {presentation.products.map((product) => (
                     <td
-                      key={product.id}
-                      className={`border-b border-r border-slate-200 px-3 py-3 text-[13px] leading-5 last:border-r-0 ${
-                        isWinner
-                          ? "bg-emerald-50 font-semibold text-emerald-800"
-                          : "bg-white text-slate-700"
-                      }`}
+                      key={product.sku}
+                      className="border-b border-r border-slate-200 bg-white px-3 py-3 text-[13px] leading-5 text-slate-700 last:border-r-0"
                     >
-                      <span className="inline-flex items-center gap-1">
-                        {row.values[product.id] ?? "—"}
-                        {isWinner ? (
-                          <Check
-                            className="size-3.5 shrink-0"
-                            aria-label="Nhỉnh hơn ở tiêu chí này"
-                          />
-                        ) : null}
-                      </span>
+                      {valuesBySku.get(product.sku) ?? <MissingValue />}
                     </td>
-                  );
-                })}
-              </tr>
-            ))}
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
-          </tbody >
-        </table >
-      </div >
-
-<<<<<<< HEAD
-    <PresentationNotices
-      presentation={presentation}
-      disabled={disabled}
-      onSuggestion={onSuggestion}
-    />
-=======
-      <div className="border-t border-slate-100 px-3 py-3 sm:px-4">
-        <p className="mb-2 text-xs font-bold text-slate-700">
-          Anh/chị muốn hỏi tiếp điều gì ạ?
-        </p>
-        <div className="grid gap-2 sm:flex sm:flex-wrap">
-          {followUpQuestions.map((question) => (
-            <button
-              key={question}
-              type="button"
-              disabled={disabled}
-              onClick={() => onSuggestion(question)}
-              className="min-h-11 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-[#0754ad] active:scale-[0.98] sm:rounded-full sm:text-xs"
-            >
-              {question}
-            </button>
-          ))}
-        </div>
+                  ))}
+                </tr>
+              );
+            })}
+            <tr>
+              <th
+                scope="row"
+                className="sticky left-0 z-10 border-r border-slate-200 bg-slate-50 px-3 py-3 text-[13px] font-bold text-slate-600"
+              >
+                Xem chi tiết
+              </th>
+              {presentation.products.map((product) => (
+                <td
+                  key={product.sku}
+                  className="border-r border-slate-200 bg-white px-3 py-3 last:border-r-0"
+                >
+                  <ProductAction product={product} onNavigate={onNavigate} />
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
       </div>
->>>>>>> 209597c5b41b7b35759f7c730a06397399c9665b
-    </section >
+
+      <PresentationNotices
+        presentation={presentation}
+        disabled={disabled}
+        onSuggestion={onSuggestion}
+      />
+    </section>
   );
 }
