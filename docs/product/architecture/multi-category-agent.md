@@ -18,7 +18,15 @@ front-and-center, answers policy questions with verbatim quotes, and always
 pushes toward a helpful sale — without ever inventing a price, spec, stock,
 promotion, or policy clause.
 
-Single-agent constrained graph (no multi-agent supervisor). The agent's
+**Single-agent constrained graph — there is NO per-category agent** (asked
+and reconfirmed 2026-07-19): one pipeline serves all 14 ngành; per-category
+expertise lives in DATA registries (cold-start scripts, dimension registry,
+domain rules), so a category evolves without touching the graph. Tool
+inventory: search (filter/page), aggregate (category stats), suggest
+(preference-driven roles), compare (multi-dimension), detail (spec sheet),
+policy corpus (verbatim retrieval), reference resolver (ordinals/names) —
+sufficient for the read-only advisory scope; deliberately missing: stock,
+ordering, CPU/GPU benchmark ranking (external data needed). The agent's
 reasoning core is **gpt-4o-mini via `OPENAI_API_KEY`** (Cường's direction,
 2026-07-19; override with `AGENT_MAIN_LLM_MODEL`), with OpenRouter deepseek
 and Mistral as automatic fallbacks and a deterministic keyword fallback when
@@ -151,7 +159,13 @@ retrieval problem and degrades to a graceful no-info answer, never the
 violation apology. Corpus hardening (round 2): conversation-generic folded
 words (mục/đích/sử/dụng) are stopwords so an echoed question cannot match the
 data-privacy headings, and windowed chunks never end on an orphan enumeration
-marker ("b."). Policy always outranks sales behavior.
+marker ("b."). Round 6: topic bigrams ("bảo hành", "đổi trả", "hoàn tiền"…)
+give sections of the document NAMED for that topic a decisive bonus — an
+incidental "Bảo hành Thợ" mention in the delivery doc cannot outrank the
+warranty policy (single-word scoring could not express this because "bảo"
+folds into a stopword); the displayed quote drops a crawl-artifact heading
+line (the remaining body stays a contiguous verbatim substring). Policy
+always outranks sales behavior.
 
 ## 7. Proactive salesman behavior
 
@@ -218,6 +232,22 @@ pair (cheapest / priciest / deepest-discount qualifiers, budget-aware) and
 compares immediately; the pair becomes `last_presented_ids` so deep
 follow-ups chain. Bare agreements ("ok", "ừ") are exact-match small talk —
 no message-length limit exists at any layer (frontend or backend).
+
+Round-6 notes (2026-07-19): the role-selection pool covers the WHOLE
+candidate set (limit 500) — a 20-item ascending page had "most expensive"
+picking the 20th-cheapest model; a price ceiling capping "the most
+expensive" is disclosed with an offer to lift it. Auto-fetched comparison
+pairs say what was picked ("em chọn 2 mẫu giá tốt nhất...") — "đang xem"
+only when the customer really saw them. An explicit role ask counts as a
+narrowing fact (no questionnaire before answering "máy lạnh đắt nhất").
+product_qa gives every compared dimension ONE explicit outcome — verdict,
+stated tie, or honest data gap — and pivots to the nearest dimension that
+CAN separate the models when the asked one cannot. Bare confusion tokens
+("hả?") restate the bot's last line instead of a generic re-ask. Output
+format is unified: "Phù hợp vì: …" / "Kết quả: …" — no arrows. The
+frontend's template-era comparison card (hardcoded fabricated
+products/ratings) is deleted; every product visual comes from grounded
+backend data.
 
 Round-5 note (2026-07-19 audit): the detail tool is wired —
 `product_detail` renders a spec sheet (price/promotion, dimension rows

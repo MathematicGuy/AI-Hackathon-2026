@@ -320,6 +320,15 @@ def _augment_understanding(
             updates["budget_min"] = budget_min
         if budget_max is not None:
             updates["budget_max"] = budget_max
+    elif patch.budget_min is not None and patch.budget_max is None:
+        # The model keeps reading bare amounts ("tầm 40 triệu") as floors.
+        # Our context parser is authoritative on bound direction: when it
+        # says ceiling-only for this message, flip the misread (genuine
+        # floor phrases like "trên 40 triệu" parse as (X, None) and stand).
+        det_min, det_max = _parse_budget_vnd(message)
+        if det_min is None and det_max is not None:
+            updates["budget_min"] = None
+            updates["budget_max"] = det_max
     category = patch.category_code or active_category
     constraints = dict(patch.attribute_constraints)
     if category in _SCREEN_CATEGORIES and "size" not in constraints:

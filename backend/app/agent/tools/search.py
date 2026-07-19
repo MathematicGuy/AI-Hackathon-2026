@@ -64,7 +64,10 @@ def search_products(
     exclude_ids: tuple[str, ...] = (),
     budget_slack: float = 0.0,
 ) -> SearchResult:
-    if not (isinstance(limit, int) and 1 <= limit <= 20) or cursor < 0:
+    # 500 covers every category's full candidate set: role selection must see
+    # the WHOLE pool — a 20-item ascending page biased "most expensive" and
+    # dimension winners toward cheap models (live-test 6 finding).
+    if not (isinstance(limit, int) and 1 <= limit <= 500) or cursor < 0:
         raise ValueError("invalid page request")
 
     candidates = [

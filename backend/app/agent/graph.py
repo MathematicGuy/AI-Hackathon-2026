@@ -33,7 +33,13 @@ from backend.app.agent.policies.answer import (
     display_source,
 )
 from backend.app.agent.policies.corpus import PolicyCorpus
-from backend.app.agent.respond import format_trieu, format_vnd, render_suggestions
+from backend.app.agent.policies.corpus import _is_heading as _corpus_is_heading
+from backend.app.agent.respond import (
+    ProposedResponse,
+    format_trieu,
+    format_vnd,
+    render_suggestions,
+)
 from backend.app.agent.tools.aggregate import category_overview
 from backend.app.agent.tools.compare import compare_products
 from backend.app.agent.tools.detail import product_detail
@@ -519,9 +525,15 @@ def _state_summary(state: AgentState) -> str:
     return "; ".join(parts)
 
 
+# Bare confusion tokens — the whole message is "what?" (live-test 6: "hả?").
+_CONFUSION_TOKENS = {"hả", "hở", "sao", "sao cơ", "gì cơ", "ủa", "what"}
+
+
 def _is_question_echo(state: AgentState, low: str) -> bool:
     if state.pending_question_key is None and state.need.category_code is None:
         return False
+    if low.strip(" ?!.~") in _CONFUSION_TOKENS:
+        return True
     if not any(marker in low for marker in _ECHO_MARKERS):
         return False
     if "mục đích" in low:
@@ -552,15 +564,27 @@ def _question_clarification_flow(
         )
         return AgentReply(text=text, intent="question_clarification", flags=[])
     example = coldstart.question_example(category, state.pending_question_key)
-    question = state.pending_question_text or (
-        "anh/chị cho em xin thêm thông tin về nhu cầu của mình ạ"
-    )
-    lines = [f"Dạ em xin hỏi lại cho rõ ạ: {question}"]
-    if example:
-        lines.append(f"(Ví dụ: {example} ạ.)")
-    return AgentReply(
-        text="\n".join(lines), intent="question_clarification", flags=[]
-    )
+    if state.pending_question_text:
+        lines = [f"Dạ em xin hỏi lại cho rõ ạ: {state.pending_question_text}"]
+        if example:
+            lines.append(f"(Ví dụ: {example} ạ.)")
+        return AgentReply(
+            text="\n".join(lines), intent="question_clarification", flags=[]
+        )
+    # No question pending ("hả?" after an answer): restate what the bot just
+    # said instead of a useless generic ask (live-test 6 finding).
+    if state.recent_turns:
+        last_bot = state.recent_turns[-1][1].split("\n")[0].strip()
+        text = (
+            f"Dạ ý em vừa nói là: {last_bot}\n"
+            "Anh/chị muốn em giải thích rõ hơn phần nào ạ?"
+        )
+    else:
+        text = (
+            "Dạ anh/chị cho em xin thêm thông tin về nhu cầu của mình để em "
+            "tư vấn đúng hơn ạ?"
+        )
+    return AgentReply(text=text, intent="question_clarification", flags=[])
 
 
 def _is_product_qa(state: AgentState, low: str) -> bool:
@@ -627,21 +651,57 @@ async def _product_qa_flow(
         lines.append("")
     dims = _question_dimensions(state, low)
     lines.append("Em so trực tiếp các mẫu vừa gợi ý theo dữ liệu hãng công bố ạ:")
-    for dim in dims[:4]:
-        values: list[str] = []
+
+    def _render_dim(dim) -> str:
+        """Every compared dimension ends in ONE explicit outcome: a verdict,
+        a stated tie, or an honest data gap (live-test 6: 'Inverter |
+        Inverter' with no conclusion is not an answer)."""
+        values = []
+        parsed = []
         for product in presented:
             shown = dimension_display(product, dim)
             values.append(
                 f"{product.name}: {shown if shown else 'hãng không công bố'}"
             )
-        lines.append(f"• {dim.label} — " + " | ".join(values))
-        if rankable(dim) and len(presented) >= 2:
-            first_value = dimension_value(presented[0], dim)
-            second_value = dimension_value(presented[1], dim)
-            verdict = better_of(first_value, second_value, dim)
+            parsed.append(dimension_value(product, dim))
+        block = f"• {dim.label} — " + " | ".join(values)
+        present_values = [v for v in parsed if v is not None]
+        if len(present_values) < 2:
+            block += "\n  Kết quả: dữ liệu hãng công bố chưa đủ để phân định ạ."
+            return block
+        if rankable(dim):
+            verdict = better_of(parsed[0], parsed[1], dim)
             if verdict != 0:
                 winner = presented[0] if verdict == -1 else presented[1]
-                lines.append(f"  → {winner.name} nhỉnh hơn ở mục này ạ.")
+                block += f"\n  Kết quả: {winner.name} nhỉnh hơn ở mục này ạ."
+                return block
+            if len(set(present_values)) == 1:
+                block += (
+                    "\n  Kết quả: các mẫu ngang nhau ở mục này — dữ liệu công"
+                    " bố chưa đủ để phân định sâu hơn ạ."
+                )
+                return block
+        return block
+
+    decisive = False
+    shown_dims = dims[:4]
+    for dim in shown_dims:
+        block = _render_dim(dim)
+        lines.append(block)
+        if "nhỉnh hơn" in block:
+            decisive = True
+    if not decisive:
+        # The asked dimension could not separate the models — pivot to the
+        # nearest rankable dimension that CAN, instead of ending flat.
+        shown_keys = {dim.key for dim in shown_dims}
+        for dim in dimensions_for(category):
+            if dim.key in shown_keys or not rankable(dim):
+                continue
+            block = _render_dim(dim)
+            if "nhỉnh hơn" in block:
+                lines.append("Bù lại, mục này có khác biệt rõ ạ:")
+                lines.append(block)
+                break
     lines.append("")
     lines.append(
         "Anh/chị nghiêng về tiêu chí nào nhất để em chốt mẫu phù hợp ạ?"
@@ -695,8 +755,10 @@ def _capture_pending_answer(state, message: str, understanding):
         return understanding
     # A redundant category_code equal to the active category is not new
     # information — it must not suppress the pending-answer capture ("nhà 4
-    # người" while the household question is pending).
-    explicit = patch.model_fields_set - {"requested_roles", "category_code"}
+    # người" while the household question is pending). Requested roles DO
+    # count as signal: "máy lạnh đắt nhất" is a directive, not an answer to
+    # the pending question (live-test 6: it got stored as the room area).
+    explicit = patch.model_fields_set - {"category_code"}
     has_signal = any(
         getattr(patch, name) not in (None, [], {}) for name in explicit
     )
@@ -931,15 +993,24 @@ def _policy_flow(
     # for it ("nguyên văn"/"trích"). Verbatim validation still runs below.
     source_name = display_source(answer.sources[0])
     wants_literal = "nguyên văn" in low or "trích" in low
+    # Display hygiene: drop a crawl-artifact heading line ("9Bảng giá...")
+    # from the shown quote — the remaining body is still a contiguous
+    # verbatim substring of the source, so validation holds (live-test 6).
+    display_quote = answer.quotes[0]
+    quote_lines = display_quote.split("\n")
+    if len(quote_lines) > 1 and _corpus_is_heading(quote_lines[0]):
+        trimmed = "\n".join(quote_lines[1:]).strip("\n")
+        if len(trimmed) > 60:
+            display_quote = trimmed
     if wants_literal:
         lines = [
             f"Dạ theo {source_name} của bên em, trích nguyên văn ạ:",
-            f'"{answer.quotes[0]}"',
+            f'"{display_quote}"',
         ]
     else:
         lines = [
             f"Dạ theo {source_name} của bên em ạ:",
-            answer.quotes[0],
+            display_quote,
         ]
     lines += [
         "",
@@ -948,7 +1019,7 @@ def _policy_flow(
     text = "\n".join(lines)
     validation_input = text
     result = validate_response(
-        text, allowed_products=[], policy_quotes=[answer.quotes[0]], corpus=deps.corpus
+        text, allowed_products=[], policy_quotes=[display_quote], corpus=deps.corpus
     )
     if not result.ok:
         # A failed quote check means WE could not ground the answer — that is
@@ -1047,7 +1118,10 @@ async def _product_flow(
         "budget_min": need.budget_min,
         "budget_max": need.budget_max,
         "brands": tuple(need.brand_prefs),
-        "limit": 20,
+        # The role-selection pool must cover the WHOLE candidate set — a
+        # 20-item ascending page made "most expensive" pick the 20th-cheapest
+        # model (live-test 6 finding). Rendering still shows winners + extras.
+        "limit": 500,
         "exclude_ids": exclude,
     }
     with observer.span("product_search", input=search_input) as search_observation:
@@ -1057,7 +1131,7 @@ async def _product_flow(
             budget_min=need.budget_min,
             budget_max=need.budget_max,
             brands=tuple(need.brand_prefs),
-            limit=20,
+            limit=500,
             exclude_ids=exclude,
             budget_slack=0.08,
         )
@@ -1151,6 +1225,20 @@ async def _product_flow(
         need=need,
         purpose_example=coldstart.purpose_example(category),
     )
+    # A price ceiling silently capping "the most expensive" confused the
+    # customer ("không có đắt hơn à") — say so and offer the way out.
+    if "most_expensive" in (need.requested_roles or []) and need.budget_max:
+        response = ProposedResponse(
+            text=(
+                response.text
+                + f"\n(Em đang lọc trong tầm giá {format_trieu(need.budget_max)}"
+                " — anh/chị muốn xem mẫu cao cấp hơn thì bỏ giới hạn giá giúp"
+                " em ạ.)"
+            ),
+            allowed_products=response.allowed_products,
+            policy_quotes=response.policy_quotes,
+            question=response.question,
+        )
     validation = validate_response(
         response.text, allowed_products=response.allowed_products
     )
@@ -1281,7 +1369,7 @@ def _pick_comparison_pair(
         category_code=category,
         budget_min=state.need.budget_min,
         budget_max=state.need.budget_max,
-        limit=20,
+        limit=500,
         budget_slack=0.08,
     )
     priced = [p for p in result.items if p.effective_price is not None]
@@ -1408,12 +1496,14 @@ def _compare_flow(
     low: str = "",
 ) -> AgentReply:
     referenced = _resolve_referenced_products(state, low, deps)
+    pair_fetched = False
     if len(referenced) >= 2:
         ids = tuple(p.productidweb for p in referenced[:2])
     else:
         ids = tuple(state.last_presented_ids[:2])
     if len(ids) < 2:
         ids = _pick_comparison_pair(state, deps, low)
+        pair_fetched = bool(ids)
     if len(ids) < 2:
         return _observed_response(
             observer,
@@ -1430,7 +1520,20 @@ def _compare_flow(
         )
     state.last_presented_ids = list(ids)
     comparison = compare_products(deps.products, ids)
-    lines = ["Dạ em so sánh hai mẫu anh/chị đang xem ạ:", ""]
+    # Honest framing: only say "đang xem" when the customer really was shown
+    # these models before; an auto-fetched pair says what was picked
+    # (live-test 6: "hai mẫu anh/chị đang xem" with nothing viewed yet).
+    if pair_fetched:
+        if any(k in low for k in ("rẻ nhất", "giá thấp", "rẻ")):
+            picked = "2 mẫu giá tốt nhất"
+        elif any(k in low for k in ("đắt nhất", "cao cấp", "xịn")):
+            picked = "2 mẫu cao cấp nhất"
+        else:
+            picked = "2 mẫu đang có ưu đãi nổi bật nhất"
+        opener = f"Dạ em chọn {picked} bên em để so sánh cho anh/chị ạ:"
+    else:
+        opener = "Dạ em so sánh hai mẫu anh/chị đang xem ạ:"
+    lines = [opener, ""]
     for item in comparison.items:
         price = format_vnd(item.effective_price) if item.effective_price else "giá đang cập nhật"
         line = f"• {item.name}: {price}"
@@ -1458,9 +1561,9 @@ def _compare_flow(
                     dimension_value(first, dim), dimension_value(second, dim), dim
                 )
                 if verdict == -1:
-                    line += f" → {first.name} nhỉnh hơn"
+                    line += f" — {first.name} nhỉnh hơn"
                 elif verdict == 1:
-                    line += f" → {second.name} nhỉnh hơn"
+                    line += f" — {second.name} nhỉnh hơn"
             dim_lines.append(line)
     if dim_lines:
         lines.append("")

@@ -52,3 +52,8 @@
 {"id": "AGENT-G-052", "name": "compare_ordinal_first_and_third", "turns": [{"user": "tủ lạnh tầm 15 triệu"}, {"user": "so sánh mẫu 1 với mẫu 3", "expect": {"intent": "compare_products", "has_products": true}}]}
 {"id": "AGENT-G-053", "name": "role_lock_released_by_clear", "turns": [{"user": "tìm tủ lạnh rẻ nhất giúp mình"}, {"user": "gợi ý bình thường đi em", "expect": {"need_roles": []}}]}
 {"id": "AGENT-G-054", "name": "compact_budget_1tr5", "turns": [{"user": "tư vấn micro karaoke tầm 1tr5", "expect": {"need_budget_max": 1500000}}]}
+{"id": "AGENT-G-055", "name": "most_expensive_answers_immediately", "turns": [{"user": "máy lạnh đắt nhất em có là gì", "expect": {"has_products": true, "contains": ["Cao cấp nhất"]}}]}
+{"id": "AGENT-G-056", "name": "budget_cap_disclosed_on_most_expensive", "turns": [{"user": "tư vấn máy lạnh tầm 10 triệu"}, {"user": "máy lạnh đắt nhất đi em", "expect": {"contains": ["Em đang lọc trong tầm giá"]}}]}
+{"id": "AGENT-G-057", "name": "auto_compare_copy_honest", "turns": [{"user": "tư vấn máy lạnh"}, {"user": "So sánh 2 mẫu máy lạnh rẻ nhất đi", "expect": {"contains": ["em chọn 2 mẫu"], "not_contains": ["đang xem"]}}]}
+{"id": "AGENT-G-058", "name": "warranty_lookup_correct_doc", "turns": [{"user": "tra cứu bảo hành máy lạnh", "expect": {"intent": "policy_question", "contains": ["Chính sách bảo hành & đổi trả"], "not_contains": ["Bảng giá Dịch vụ"]}}]}
+{"id": "AGENT-G-059", "name": "no_arrows_in_suggestions", "turns": [{"user": "tủ lạnh tầm 15 triệu", "expect": {"has_products": true, "contains": ["Phù hợp vì:"], "not_contains": ["→"]}}]}

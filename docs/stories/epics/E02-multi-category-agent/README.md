@@ -78,5 +78,15 @@ stays pending), the detail tool is wired with a shared ordinal/name/
 product_refs reference resolver (also powering "so sánh mẫu 1 với mẫu 3"),
 explicit role locks release on new preferences, and clear_fields
 generalized to brands/priorities/roles (golden AGENT-G-049…054, suite 258).
-Deferred: policy retrieval over pgvector (the platform has no knowledge-base
-tables yet); Langfuse judge wiring (keys not configured).
+Round 6 (2026-07-19) deleted the template-era fake comparison card
+(hardcoded products/ratings) from the frontend, widened the role-selection
+pool to the whole candidate set ("máy lạnh đắt nhất" no longer picks the
+20th-cheapest; a capping budget is disclosed), made auto-fetched comparison
+copy honest, added policy topic-bigram doc bonuses ("tra cứu bảo hành" hits
+the warranty doc, not the service price table) with crawl-heading trims,
+gave product_qa an explicit outcome per dimension (verdict/tie/data gap)
+with a pivot to a separating dimension, made "hả?" restate the last answer,
+counted explicit role asks as narrowing facts, and unified the output
+format (no arrows) — golden AGENT-G-055…059, suite 275. Deferred: policy
+retrieval over pgvector (the platform has no knowledge-base tables yet);
+Langfuse judge wiring (keys not configured).

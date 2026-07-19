@@ -13,7 +13,6 @@ import {
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SafeImage } from "@/components/SafeImage";
-import { ChatComparisonResult } from "@/components/chat/ChatComparisonResult";
 import { useToast } from "@/components/ToastProvider";
 
 interface ChatMessage {
@@ -21,7 +20,6 @@ interface ChatMessage {
   role: "assistant" | "user";
   text: string;
   time: string;
-  kind?: "comparison";
 }
 
 const QUICK_QUESTIONS = [
@@ -36,13 +34,6 @@ function normalizeChatQuery(query: string) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("vi-VN")
     .replace(/đ/g, "d");
-}
-
-function isComparisonQuery(query: string) {
-  const normalized = normalizeChatQuery(query);
-  return (
-    /so sanh/.test(normalized) && /may lanh|dieu hoa/.test(normalized)
-  );
 }
 
 function formatChatTime(date: Date) {
@@ -115,7 +106,6 @@ export function ChatbotAssistant() {
   const closeButton = useRef<HTMLButtonElement>(null);
   const replyTimer = useRef<number | null>(null);
   const conversationScroller = useRef<HTMLDivElement>(null);
-  const latestComparison = useRef<HTMLDivElement>(null);
 
   const closeChat = useCallback(() => {
     setIsOpen(false);
@@ -134,7 +124,6 @@ export function ChatbotAssistant() {
     if (!isOpen) {
       return;
     }
-    const latestMessage = messages[messages.length - 1];
     const behavior = window.matchMedia("(prefers-reduced-motion: reduce)")
       .matches
       ? "auto"
@@ -145,14 +134,6 @@ export function ChatbotAssistant() {
     }
     if (messages.length === 0 && !isSending) {
       scroller.scrollTo({ top: 0, behavior: "auto" });
-      return;
-    }
-    if (latestMessage?.kind === "comparison" && latestComparison.current) {
-      const comparisonTop =
-        latestComparison.current.getBoundingClientRect().top -
-        scroller.getBoundingClientRect().top +
-        scroller.scrollTop;
-      scroller.scrollTo({ top: Math.max(0, comparisonTop - 12), behavior });
       return;
     }
     scroller.scrollTo({ top: scroller.scrollHeight, behavior });
@@ -305,7 +286,6 @@ export function ChatbotAssistant() {
                   role: "assistant",
                   text: event.text ?? "",
                   time: formatChatTime(new Date()),
-                  kind: isComparisonQuery(query) ? "comparison" : undefined,
                 },
               ]);
             } else {
@@ -533,19 +513,10 @@ export function ChatbotAssistant() {
           aria-busy={isSending}
         >
           {messages.map((message) => {
-            const isComparison =
-              message.role === "assistant" && message.kind === "comparison";
-
             return (
               <div
                 key={message.id}
-                ref={
-                  isComparison &&
-                  message.id === messages[messages.length - 1]?.id
-                    ? latestComparison
-                    : undefined
-                }
-                className={`scroll-mt-3 flex gap-1.5 ${isComparison ? "items-start" : "items-end"} ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`scroll-mt-3 flex items-end gap-1.5 ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {message.role === "assistant" ? (
                   <SafeImage
@@ -556,26 +527,13 @@ export function ChatbotAssistant() {
                   />
                 ) : null}
                 <div
-                  className={
-                    isComparison
-                      ? "min-w-0 flex-1 text-left"
-                      : `max-w-[84%] ${message.role === "user" ? "text-right" : "text-left"}`
-                  }
+                  className={`max-w-[84%] ${message.role === "user" ? "text-right" : "text-left"}`}
                 >
                   <div
                     className={`whitespace-pre-line rounded-[20px] px-4 py-3 text-sm leading-6 ${message.role === "user" ? "rounded-ee-none bg-[#176fc9] text-white" : "rounded-ss-none bg-slate-100 text-slate-800"}`}
                   >
                     {message.text}
                   </div>
-                  {isComparison ? (
-                    <div className="-ml-[42px] w-[calc(100%+42px)]">
-                      <ChatComparisonResult
-                        disabled={isSending}
-                        onNavigate={closeChat}
-                        onSuggestion={sendQuery}
-                      />
-                    </div>
-                  ) : null}
                   <div
                     className={`mt-1 flex items-center gap-1 px-1 ${message.role === "user" ? "justify-end" : "justify-start"}`}
                   >

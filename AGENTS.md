@@ -279,6 +279,8 @@ When the user corrects your approach, append a one-line rule here before ending 
 - Never gate chat messages on length at any layer (no "tin nhắn quá ngắn" checks); bare agreements like "ok"/"ừ" must flow as small talk.
 - Cold-start answer capture fires only for continuation intents; interrupts (policy/smalltalk/QA...) must never be stored as the pending answer and must keep the question pending.
 - Every sticky preference (budget, brands, priorities, role locks) must have a clear path (clear_fields) and role locks release automatically on new preference signals.
+- Any UI element that displays product data must render grounded backend data — demo/template components with hardcoded products, prices, or ratings are forbidden (the template's fake comparison card was deleted in round 6).
+- Superlative role selections (most expensive, dimension winners) must run over the full candidate pool, never a price-sorted first page.
 
 ---
 

@@ -139,7 +139,7 @@ def _fit_reason(
             reasons.append(
                 "nhỉnh hơn ngân sách một chút nhưng đáng cân nhắc vì ưu đãi"
             )
-    return "  → Phù hợp vì " + ", ".join(reasons) + "." if reasons else ""
+    return "  Phù hợp vì: " + ", ".join(reasons) + "." if reasons else ""
 
 
 def _missing_info_hint(

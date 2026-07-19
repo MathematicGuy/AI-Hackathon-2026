@@ -142,5 +142,8 @@ def has_material_minimum(need: GenericNeed) -> bool:
         or bool(need.attribute_constraints)
         or bool(need.brand_prefs)
         or bool(need.priorities)
+        # An explicit role ask ("máy lạnh đắt nhất") IS a narrowing fact —
+        # answer it instead of opening the questionnaire (live-test 6).
+        or bool(need.requested_roles)
     )
     return narrowing

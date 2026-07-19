@@ -42,6 +42,17 @@ _STOPWORDS = {
 # section that ends on one of these reads as a broken chunk.
 _ORPHAN_ENUM = re.compile(r"^\s*(?:[a-zđ]|[0-9]+(?:\.[0-9]+)*)[\.\)]\s*$")
 
+# Topic bigrams (folded): when the query names a policy TOPIC, sections from
+# the document carrying that topic in its NAME get a decisive bonus — an
+# incidental "Bảo hành Thợ" mention in the delivery doc must not outrank the
+# warranty policy (live-test 6). Single-word scoring cannot express this
+# because topic words like "bảo" fold into stopwords.
+_TOPIC_BIGRAMS = (
+    "bao hanh", "doi tra", "hoan tien", "giao hang", "lap dat",
+    "khui hop", "du lieu ca nhan", "tra gop", "dieu khoan",
+)
+_TOPIC_BONUS = 6.0
+
 
 def _is_heading(line: str) -> bool:
     stripped = line.strip()
@@ -129,6 +140,11 @@ class PolicyCorpus:
         if not query_words:
             return []
 
+        folded_query = _fold(query)
+        query_topics = tuple(
+            bigram for bigram in _TOPIC_BIGRAMS if bigram in folded_query
+        )
+
         scored: list[tuple[float, int, PolicySection]] = []
         for index, section in enumerate(self.sections):
             # Heading-only stubs carry nothing quotable.
@@ -143,6 +159,15 @@ class PolicyCorpus:
             score = float(sum(min(body_counts[word], 3) for word in matched))
             score += 3.0 * len(matched & heading_words)
             score /= 1.0 + len(section.text) / 1500.0
+            # The document NAME is the strongest topical signal: "bảo hành"
+            # must prefer chinh_sach_bao_hanh_doi_tra over an incidental
+            # "Bảo hành Thợ" mention in the delivery doc (live-test 6).
+            doc_words = set(_tokens(_fold(section.doc_name)))
+            score += 2.0 * len(query_words & doc_words)
+            folded_doc_name = _fold(section.doc_name).replace("_", " ").replace("-", " ")
+            score += _TOPIC_BONUS * sum(
+                1 for topic in query_topics if topic in folded_doc_name
+            )
             if (len(matched) >= 2 or score >= 2.0) and score >= min_score:
                 scored.append((score, index, section))
         scored.sort(key=lambda entry: (-entry[0], entry[1]))

@@ -151,6 +151,7 @@ QUY TẮC:
   KHÔNG BAO GIỜ là clear_fields.
 - "trên/hơn/tối thiểu X triệu" là mức SÀN (budget_min); "dưới/tối đa X" là
   mức TRẦN (budget_max); "X triệu đổ lại" -> budget_max, "X trở lên" -> budget_min.
+  Nêu "X triệu" TRẦN TRỤI (không kèm trên/dưới) -> budget_max = X, budget_min null.
 - Khách muốn mẫu đắt nhất/cao cấp nhất -> requested_roles ["most_expensive"],
   intent "more_recommendations" nếu đang tư vấn dở.
 - Đang tư vấn dở một ngành (xem bối cảnh) thì câu nói ngắn mơ hồ về "máy/mẫu/cái đó"
