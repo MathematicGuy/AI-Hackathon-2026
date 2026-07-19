@@ -12,6 +12,7 @@ import sys
 import time
 from collections.abc import Callable, Iterable
 from contextlib import nullcontext
+from dataclasses import replace
 from datetime import datetime, timezone
 
 import httpx
@@ -69,6 +70,7 @@ def _write_review_csv(path: pathlib.Path, groups: Iterable[dict]) -> None:
                 "image_position",
                 "image_url",
                 "source_url",
+                "attempted_source_urls",
                 "failure_reason",
             ),
         )
@@ -92,6 +94,9 @@ def _write_review_csv(path: pathlib.Path, groups: Iterable[dict]) -> None:
                         ),
                         "image_url": _image_url(image) if image else "",
                         "source_url": group.get("source_url") or "",
+                        "attempted_source_urls": " | ".join(
+                            group.get("attempted_source_urls") or []
+                        ),
                         "failure_reason": group.get("failure_reason") or "",
                     }
                 )
@@ -263,8 +268,15 @@ def run_collection(
                     len(result["images"]),
                 )
             else:
-                result = collect_group(source, active_client)
-                fetched = source.source_url is not None
+                collection_source = source
+                if resume and existing is not None and source.fallback_url:
+                    collection_source = replace(
+                        source,
+                        source_url=source.fallback_url,
+                        fallback_url=None,
+                    )
+                result = collect_group(collection_source, active_client)
+                fetched = collection_source.source_url is not None
                 logger.info(
                     "group=%s status=%s images=%d",
                     source.key,

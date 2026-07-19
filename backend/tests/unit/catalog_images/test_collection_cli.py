@@ -64,6 +64,28 @@ def test_source_urls_follow_current_first_party_category_patterns():
     )
 
 
+def test_source_urls_include_group_search_fallback_and_ipad_override():
+    ipad = source_for_group("30", None, "Ipad (Apple)")
+    assert ipad.source_url == (
+        "https://www.dienmayxanh.com/may-tinh-bang-apple-ipad"
+    )
+    assert ipad.match_brand is None
+    assert ipad.match_category == "Máy tính bảng"
+    assert ipad.fallback_url == (
+        "https://www.dienmayxanh.com/search?key=may+tinh+bang+Ipad+%28Apple%29&sc=new"
+    )
+
+    zenbos = source_for_group("139", "447", "Zenbos")
+    assert zenbos.match_category == "Micro karaoke"
+    assert zenbos.fallback_url == (
+        "https://www.dienmayxanh.com/search?key=micro+Zenbos&sc=new"
+    )
+
+    invalid = source_for_group("41", None, "#N/A")
+    assert invalid.source_url is None
+    assert invalid.fallback_url is None
+
+
 def test_pilot_rejects_unsafe_rate_limit(tmp_path):
     with pytest.raises(SystemExit):
         main(
@@ -157,6 +179,70 @@ def test_existing_checkpoint_requires_resume_or_force(tmp_path):
             timeout_seconds=1,
             rate_limit_seconds=1,
         )
+
+
+def test_resume_retries_not_found_group_from_fallback_only(tmp_path):
+    mapping_path = tmp_path / "runtime.json"
+    output_dir = tmp_path / "operation"
+    ready_mapping(mapping_path)
+    output_dir.mkdir()
+    (output_dir / "checkpoint.json").write_text(
+        json.dumps(
+            {
+                "groups": {
+                    "36:2": {
+                        "group_key": "36:2",
+                        "category_code": "36",
+                        "brand_id": "2",
+                        "brand": "Samsung",
+                        "image_type": "representative",
+                        "source_url": "https://www.dienmayxanh.com/may-lanh",
+                        "status": "not_found",
+                        "failure_reason": "no_product_card_images",
+                        "images": [],
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    source = GroupSource(
+        "36",
+        "2",
+        "Samsung",
+        "https://www.dienmayxanh.com/may-lanh-samsung",
+        fallback_url=(
+            "https://www.dienmayxanh.com/search?key=may+lanh+Samsung&sc=new"
+        ),
+    )
+    requests: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(str(request.url))
+        return httpx.Response(200, text=LISTING_HTML, request=request)
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        assert (
+            run_collection(
+                sources=(source,),
+                mode="all-groups",
+                output_dir=output_dir,
+                production_mapping_path=mapping_path,
+                mapping_version=1,
+                resume=True,
+                force=False,
+                timeout_seconds=1,
+                rate_limit_seconds=1,
+                client=client,
+                sleep=lambda _: None,
+            )
+            == 0
+        )
+    assert requests == [
+        "https://www.dienmayxanh.com/search?key=may+lanh+Samsung&sc=new"
+    ]
+    deployed = json.loads(mapping_path.read_text(encoding="utf-8"))
+    assert "36:2" in deployed["groups"]
 
 
 def test_interruption_keeps_production_mapping_unchanged(tmp_path):

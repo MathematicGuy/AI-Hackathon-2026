@@ -21,11 +21,14 @@ different brands into one group.
 
 1. Require exactly one explicit mode: `--pilot` or `--all-groups`. The pilot
    uses five frozen groups; all-groups derives unique groups from the catalog
-   and deterministic first-party category/brand URL slugs. No search API is
-   called.
+   and deterministic first-party category/brand URL slugs. No external search
+   API is called.
 2. Fetch each `https://www.dienmayxanh.com/...` source page with a bounded
    timeout, a descriptive user agent, retry/backoff, and a low request rate.
-3. Parse product-card image attributes, normalize protocol-relative URLs, keep
+   If the direct listing has no exact-brand cards, retry the official DMX
+   internal `/search?key=...&sc=new` page for the same category and brand.
+3. Parse product-card image attributes, require both the exact brand and
+   the expected `data-cate` industry label, normalize protocol-relative URLs, keep
    only TGDD/DMX CDN HTTP(S) images, deduplicate in document order, and cap the
    group at three.
 4. Atomically checkpoint after every group. Resume keeps `ready` groups and
@@ -84,8 +87,9 @@ unchanged.
 ## Observability
 
 The CLI logs one safe line per group: key, source host, status, and image count.
-It never logs cookies, response bodies, local environment values, or image
-binary content.
+The review CSV and checkpoint retain every first-party page URL attempted,
+including redirects and the successful fallback page. They never log cookies,
+response bodies, local environment values, or image binary content.
 
 ## Alternatives Considered
 

@@ -79,10 +79,12 @@ def test_mapping_rejects_non_allowlisted_duplicate_or_excess_images(images):
         RepresentativeImageMapping.from_payload(payload(images))
 
 
-def test_default_mapping_is_the_reviewed_five_group_seed():
+def test_default_mapping_contains_the_reviewed_five_group_seed():
     mapping = load_default_mapping()
     assert mapping.mapping_version == 1
-    assert set(mapping.groups) == {"38:2", "36:7", "115:315", "39:133", "41:355"}
+    assert {"38:2", "36:7", "115:315", "39:133", "41:355"}.issubset(
+        mapping.groups
+    )
 
 
 def test_catalog_group_sources_are_unique_stable_and_first_party():
@@ -103,7 +105,9 @@ def test_catalog_group_sources_are_unique_stable_and_first_party():
     assert sources[2].source_url is None
 
 
-def test_source_aliases_ipad_brand_for_page_card_matching():
+def test_source_uses_current_ipad_page_card_brand():
     source = source_for_group("30", None, "Ipad (Apple)")
-    assert source.source_url == "https://www.dienmayxanh.com/may-tinh-bang-apple"
-    assert source.match_brand == "Apple"
+    assert source.source_url == (
+        "https://www.dienmayxanh.com/may-tinh-bang-apple-ipad"
+    )
+    assert source.match_brand is None

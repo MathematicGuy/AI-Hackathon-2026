@@ -102,16 +102,16 @@ the ignored `data/processed/representative-images/pilot-5/` directory. The
 subsequent promotion below adds the runtime projection and guarded collector;
 the pilot itself never wrote catalog rows.
 
-US-126 promotion status (2026-07-19): implementation is complete for explicit
-all-group collection, versioned runtime mapping, stable SKU projection, Agent
-API fields, common placeholder, and disclosed chatbot rendering. Focused tests
-are 63 passed; the full backend suite is 500 passed / 17 skipped; frontend lint,
-typecheck, and production build pass. The pilot resume reports 5 ready groups
-and 15 images. The catalog derives 238 unique groups (234 source-backed and 4
-placeholder-only). The all-group crawl has not been invoked because the CLI
-requires an explicit `--all-groups`; no catalog/database write is implicit.
-Browser screenshot proof is still pending after the local dev/CDP session was
-interrupted.
+US-126 crawl status (2026-07-19): the explicit `--all-groups --force`
+run completed without database writes. The catalog derives 238 groups; the
+production mapping now contains 197 ready groups and 526 official CDN image URLs.
+There are 37 exact-brand `not_found` groups and 4 placeholder-only `skipped`
+groups, with 0 errors. Direct listing pages that lacked exact-brand cards were
+retried through the official DMX internal search page; attempted URLs and failure
+reasons are retained in the ignored review CSV. Focused tests are 69 passed; the
+full backend suite is 587 passed / 17 skipped. The five pilot groups were
+preserved, no catalog/database row was updated, and browser screenshot proof is
+still pending after the local dev/CDP session was interrupted.
 
 ## Definition of Done
 

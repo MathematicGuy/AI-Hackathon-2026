@@ -46,6 +46,8 @@ class GroupSource:
     brand: str
     source_url: str | None
     match_brand: str | None = None
+    fallback_url: str | None = None
+    match_category: str | None = None
 
     @property
     def key(self) -> str:
@@ -126,18 +128,28 @@ def normalize_image_url(value: str, source_url: str) -> str | None:
 
 
 class _ProductCardImageParser(html.parser.HTMLParser):
-    def __init__(self, source_url: str, expected_brand: str, limit: int) -> None:
+    def __init__(
+        self,
+        source_url: str,
+        expected_brand: str,
+        expected_category: str | None,
+        limit: int,
+    ) -> None:
         super().__init__(convert_charrefs=True)
         self.source_url = source_url
         self.expected_brand = normalized_brand_slug(expected_brand)
+        self.expected_category = (
+            normalized_brand_slug(expected_category) if expected_category else None
+        )
         self.limit = limit
         self.images: list[str] = []
         self._seen: set[str] = set()
-        self._stack: list[tuple[str, bool, bool, bool, bool]] = []
+        self._stack: list[tuple[str, bool, bool, bool, bool, bool]] = []
         self._list_depth = 0
         self._image_depth = 0
         self._card_depth = 0
         self._brand_depth = 0
+        self._category_depth = 0
 
     def handle_starttag(
         self, tag: str, attrs: list[tuple[str, str | None]]
@@ -158,6 +170,14 @@ class _ProductCardImageParser(html.parser.HTMLParser):
             and normalized_brand_slug(values.get("data-brand", ""))
             == self.expected_brand
         )
+        starts_category = (
+            self._category_depth == 0
+            and self._card_depth > 0
+            and tag == "a"
+            and self.expected_category is not None
+            and normalized_brand_slug(values.get("data-cate", ""))
+            == self.expected_category
+        )
 
         if starts_list:
             self._list_depth += 1
@@ -167,6 +187,8 @@ class _ProductCardImageParser(html.parser.HTMLParser):
             self._card_depth += 1
         if starts_brand:
             self._brand_depth += 1
+        if starts_category:
+            self._category_depth += 1
 
         if (
             tag == "img"
@@ -174,12 +196,20 @@ class _ProductCardImageParser(html.parser.HTMLParser):
             and self._image_depth > 0
             and self._card_depth > 0
             and self._brand_depth > 0
+            and (self.expected_category is None or self._category_depth > 0)
         ):
             self._add_image(values)
 
         if tag not in _VOID_TAGS:
             self._stack.append(
-                (tag, starts_list, starts_image, starts_card, starts_brand)
+                (
+                    tag,
+                    starts_list,
+                    starts_image,
+                    starts_card,
+                    starts_brand,
+                    starts_category,
+                )
             )
 
     def handle_startendtag(
@@ -193,10 +223,11 @@ class _ProductCardImageParser(html.parser.HTMLParser):
                 continue
             closing = self._stack[index:]
             del self._stack[index:]
-            self._list_depth -= sum(1 for _, starts, _, _, _ in closing if starts)
-            self._image_depth -= sum(1 for _, _, starts, _, _ in closing if starts)
-            self._card_depth -= sum(1 for _, _, _, starts, _ in closing if starts)
-            self._brand_depth -= sum(1 for _, _, _, _, starts in closing if starts)
+            self._list_depth -= sum(1 for _, starts, _, _, _, _ in closing if starts)
+            self._image_depth -= sum(1 for _, _, starts, _, _, _ in closing if starts)
+            self._card_depth -= sum(1 for _, _, _, starts, _, _ in closing if starts)
+            self._brand_depth -= sum(1 for _, _, _, _, starts, _ in closing if starts)
+            self._category_depth -= sum(1 for _, _, _, _, _, starts in closing if starts)
             break
 
     def _add_image(self, attrs: dict[str, str]) -> None:
@@ -213,14 +244,21 @@ class _ProductCardImageParser(html.parser.HTMLParser):
 
 
 def parse_representative_images(
-    page_html: str, source_url: str, expected_brand: str, *, limit: int = 3
+    page_html: str,
+    source_url: str,
+    expected_brand: str,
+    *,
+    expected_category: str | None = None,
+    limit: int = 3,
 ) -> list[str]:
     validate_source_url(source_url)
     if not 1 <= limit <= 3:
         raise ValueError("limit must be between 1 and 3")
     if not normalized_brand_slug(expected_brand):
         raise ValueError("expected_brand is required")
-    parser = _ProductCardImageParser(source_url, expected_brand, limit)
+    parser = _ProductCardImageParser(
+        source_url, expected_brand, expected_category, limit
+    )
     parser.feed(page_html)
     parser.close()
     return parser.images
@@ -246,59 +284,82 @@ def collect_group(
             "source_url": None,
             "status": "skipped",
             "failure_reason": "missing_first_party_source",
+            "attempted_source_urls": [],
             "images": [],
         }
-    validate_source_url(group.source_url)
+    source_urls = [group.source_url]
+    if group.fallback_url and group.fallback_url != group.source_url:
+        source_urls.append(group.fallback_url)
 
+    attempted_source_urls: list[str] = []
+    last_source_url = group.source_url
     failure_reason: str | None = None
-    for attempt in range(max_attempts):
-        try:
-            response = client.get(group.source_url)
-            if response.status_code == 404:
-                return {
-                    "group_key": group.key,
-                    "category_code": group.category_code,
-                    "brand_id": group.brand_id,
-                    "brand": group.brand,
-                    "image_type": IMAGE_TYPE,
-                    "source_url": str(response.url),
-                    "status": "not_found",
-                    "failure_reason": "http_404",
-                    "images": [],
-                }
-            if response.status_code == 429 or response.status_code >= 500:
-                failure_reason = f"http_{response.status_code}"
+    status = "error"
+    for source_url in source_urls:
+        validate_source_url(source_url)
+        if source_url not in attempted_source_urls:
+            attempted_source_urls.append(source_url)
+        source_failure: str | None = None
+        source_status = "error"
+        for attempt in range(max_attempts):
+            try:
+                response = client.get(source_url)
+                last_source_url = str(response.url)
+                if last_source_url not in attempted_source_urls:
+                    attempted_source_urls.append(last_source_url)
+                if response.status_code == 404:
+                    source_failure = "http_404"
+                    source_status = "not_found"
+                    break
+                if response.status_code == 429 or response.status_code >= 500:
+                    source_failure = f"http_{response.status_code}"
+                    if attempt + 1 < max_attempts:
+                        retry_after = response.headers.get("Retry-After", "")
+                        delay = (
+                            float(retry_after) if retry_after.isdigit() else 2**attempt
+                        )
+                        sleep(delay)
+                        continue
+                    break
+                response.raise_for_status()
+                images = parse_representative_images(
+                    response.text,
+                    last_source_url,
+                    group.match_brand or group.brand,
+                    expected_category=group.match_category,
+                    limit=3,
+                )
+                if images:
+                    return {
+                        "group_key": group.key,
+                        "category_code": group.category_code,
+                        "brand_id": group.brand_id,
+                        "brand": group.brand,
+                        "image_type": IMAGE_TYPE,
+                        "source_url": last_source_url,
+                        "status": "ready",
+                        "failure_reason": None,
+                        "attempted_source_urls": attempted_source_urls,
+                        "images": [
+                            {
+                                "position": index,
+                                "url": url,
+                                "source_url": last_source_url,
+                            }
+                            for index, url in enumerate(images)
+                        ],
+                    }
+                source_failure = "no_product_card_images"
+                source_status = "not_found"
+                break
+            except (httpx.HTTPError, ValueError) as exc:
+                source_failure = type(exc).__name__
                 if attempt + 1 < max_attempts:
-                    retry_after = response.headers.get("Retry-After", "")
-                    delay = float(retry_after) if retry_after.isdigit() else 2**attempt
-                    sleep(delay)
+                    sleep(2**attempt)
                     continue
-            response.raise_for_status()
-            images = parse_representative_images(
-                response.text,
-                str(response.url),
-                group.match_brand or group.brand,
-                limit=3,
-            )
-            status = "ready" if images else "not_found"
-            return {
-                "group_key": group.key,
-                "category_code": group.category_code,
-                "brand_id": group.brand_id,
-                "brand": group.brand,
-                "image_type": IMAGE_TYPE,
-                "source_url": str(response.url),
-                "status": status,
-                "failure_reason": None if images else "no_product_card_images",
-                "images": [
-                    {"position": index, "url": url, "source_url": str(response.url)}
-                    for index, url in enumerate(images)
-                ],
-            }
-        except (httpx.HTTPError, ValueError) as exc:
-            failure_reason = type(exc).__name__
-            if attempt + 1 < max_attempts:
-                sleep(2**attempt)
+                break
+        failure_reason = source_failure or "unknown_error"
+        status = source_status
 
     return {
         "group_key": group.key,
@@ -306,9 +367,10 @@ def collect_group(
         "brand_id": group.brand_id,
         "brand": group.brand,
         "image_type": IMAGE_TYPE,
-        "source_url": group.source_url,
-        "status": "error",
+        "source_url": last_source_url,
+        "status": status,
         "failure_reason": failure_reason or "unknown_error",
+        "attempted_source_urls": attempted_source_urls,
         "images": [],
     }
 

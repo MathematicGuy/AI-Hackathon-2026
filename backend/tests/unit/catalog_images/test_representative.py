@@ -48,6 +48,21 @@ def test_parser_keeps_three_unique_product_card_images():
     ]
 
 
+def test_parser_filters_cards_to_expected_category():
+    html = """
+    <ul class="listproduct">
+      <li class="item" data-id="1"><a data-brand="Samsung" data-cate="Máy lạnh"><div class="item-img"><img data-src="https://cdn.tgdd.vn/Products/Images/1/1/wrong.jpg"></div></a></li>
+      <li class="item" data-id="2"><a data-brand="Samsung" data-cate="Tủ lạnh"><div class="item-img"><img data-src="https://cdn.tgdd.vn/Products/Images/1/2/right.jpg"></div></a></li>
+    </ul>
+    """
+    assert parse_representative_images(
+        html,
+        "https://www.dienmayxanh.com/search?key=tu+lanh+Samsung",
+        "Samsung",
+        expected_category="Tủ lạnh",
+    ) == ["https://cdn.tgdd.vn/Products/Images/1/2/right.jpg"]
+
+
 @pytest.mark.parametrize(
     "source_url",
     ["http://www.dienmayxanh.com/tu-lanh", "https://example.com/tu-lanh"],
@@ -103,6 +118,35 @@ def test_collect_group_isolates_not_found():
     assert result["status"] == "not_found"
     assert result["failure_reason"] == "no_product_card_images"
     assert result["images"] == []
+
+
+def test_collect_group_uses_first_party_search_fallback():
+    requests: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(str(request.url))
+        if request.url.path == "/tu-lanh-samsung":
+            return httpx.Response(200, text="<html>no product list</html>", request=request)
+        return httpx.Response(200, text=LISTING_HTML, request=request)
+
+    source = GroupSource(
+        "38",
+        "2",
+        "Samsung",
+        "https://www.dienmayxanh.com/tu-lanh-samsung",
+        fallback_url=(
+            "https://www.dienmayxanh.com/search?key=tu+lanh+Samsung&sc=new"
+        ),
+    )
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        result = collect_group(source, client, max_attempts=1)
+    assert requests == [
+        "https://www.dienmayxanh.com/tu-lanh-samsung",
+        "https://www.dienmayxanh.com/search?key=tu+lanh+Samsung&sc=new",
+    ]
+    assert result["status"] == "ready"
+    assert len(result["images"]) == 3
+    assert result["attempted_source_urls"] == requests
 
 
 def test_collect_group_retries_transient_failure():

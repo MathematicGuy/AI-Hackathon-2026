@@ -6,8 +6,9 @@ The five-group pilot is complete: each configured category-brand group has
 three reviewed first-party image URLs and the SHA-256 selector is stable. The
 promoted implementation now ships explicit pilot/all-group collection modes,
 a versioned runtime mapping seeded from those five groups, additive Agent API
-fields, a shared placeholder, and disclosed chatbot rendering. The intentional
-all-group crawl has not been invoked.
+fields, a shared placeholder, and disclosed chatbot rendering. The all-group
+resume crawl has now completed with a first-party DMX search fallback for
+groups whose direct listing page had no exact-brand product cards.
 
 ## Target Behavior
 
