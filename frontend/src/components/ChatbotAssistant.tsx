@@ -15,11 +15,34 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { SafeImage } from "@/components/SafeImage";
 import { useToast } from "@/components/ToastProvider";
 
+interface ComparisonTable {
+  products: {
+    id: string;
+    name: string;
+    brand: string | null;
+    list_price: number | null;
+    sale_price: number | null;
+    effective_price: number | null;
+    discount_percent: number | null;
+    gift: boolean;
+  }[];
+  rows: { label: string; values: string[]; winner_id: string | null }[];
+}
+
 interface ChatMessage {
   id: number;
   role: "assistant" | "user";
   text: string;
   time: string;
+  // Grounded comparison payload from the backend — the only table source.
+  table?: ComparisonTable | null;
+}
+
+function formatVnd(amount: number | null) {
+  if (amount === null || amount === undefined) {
+    return "Đang cập nhật";
+  }
+  return `${amount.toLocaleString("vi-VN")}₫`;
 }
 
 const QUICK_QUESTIONS = [
@@ -274,6 +297,7 @@ export function ChatbotAssistant() {
             type: string;
             text?: string;
             session_id?: string;
+            table?: ComparisonTable | null;
           };
           if (event.type === "chunk" && event.text !== undefined) {
             if (!started) {
@@ -297,8 +321,18 @@ export function ChatbotAssistant() {
                 ),
               );
             }
-          } else if (event.type === "done" && event.session_id) {
-            sessionId.current = event.session_id;
+          } else if (event.type === "done") {
+            if (event.session_id) {
+              sessionId.current = event.session_id;
+            }
+            if (event.table) {
+              const table = event.table;
+              setMessages((current) =>
+                current.map((message) =>
+                  message.id === assistantId ? { ...message, table } : message,
+                ),
+              );
+            }
           }
         }
       }
@@ -534,6 +568,65 @@ export function ChatbotAssistant() {
                   >
                     {message.text}
                   </div>
+                  {message.table ? (
+                    <div className="mt-2 overflow-x-auto rounded-xl border border-slate-200">
+                      <table className="w-full min-w-[420px] border-collapse text-left text-xs">
+                        <thead>
+                          <tr className="bg-slate-50">
+                            <th className="sticky left-0 bg-slate-50 px-3 py-2 font-semibold text-slate-500">
+                              Tiêu chí
+                            </th>
+                            {message.table.products.map((product) => (
+                              <th key={product.id} className="px-3 py-2 align-top">
+                                <p className="font-semibold text-slate-800">{product.name}</p>
+                                <p className="mt-0.5 font-bold text-[#0754ad]">
+                                  {formatVnd(product.effective_price)}
+                                  {product.discount_percent ? (
+                                    <span className="ml-1 rounded bg-red-50 px-1 py-px text-[10px] font-bold text-red-600">
+                                      -{Math.round(product.discount_percent)}%
+                                    </span>
+                                  ) : null}
+                                </p>
+                                {product.sale_price && product.list_price ? (
+                                  <p className="text-[10px] text-slate-400 line-through">
+                                    {formatVnd(product.list_price)}
+                                  </p>
+                                ) : null}
+                                {product.gift ? (
+                                  <p className="text-[10px] font-medium text-emerald-600">
+                                    Có quà tặng kèm
+                                  </p>
+                                ) : null}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {message.table.rows.map((row) => (
+                            <tr key={row.label} className="border-t border-slate-100">
+                              <td className="sticky left-0 bg-white px-3 py-2 font-medium text-slate-500">
+                                {row.label}
+                              </td>
+                              {row.values.map((value, index) => {
+                                const productId = message.table?.products[index]?.id;
+                                const isWinner =
+                                  row.winner_id !== null && row.winner_id === productId;
+                                return (
+                                  <td
+                                    key={`${row.label}-${productId}`}
+                                    className={`px-3 py-2 text-slate-700 ${isWinner ? "bg-emerald-50 font-semibold text-emerald-700" : ""}`}
+                                  >
+                                    {value}
+                                    {isWinner ? " ✓" : ""}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : null}
                   <div
                     className={`mt-1 flex items-center gap-1 px-1 ${message.role === "user" ? "justify-end" : "justify-start"}`}
                   >

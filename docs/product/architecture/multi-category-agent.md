@@ -311,6 +311,11 @@ Frontend edit is replay-based: editing a user message cuts the conversation
 back to that point and silently replays the earlier user turns on a fresh
 session before sending the edited text — real edit semantics over the
 in-process session store. The bot self-addresses as "em" in every UI string.
+Compare replies additionally carry `table` (round 7): the SAME comparison
+the text already made, structured (products + dimension rows + winner ids)
+so the chat embeds a real table under the bubble — present only on
+`compare_products` with two models; the UI renders exclusively this
+backend payload, never client-side guesses.
 
 Stories: `docs/stories/epics/E02-multi-category-agent/` (US-201 catalog,
 US-202 tools, US-203 policy, US-204 conversation, US-205 salesman, US-206

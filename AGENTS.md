@@ -281,6 +281,7 @@ When the user corrects your approach, append a one-line rule here before ending 
 - Every sticky preference (budget, brands, priorities, role locks) must have a clear path (clear_fields) and role locks release automatically on new preference signals.
 - Any UI element that displays product data must render grounded backend data — demo/template components with hardcoded products, prices, or ratings are forbidden (the template's fake comparison card was deleted in round 6).
 - Superlative role selections (most expensive, dimension winners) must run over the full candidate pool, never a price-sorted first page.
+- When Cường asks to embed/expose an existing capability, build ONLY the embedding (trigger + wiring) — do not expand it into a new feature system (round 7 correction: a table-embed request is not a request for card/detail view families).
 
 ---
 

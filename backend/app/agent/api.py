@@ -18,6 +18,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from backend.app.agent.catalog.dimensions import (
+    better_of,
+    dimension_display,
+    dimension_value,
+    dimensions_for,
+    rankable,
+)
 from backend.app.agent.contracts import AgentState
 from backend.app.agent.graph import AgentDependencies, run_turn
 from backend.app.observability import noop_agent_observer
@@ -36,12 +43,66 @@ class AgentResponse(BaseModel):
     text: str
     flags: list[str] = []
     presented_ids: list[str] = []
+    # The EXISTING comparison, structured for embedding (round 7): present
+    # only on compare replies, built from the same tools the text used.
+    # Optional and additive — older clients ignore it.
+    table: dict | None = None
 
 
 class FeedbackRequest(BaseModel):
     session_id: str
     message_index: int = Field(ge=0)
     rating: str = Field(pattern="^(like|dislike)$")
+
+
+def _comparison_table(deps: AgentDependencies, reply) -> dict | None:
+    """Structure the comparison the reply ALREADY made (same tools as
+    `_compare_flow`'s text) so the UI can embed it as a table. Only for
+    compare replies with two products — nowhere else."""
+    if reply.intent != "compare_products" or len(reply.presented_ids) < 2:
+        return None
+    selected = [
+        p
+        for pid in reply.presented_ids[:2]
+        for p in deps.products
+        if p.productidweb == pid
+    ]
+    if len(selected) < 2:
+        return None
+    products = []
+    for p in selected:
+        products.append(
+            {
+                "id": p.productidweb,
+                "name": p.name,
+                "brand": p.brand,
+                "list_price": p.list_price,
+                "sale_price": p.sale_price,
+                "effective_price": p.effective_price,
+                "discount_percent": p.promotion.discount_percent,
+                "gift": bool(p.gift_promotion),
+            }
+        )
+    rows = []
+    first, second = selected
+    for dim in dimensions_for(first.category_code):
+        shown_a = dimension_display(first, dim)
+        shown_b = dimension_display(second, dim)
+        if shown_a is None or shown_b is None:
+            continue
+        winner_id = None
+        if rankable(dim):
+            verdict = better_of(
+                dimension_value(first, dim), dimension_value(second, dim), dim
+            )
+            if verdict == -1:
+                winner_id = first.productidweb
+            elif verdict == 1:
+                winner_id = second.productidweb
+        rows.append(
+            {"label": dim.label, "values": [shown_a, shown_b], "winner_id": winner_id}
+        )
+    return {"products": products, "rows": rows}
 
 
 def _session_dir() -> Path:
@@ -124,6 +185,7 @@ def create_agent_router(deps: AgentDependencies) -> APIRouter:
             text=reply.text,
             flags=reply.flags,
             presented_ids=reply.presented_ids,
+            table=_comparison_table(deps, reply),
         )
 
     @router.post("/api/v1/agent/respond/stream")
@@ -153,6 +215,7 @@ def create_agent_router(deps: AgentDependencies) -> APIRouter:
                     "intent": reply.intent,
                     "flags": reply.flags,
                     "presented_ids": reply.presented_ids,
+                    "table": _comparison_table(deps, reply),
                 },
                 ensure_ascii=False,
             ) + "\n"
