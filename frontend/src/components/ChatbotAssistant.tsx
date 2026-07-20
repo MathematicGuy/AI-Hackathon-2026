@@ -36,6 +36,11 @@ interface ChatMessage {
   time: string;
   // Grounded comparison payload from the backend — the only table source.
   table?: ComparisonTable | null;
+  // Representative imagery disclosed by the backend (US-126). Presentation
+  // only — never a catalog fact, and never inferred client-side.
+  imageUrl?: string;
+  imageType?: "representative";
+  mappingVersion?: number;
 }
 
 function formatVnd(amount: number | null) {
@@ -70,8 +75,12 @@ function formatChatTime(date: Date) {
 
 // Live E02 sales agent (backend/app/agent). Falls back to the retry UI when
 // the API is unreachable.
-const AGENT_API_BASE =
-  process.env.NEXT_PUBLIC_AGENT_API_URL ?? "http://127.0.0.1:8000";
+// Same origin by default. `next.config.ts` rewrites /api/* to the backend in
+// development, and nginx routes /api/ to it in production, so a relative path
+// is correct in both. An absolute default would be inlined into the client
+// bundle at build time and point every VISITOR's browser at their own machine
+// — which is exactly how this broke on the server before.
+const AGENT_API_BASE = process.env.NEXT_PUBLIC_AGENT_API_URL ?? "";
 
 // Natural progress line while waiting, picked from the query (replaces "...").
 function statusForQuery(query: string) {
@@ -298,6 +307,9 @@ export function ChatbotAssistant() {
             text?: string;
             session_id?: string;
             table?: ComparisonTable | null;
+            image_url?: string | null;
+            image_type?: "representative" | null;
+            mapping_version?: number | null;
           };
           if (event.type === "chunk" && event.text !== undefined) {
             if (!started) {
@@ -330,6 +342,22 @@ export function ChatbotAssistant() {
               setMessages((current) =>
                 current.map((message) =>
                   message.id === assistantId ? { ...message, table } : message,
+                ),
+              );
+            }
+            if (event.image_url && event.image_type === "representative") {
+              const imageUrl = event.image_url;
+              const mappingVersion = event.mapping_version ?? undefined;
+              setMessages((current) =>
+                current.map((message) =>
+                  message.id === assistantId
+                    ? {
+                        ...message,
+                        imageUrl,
+                        imageType: "representative",
+                        mappingVersion,
+                      }
+                    : message,
                 ),
               );
             }
@@ -568,6 +596,23 @@ export function ChatbotAssistant() {
                   >
                     {message.text}
                   </div>
+                  {message.imageUrl && message.imageType === "representative" ? (
+                    <figure
+                      data-testid="chat-representative-image"
+                      data-mapping-version={message.mappingVersion}
+                      className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"
+                    >
+                      <SafeImage
+                        src={message.imageUrl}
+                        alt="Hình ảnh minh họa cho sản phẩm được tư vấn"
+                        className="mx-auto aspect-square max-h-52 w-full rounded-xl object-contain"
+                        fallbackLabel="Hình ảnh minh họa"
+                      />
+                      <figcaption className="mt-1.5 text-center text-xs font-medium text-slate-500">
+                        Hình ảnh minh họa
+                      </figcaption>
+                    </figure>
+                  ) : null}
                   {message.table ? (
                     <div className="mt-2 overflow-x-auto rounded-xl border border-slate-200">
                       <table className="w-full min-w-[420px] border-collapse text-left text-xs">

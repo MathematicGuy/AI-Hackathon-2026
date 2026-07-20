@@ -1,0 +1,2305 @@
+{
+  "mapping_version": 1,
+  "generated_at": "2026-07-19T05:27:12.619718+00:00",
+  "groups": {
+    "30:brand:acer": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Acer",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/522/92138/acer-iconia-talk-7-b1-733-ava-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+tinh+bang+Acer&sc=new"
+    },
+    "30:brand:alcatel": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Alcatel",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/522/270132/Alcatel-3T8-1-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+tinh+bang+Alcatel&sc=new"
+    },
+    "30:brand:asus": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Asus",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/522/71326/asus-fonepad-7-fe171cg-300-nowatermark-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/522/72396/asus-zenpad-c-70-z370cg-nk-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+tinh+bang+Asus&sc=new"
+    },
+    "30:brand:honor": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Honor",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/522/345544/honor-pad-x7-wifi-4gb-64gb-150925-041634-575-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/339828-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/367014.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-bang-honor"
+    },
+    "30:brand:huawei": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Huawei",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/522/196071/huawei-mediapad-t5-den-600x600-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/522/241051/Huawei-MatePad-T10-1-2-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+tinh+bang+Huawei&sc=new"
+    },
+    "30:brand:ipad-apple": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Ipad (Apple)",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/522/335308/ipad-11-wifi-yellow-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/522/363417/ipad-air-m4-11-inch-wifi-128gb-xam-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/522/358082/ipad-pro-m5-wifi-11-inch-black-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-bang-apple-ipad"
+    },
+    "30:brand:lenovo": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Lenovo",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/342548-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/368516.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/368580.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-bang-lenovo"
+    },
+    "30:brand:masstel": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Masstel",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/522/340147/masstel-tab-11-ultra-yellow-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-bang-masstel"
+    },
+    "30:brand:mobell": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Mobell",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/522/311039/mobell-tab-8,1-thumb-xanh-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/522/73547/mobell-tab-7s-vangdong-600x600-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/522/187172/mobell-tab-10-33397-1-thumb1-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+tinh+bang+Mobell&sc=new"
+    },
+    "30:brand:nokia": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Nokia",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/522/248101/nokia-t20-thumb-600x600.jpeg",
+        "https://cdn.tgdd.vn/Products/Images/522/266337/nokia-tab-t20-wifi-thumb-600x600-1-600x600.jpeg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+tinh+bang+Nokia&sc=new"
+    },
+    "30:brand:oppo": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "OPPO",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/361231.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/339287-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/320992-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-bang-oppo"
+    },
+    "30:brand:samsung": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Samsung",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/359089-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/359086-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/343061-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-bang-samsung"
+    },
+    "30:brand:tcl": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Tcl",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/522/320989/tcl-tab-10l-gen-2-black-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/522/320990/tcl-tab-10-gen-2-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/522/320991/tcl-tab-11-tim-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+tinh+bang+Tcl&sc=new"
+    },
+    "30:brand:xiaomi": {
+      "category_code": "30",
+      "brand_id": null,
+      "brand": "Xiaomi",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/362716.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/362718.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/339204-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-bang-xiaomi"
+    },
+    "36:444": {
+      "category_code": "36",
+      "brand_id": "444",
+      "brand": "Akito",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2002/228812/may-lanh-akito-aic-09st-1-550x160.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2002/228858/may-lanh-akito-aks-c9oc-1-550x160.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2002/228860/may-lanh-akito-aks-c12oc-550x160.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+lanh+Akito&sc=new"
+    },
+    "36:187": {
+      "category_code": "36",
+      "brand_id": "187",
+      "brand": "Aqua",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/333353-600x600-1.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/360638/may-lanh-aqua-inverter-1-hp-aqa-rv10qa5-thumb-639110326490179924-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/360640/may-lanh-aqua-inverter-15-hp-aqa-rv13qa5-thumb-639110326012134088-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-aqua"
+    },
+    "36:443": {
+      "category_code": "36",
+      "brand_id": "443",
+      "brand": "Aux",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/335304/aux-inverter-1-5-hp-aw13caa4di-3vn-thumb-639112081603270214-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/05/timerseo/335134.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/335266/aux-inverter-2-hp-aw18cda4di-5vn-thumb1-639118120848836905-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-aux"
+    },
+    "36:185": {
+      "category_code": "36",
+      "brand_id": "185",
+      "brand": "Beko",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2002/156188/may-lanh-beko-rssc12cv-2-550x160.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2002/156389/may-lanh-beko-rsvc10av-dd-550x160-550x160.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2002/198109/may-lanh-beko-rsvc09vs-5-550x160.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+lanh+Beko&sc=new"
+    },
+    "36:10": {
+      "category_code": "36",
+      "brand_id": "10",
+      "brand": "Casper",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/05/timerseo/363971.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/334018-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/05/timerseo/363973.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-casper"
+    },
+    "36:9": {
+      "category_code": "36",
+      "brand_id": "9",
+      "brand": "Comfee",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/05/timerseo/363374.png",
+        "https://cdn.tgdd.vn/2026/05/timerseo/363375.jpg",
+        "https://cdn.tgdd.vn/2026/05/timerseo/363485.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-comfee"
+    },
+    "36:6": {
+      "category_code": "36",
+      "brand_id": "6",
+      "brand": "Daikin",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/322936/daikin-inverter-1-hp-atkb25yvmv-thumb1-639112081147335896-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/322937.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/334523/daikin-inverter-1-hp-atkf25zvmv-thumb-639112086592419765-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-daikin"
+    },
+    "36:315": {
+      "category_code": "36",
+      "brand_id": "315",
+      "brand": "Electrolux",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2002/133252/electrolux-esm09crm-a1-550x160-550x160-550x160.png",
+        "https://cdn.tgdd.vn/Products/Images/2002/97718/may-lanh-electrolux-esm09crm-a3-2-550x160.png",
+        "https://cdn.tgdd.vn/Products/Images/2002/91740/electrolux-1-hp-esm09crm-a4-250422-104407-550x160.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+lanh+Electrolux&sc=new"
+    },
+    "36:13": {
+      "category_code": "36",
+      "brand_id": "13",
+      "brand": "Funiki",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/05/timerseo/361690.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/361692/funiki-inverter-15-hp-hic12tmm-6-thumb-639110318585816090-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/361694/funiki-inverter-2-hp-hic18tmm-6-thumb-639110318375312204-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-funiki"
+    },
+    "36:331": {
+      "category_code": "36",
+      "brand_id": "331",
+      "brand": "Gree",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/335837/gree-inverter-1-hp-bd9ci-thumb-639167010454195590-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/336040/gree-inverter-1-5-hp-bd12ci-thumb-639167011367319993-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/05/timerseo/336043.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-gree"
+    },
+    "36:346": {
+      "category_code": "36",
+      "brand_id": "346",
+      "brand": "Haier",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/360644/may-lanh-haier-inverter-1hp-hr-10vsa-thumb-639112038282269497-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/360647/haier-inverter-15hp-hr-13vqi-thumb-639112037490158538-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/360646.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-haier"
+    },
+    "36:18": {
+      "category_code": "36",
+      "brand_id": "18",
+      "brand": "Hisense",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/334369-600x600-4.jpg",
+        "https://cdn.tgdd.vn/2026/05/timerseo/361958.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/361965/may-lanh-hisense-inverter-2-hp-as-18tr4rwsca00-thumb-639110314232870998-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-hisense"
+    },
+    "36:193": {
+      "category_code": "36",
+      "brand_id": "193",
+      "brand": "Kangaroo",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/05/timerseo/365963.jpg",
+        "https://cdn.tgdd.vn/2026/05/timerseo/365994.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/365995/kangaroo-inverter-2-hp-kg18aci-thumb-639136475820232080-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-kangaroo"
+    },
+    "36:8": {
+      "category_code": "36",
+      "brand_id": "8",
+      "brand": "LG",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/361659.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/361651.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/361660/lg-inverter-15-hp-ifc12m1-thumb-639110321765523754-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-lg"
+    },
+    "36:186": {
+      "category_code": "36",
+      "brand_id": "186",
+      "brand": "Midea",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/320893.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/302747/midea-inverter-15-hp-msaga-13crdn8-thumb1-639112062365936450-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/302746/midea-msaga-10crdn8-thumb1-639112062219632633-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-midea"
+    },
+    "36:342": {
+      "category_code": "36",
+      "brand_id": "342",
+      "brand": "Mitsubishi Electric",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2002/72780/mitsubishi-electric-ms-hl25vc-3-550x160.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2002/72781/mitsubishi-electric-ms-hl35vc-550x160.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2002/85217/may-lanh-mitsubishi-electric-ms-hm25va-550x160.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+lanh+Mitsubishi+Electric&sc=new"
+    },
+    "36:442": {
+      "category_code": "36",
+      "brand_id": "442",
+      "brand": "Mitsubishi Heavy",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2002/71190/mitsubishi-heavy-srk12cm-5-1-550x160.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2002/75261/may-lanh-mitsubishi-heavy-srk18cl-5-550x160.png",
+        "https://cdn.tgdd.vn/Products/Images/2002/71191/mitsubishi-heavy-srk13yn-s5-daidien-550x160.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+lanh+Mitsubishi+Heavy&sc=new"
+    },
+    "36:316": {
+      "category_code": "36",
+      "brand_id": "316",
+      "brand": "Nagakawa",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/361674.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/299825.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/361677.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-nagakawa"
+    },
+    "36:7": {
+      "category_code": "36",
+      "brand_id": "7",
+      "brand": "Panasonic",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/321382.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/321383.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/334298/panasonic-inverter-1-hp-cu-cs-u9bkh-8-thumb-639112105271935504-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-panasonic"
+    },
+    "36:2": {
+      "category_code": "36",
+      "brand_id": "2",
+      "brand": "Samsung",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/362709.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/362708.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/362702/samsung-inverter-1-hp-ar50h10d1bhnsv-thumb-639110306063183745-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-samsung"
+    },
+    "36:12": {
+      "category_code": "36",
+      "brand_id": "12",
+      "brand": "Sharp",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/05/timerseo/362466.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/362467/sharp-inverter-15-hp-ah-x13dew-thumb-639110312917332119-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/362481/sharp-inverter-1-hp-ah-xp10dsw-thumbksp-639118090315342266-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-sharp"
+    },
+    "36:190": {
+      "category_code": "36",
+      "brand_id": "190",
+      "brand": "Sunhouse",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/333227-600x600-4.jpg",
+        "https://cdn.tgdd.vn/2026/05/timerseo/333282.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/333319/sunhouse-inverter-2-hp-shr-aw18ic650-thumb1-639112084206668288-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-sunhouse"
+    },
+    "36:54": {
+      "category_code": "36",
+      "brand_id": "54",
+      "brand": "Tcl",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/364713/tcl-inverter-25-hp-tbi-24csd-tphi-thumb-639136477681693202-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/05/timerseo/364677.png",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2002/364678/tcl-inverter-15-hp-tac-br13csv-tb-thumb1-639118118155274471-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-tcl"
+    },
+    "36:11": {
+      "category_code": "36",
+      "brand_id": "11",
+      "brand": "Toshiba",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/334397-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/363515.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/363517.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-lanh-toshiba"
+    },
+    "38:187": {
+      "category_code": "38",
+      "brand_id": "187",
+      "brand": "Aqua",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/337668/TimerThumb/337668-600x600-2.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/364672/TimerThumb/364672-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh"
+    },
+    "38:185": {
+      "category_code": "38",
+      "brand_id": "185",
+      "brand": "Beko",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/320497/tu-lanh-beko-inverter-340-lit-rdnt371e50vzhfsgb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/225122/beko-rs9051p-230822-050821-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/93881/tu-lanh-beko-rdnt230i30zp-300x300.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=tu+lanh+Beko&sc=new"
+    },
+    "38:315": {
+      "category_code": "38",
+      "brand_id": "315",
+      "brand": "Electrolux",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/75706/electrolux-eme2600mg-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/75701/electrolux-etb2300mg--300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/75927/tu-lanh-electrolux-ete5720aa-3-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=tu+lanh+Electrolux&sc=new"
+    },
+    "38:13": {
+      "category_code": "38",
+      "brand_id": "13",
+      "brand": "Funiki",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/363327.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1943/363381/tu-lanh-funiki-inverter-535-lit-side-by-side-hr-ss8535tdg-thumb-639086691224157950-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/363378.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-funiki"
+    },
+    "38:346": {
+      "category_code": "38",
+      "brand_id": "346",
+      "brand": "Haier",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/366754.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/365628/TimerThumb/365628-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/365627/TimerThumb/365627-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-haier"
+    },
+    "38:18": {
+      "category_code": "38",
+      "brand_id": "18",
+      "brand": "Hisense",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/356838.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/363088.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/342878-600x600-10.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-hisense"
+    },
+    "38:313": {
+      "category_code": "38",
+      "brand_id": "313",
+      "brand": "Hitachi",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/360346/TimerThumb/Group-2147228567-600x600-2.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/360348.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/360350/TimerThumb/360350-600x600-5.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-hitachi"
+    },
+    "38:8": {
+      "category_code": "38",
+      "brand_id": "8",
+      "brand": "LG",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1943/338406/tu-lanh-lg-inverter-266-lit-ltb26svm-thumb-638835086907008088-300x300.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/327795-600x600-4.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/331796/TimerThumb/331796-600x600-2.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-lg"
+    },
+    "38:186": {
+      "category_code": "38",
+      "brand_id": "186",
+      "brand": "Midea",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/72646/midea-hs-122ln-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/199948/tu-lanh-tu-lanh-midea-hf-122tty-3-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/72653/midea-hd-296fw-n1-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=tu+lanh+Midea&sc=new"
+    },
+    "38:342": {
+      "category_code": "38",
+      "brand_id": "342",
+      "brand": "Mitsubishi Electric",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/73998/mitsubishi-electric-mr-fv32ej-br-v-300-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/73393/mitsubishi-electric-mr-v50eh-slw-v-300-1-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/73690/mitsubishi-electric-mr-l72eh-stv-300-1-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=tu+lanh+Mitsubishi+Electric&sc=new"
+    },
+    "38:7": {
+      "category_code": "38",
+      "brand_id": "7",
+      "brand": "Panasonic",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/235431.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/249097.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/240703-600x600-6.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-panasonic"
+    },
+    "38:2": {
+      "category_code": "38",
+      "brand_id": "2",
+      "brand": "Samsung",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/335158/TimerThumb/335158-600x600-4.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/220325/TimerThumb/220326-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/358151-600x600-5.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-samsung"
+    },
+    "38:12": {
+      "category_code": "38",
+      "brand_id": "12",
+      "brand": "Sharp",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/360285-600x600-4.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/360284-600x600-4.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/359900/TimerThumb/359900-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-sharp"
+    },
+    "38:11": {
+      "category_code": "38",
+      "brand_id": "11",
+      "brand": "Toshiba",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/324574-600x600-5.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/362938.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/319612/TimerThumb/319612-600x600-3.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-lanh-toshiba"
+    },
+    "38:336": {
+      "category_code": "38",
+      "brand_id": "336",
+      "brand": "Vtb",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/72767/vtb-rz-146n-300-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/72769/vtb-ce-188ns-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/72768/vtb-rz-166n1-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=tu+lanh+Vtb&sc=new"
+    },
+    "38:343": {
+      "category_code": "38",
+      "brand_id": "343",
+      "brand": "Whirlpool",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1943/278945/whirlpool-inverter-594-lit-wfq590nbgv-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/278944/whirlpool-inverter-594-lit-wfq590nssv-130522-021835-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1943/278947/tu-lanh-whirlpool-inverter-592-lit-wfq590wssv-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=tu+lanh+Whirlpool&sc=new"
+    },
+    "39:185": {
+      "category_code": "39",
+      "brand_id": "185",
+      "brand": "Beko",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5475/229478/beko-dfn05311w-264920-094901-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/284265/may-rua-chen-doc-lap-co-say-beko-den48520x-10-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/284264/may-rua-chen-doc-lap-co-say-beko-dfn28424x-13-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+rua+chen+Beko&sc=new"
+    },
+    "39:133": {
+      "category_code": "39",
+      "brand_id": "133",
+      "brand": "Bosch",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/5475/318121/may-rua-chen-doc-lap-bosch-sms4eki06e-pop-0-639147111653198884-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/5475/259981/doc-lap-bosch-sms8yci01e-pop-0-639147103206671536-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/5475/367197/may-rua-chen-doc-lap-bosch-sms6zmb00p-pop-0-639147108361032868-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-bosch"
+    },
+    "39:345": {
+      "category_code": "39",
+      "brand_id": "345",
+      "brand": "Candy",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5475/219203/candy-cdpn-1l390pw-10-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/249685/candy-cdpn-4d620px-e-2150w-1.-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/249684/candy-cdpn-4d620pw-e-2150w-1.-600x600.jpeg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+rua+chen+Candy&sc=new"
+    },
+    "39:9": {
+      "category_code": "39",
+      "brand_id": "9",
+      "brand": "Comfee",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5475/333218/TimerThumb/333218-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/5475/317598/may-rua-chen-doc-lap-comfee-cdwef1401hb-w-vn-thumb-pop-638932376544442044-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/364671-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-comfee"
+    },
+    "39:315": {
+      "category_code": "39",
+      "brand_id": "315",
+      "brand": "Electrolux",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5475/339192/TimerThumb/339192-600x600-1.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/333817/TimerThumb/333817-600x600-5.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/339191/TimerThumb/339191-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-electrolux"
+    },
+    "39:368": {
+      "category_code": "39",
+      "brand_id": "368",
+      "brand": "Galanz",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5475/232964/may-rua-chen-galanz-w60b1a401m-ae5-ss-154721-024703-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/232927/galanz-w45a3a401s-0e1-ss-1850w-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/286831/mini-co-say-galanz-w8a2q1-0e1-w-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+rua+chen+Galanz&sc=new"
+    },
+    "39:347": {
+      "category_code": "39",
+      "brand_id": "347",
+      "brand": "Hafele",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/318932.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/5475/357523/doc-lap-hafele-hdw-f6053s-535-29-702-thumb-639003535244485638-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/315726-600x600-14.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-hafele"
+    },
+    "39:346": {
+      "category_code": "39",
+      "brand_id": "346",
+      "brand": "Haier",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/360555.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/360563.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/364523.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-haier"
+    },
+    "39:313": {
+      "category_code": "39",
+      "brand_id": "313",
+      "brand": "Hitachi",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/328611.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/328612.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-hitachi"
+    },
+    "39:495": {
+      "category_code": "39",
+      "brand_id": "495",
+      "brand": "Hòa Phát",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5475/320943/may-rua-chen-doc-lap-hoa-phat-hd-f1407dbb-tm-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/320945/may-rua-chen-doc-lap-hoa-phat-hd-f1206ebb-tm-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/320944/may-rua-chen-doc-lap-hoa-phat-hd-f1306dbs-tm-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+rua+chen+H%C3%B2a+Ph%C3%A1t&sc=new"
+    },
+    "39:366": {
+      "category_code": "39",
+      "brand_id": "366",
+      "brand": "Junger",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/320594.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/320592.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-junger"
+    },
+    "39:8": {
+      "category_code": "39",
+      "brand_id": "8",
+      "brand": "LG",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/325048.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/325049.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/359636.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-lg"
+    },
+    "39:186": {
+      "category_code": "39",
+      "brand_id": "186",
+      "brand": "Midea",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5475/249761/maysaychen-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+rua+chen+Midea&sc=new"
+    },
+    "39:316": {
+      "category_code": "39",
+      "brand_id": "316",
+      "brand": "Nagakawa",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5475/314812/doc-lap-nagakawa-nag3601m15-fix-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/314809/may-rua-chen-doc-lap-nagakawa-nk13d02m-fix-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/314811/nagakawa-nk15d03m-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+rua+chen+Nagakawa&sc=new"
+    },
+    "39:7": {
+      "category_code": "39",
+      "brand_id": "7",
+      "brand": "Panasonic",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/5475/334876/panasonic-np-th1wevn-thumb-638760731592992123-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+rua+chen+Panasonic&sc=new"
+    },
+    "39:2": {
+      "category_code": "39",
+      "brand_id": "2",
+      "brand": "Samsung",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/06/timerseo/322213-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-samsung"
+    },
+    "39:11": {
+      "category_code": "39",
+      "brand_id": "11",
+      "brand": "Toshiba",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/337769.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/337770.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/337771.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-rua-chen-toshiba"
+    },
+    "39:343": {
+      "category_code": "39",
+      "brand_id": "343",
+      "brand": "Whirlpool",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5475/275586/whirlpool-wio-3t133p-260822-033414-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/275587/may-rua-chen-whirlpool-wfc-3c26p-12-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5475/275585/whirlpool-wfe-2b19-011122-025708-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+rua+chen+Whirlpool&sc=new"
+    },
+    "40:189": {
+      "category_code": "40",
+      "brand_id": "189",
+      "brand": "Alaska",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/313917.jpg",
+        "https://cdn.tgdd.vn/Products/Images/166/327957/tu-mat-alaska-inverter-800-lit-lci-800dx-thumb-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/166/341078/tu-mat-alaska-525-lit-lc-525c-thumb-638887976472610209-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-dong-alaska"
+    },
+    "40:187": {
+      "category_code": "40",
+      "brand_id": "187",
+      "brand": "Aqua",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/166/336551/TimerThumb/336551-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/288659.jpg",
+        "https://cdn.tgdd.vn/Products/Images/166/336382/TimerThumb/336382-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-dong-aqua"
+    },
+    "40:188": {
+      "category_code": "40",
+      "brand_id": "188",
+      "brand": "Darling",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/166/227382/tu-dong-darling-dmf-4799-asi-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/166/230561/darling-dmf-3999-w2-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/166/227381/tu-dong-darling-dmf-3799-asi-243420-103430-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=tu+dong+Darling&sc=new"
+    },
+    "40:184": {
+      "category_code": "40",
+      "brand_id": "184",
+      "brand": "Hoà Phát",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/291689-600x600-3.jpg",
+        "https://cdn.tgdd.vn/Products/Images/166/306402/TimerThumb/306402-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/291688-600x600-3.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-dong-hoa-phat"
+    },
+    "40:193": {
+      "category_code": "40",
+      "brand_id": "193",
+      "brand": "Kangaroo",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/362696.jpg",
+        "https://cdn.tgdd.vn/Products/Images/166/324575/TimerThumb/324575-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/233229.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-dong-kangaroo"
+    },
+    "40:191": {
+      "category_code": "40",
+      "brand_id": "191",
+      "brand": "Sanaky",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/115069-300x300-3.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/115068.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/229617.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-dong-sanaky"
+    },
+    "40:190": {
+      "category_code": "40",
+      "brand_id": "190",
+      "brand": "Sunhouse",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/166/220343/sunhouse-shr-f2272w2-150222-034013-600x600.jpeg",
+        "https://cdn.tgdd.vn/Products/Images/166/220349/sunhouse-shr-f2472w2-13-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/166/220348/sunhouse-shr-f2412w2-6-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=tu+dong+Sunhouse&sc=new"
+    },
+    "40:11": {
+      "category_code": "40",
+      "brand_id": "11",
+      "brand": "Toshiba",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/166/336385/TimerThumb/336385-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/336531-600x600-5.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/336542-600x600-5.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/tu-dong-toshiba"
+    },
+    "41:187": {
+      "category_code": "41",
+      "brand_id": "187",
+      "brand": "Aqua",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/344415/may-nuoc-nong-gian-tiep-aqua-20-lit-2500w-aes20h-super-thumb-638989665529363165-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/344417/may-nuoc-nong-truc-tiep-aqua-4500w-aei45m-ep1w-vn-thumb-638989659652916559-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/344418/may-nuoc-nong-truc-tiep-aqua-4500w-aei45e-fp3b-vn-thumb-638989662088085387-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-aqua"
+    },
+    "41:351": {
+      "category_code": "41",
+      "brand_id": "351",
+      "brand": "Ariston",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/286051/may-nuoc-nong-truc-tiep-ariston-4500w-aures-premium-45p-pearl-170822-034224-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/329298/gian-tiep-ariston-20-lit-2500w-vitaly-20-slim-25-fe-2024-thumb-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/298838/truc-tiep-ariston-aures-easy-4-5-d-250924-093541-841-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-ariston"
+    },
+    "41:353": {
+      "category_code": "41",
+      "brand_id": "353",
+      "brand": "Atlantic",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/329347/truc-tiep-atlantic-4000w-tempo-lite-4000-pu-811023-thumb-638986164854185314-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/329067/gian-tiep-atlantic-20-lit-swh-20h-m-14-esa-slim-823044-thumb-638986162721264194-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/329348/truc-tiep-atlantic-5000w-tempo-lite-5000-pu-811025-638986158998440014-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-atlantic"
+    },
+    "41:185": {
+      "category_code": "41",
+      "brand_id": "185",
+      "brand": "Beko",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1962/174608/may-nuoc-nong-beko-bwi45s1a-213-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/174610/beko-bwi45s1n-213-150222-093234-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/174605/may-nuoc-nong-beko-bwi35s1a-213-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+nuoc+nong+Beko&sc=new"
+    },
+    "41:10": {
+      "category_code": "41",
+      "brand_id": "10",
+      "brand": "Casper",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1962/262542/truc-tiep-casper-4500w-ep-45th11-1.-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/262543/may-nuoc-nong-truc-tiep-casper-4500w-en-45th11-021221-040517-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+nuoc+nong+Casper&sc=new"
+    },
+    "41:349": {
+      "category_code": "41",
+      "brand_id": "349",
+      "brand": "Centon",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1962/84646/may-nuoc-nong-centon-gd600esp-rs-dd-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/72691/centon-m777e-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/75681/may-nuoc-nong-centon-ks500ep-solid-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+nuoc+nong+Centon&sc=new"
+    },
+    "41:315": {
+      "category_code": "41",
+      "brand_id": "315",
+      "brand": "Electrolux",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/329873/truc-tiep-electrolux-4500w-ewe451qb-w4-thumb-638681467653483824-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/329872/truc-tiep-electrolux-4500w-ewe451qx-w4-thumbb-638681456300290362-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/329874/truc-tiep-electrolux-4500w-ewe451rb-g6-thumb-638688163644584549-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-electrolux"
+    },
+    "41:348": {
+      "category_code": "41",
+      "brand_id": "348",
+      "brand": "Ferroli",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1962/227384/binh-nuoc-nong-gian-tiep-ferroli-mido-20l-sq-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/225947/ferroli-mido-de-30l-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/225883/ferroli-mido-de-20l-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-ferroli"
+    },
+    "41:313": {
+      "category_code": "41",
+      "brand_id": "313",
+      "brand": "Hitachi",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1962/71471/hitachi-hes-35vpy-1-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/72202/hitachi-hes-45vy-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+nuoc+nong+Hitachi&sc=new"
+    },
+    "41:193": {
+      "category_code": "41",
+      "brand_id": "193",
+      "brand": "Kangaroo",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/330585/truc-tiep-kangaroo-4500w-kgwd45p2-thumb-638639189445652899-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/330586/truc-tiep-kangaroo-4500w-kgwd45n2-thumb-638639180723770547-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/330584/truc-tiep-kangaroo-4500w-kgwd45n1-thumb-638639187502758001-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-kangaroo"
+    },
+    "41:186": {
+      "category_code": "41",
+      "brand_id": "186",
+      "brand": "Midea",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1962/192293/may-nuoc-nong-midea-dsk45p3-9-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/192294/may-nuoc-nong-midea-dsk45u3-10-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/194697/may-nuoc-nong-midea-d20-25ha-9-300x300.JPG"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+nuoc+nong+Midea&sc=new"
+    },
+    "41:7": {
+      "category_code": "41",
+      "brand_id": "7",
+      "brand": "Panasonic",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/329951/truc-tiep-panasonic-4500w-dh-4vs1vw-thumb-638681405298419258-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/330564/truc-tiep-panasonic-4500w-dh-4vp1vw-thumb-638640859267192700-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/297038/truc-tiep-panasonic-4500w-dh-4up1vw-220823-032814-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-panasonic"
+    },
+    "41:354": {
+      "category_code": "41",
+      "brand_id": "354",
+      "brand": "Rapido",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/329584-600x600-4.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/312347/truc-tiep-rapido-4500w-sonne-sn4-5-020724-105148-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/312344/truc-tiep-rapido-4500w-sonne-sp4-5-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-rapido"
+    },
+    "41:357": {
+      "category_code": "41",
+      "brand_id": "357",
+      "brand": "Rossi",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/331642/gian-tiep-rossi-eleganz-c-30-lit-2500w-rec30sl-thumb-638671971267416519-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/331641/gian-tiep-rossi-eleganz-c-20-lit-2500w-rec20sl-thumb-638671967016777519-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/331342/truc-tiep-rossi-4500w-ris-450-rep-thumb-638671124807882694-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-rossi"
+    },
+    "41:358": {
+      "category_code": "41",
+      "brand_id": "358",
+      "brand": "Sơn Hà",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/331319/gian-tiep-son-ha-galaxy-20-lit-2500w-s20vg-thumb-638666823398331838-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/331318/gian-tiep-son-ha-galaxy-15-lit-2500w-s15vg-thumb-638659821754176017-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/331540/gian-tiep-son-ha-galaxy-20-lit-2500w-s20ng-thumb-638659704164522974-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-son-ha"
+    },
+    "41:355": {
+      "category_code": "41",
+      "brand_id": "355",
+      "brand": "Stiebel Eltron",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1962/299643/may-nuoc-nong-truc-tiep-stiebel-eltron-4500w-xgp-45-ec-thumb-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/330775/gian-tiep-stiebel-eltron-15-lit-esh-15-b-trend-vn-thumb-638645903969123768-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/344397/may-nuoc-nong-truc-tiep-stiebel-eltron-4500w-xp-45-ec-thumb-638925162830685611-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-stiebel-eltron"
+    },
+    "41:356": {
+      "category_code": "41",
+      "brand_id": "356",
+      "brand": "Tân Á ĐạI Thành",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/220880/dai-thanh-classic-5815-11-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1962/220496/dai-thanh-classic-5812-11-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/220887/dai-thanh-classic-5818-11-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-dai-thanh?key=may+nuoc+nong+T%C3%A2n+%C3%81+%C4%90%E1%BA%A1I+Th%C3%A0nh&sc=new"
+    },
+    "41:11": {
+      "category_code": "41",
+      "brand_id": "11",
+      "brand": "Toshiba",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/344836/truc-tiep-toshiba-4500w-twh-45emcpvn-k-cb-thumb-639056496165315538-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/344835/truc-tiep-toshiba-4500w-twh-45mcnvn-w-wb-thumb-639056496280216164-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1962/344837/truc-tiep-toshiba-4500w-twh-45emc1pvn-k-kb-thumb-639056495932609715-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-nuoc-nong-toshiba"
+    },
+    "49:brand:abardeen": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Abardeen",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/228730/abardeen-t3-xanh-1-2-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/228721/abardeen-t3-hong-1-2-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Abardeen&sc=new"
+    },
+    "49:brand:amazfit": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Amazfit",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/322267/amazfit-active-den-tb-1-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/335088/amazfit-active-2-tb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/337643/amazfit-bip-6-do-tn-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-huami-amazfit?key=dong+ho+thong+minh+Amazfit&sc=new"
+    },
+    "49:brand:apple": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Apple",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/344767/apple-watch-se-3-40mm-vien-nhom-day-the-thao-trang-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/344750/apple-watch-series-11-42mm-vien-nhom-day-the-thao-vang-hong-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/344809/apple-watch-ultra-3-gps-cellular-49mm-vien-titanium-day-milan-tu-nhien-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-apple"
+    },
+    "49:brand:asus": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Asus",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/277636/277636-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/279169/asus-vivowatch-5-vien-chi-trang-thumbn-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Asus&sc=new"
+    },
+    "49:brand:befit": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Befit",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/322836/befit-active-2-hong-tb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/306530/befit-watch-fit-hong-tn-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/296856/befit-sporty-2-pink-tn-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Befit&sc=new"
+    },
+    "49:brand:fitbit": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Fitbit",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/194524/dong-ho-thong-minh-fitbit-ionic-den-xam-charcoal-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Fitbit&sc=new"
+    },
+    "49:brand:garmin": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Garmin",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/322848/garmin-forerunner-165-den-tb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/305881/garmin-forerunner-965-den-tn-3-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/244296.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-garmin"
+    },
+    "49:brand:haylou": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Haylou",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/286741/dong-ho-haylou-rt-2-den-thumbnew-600x600.jpeg",
+        "https://cdn.tgdd.vn/Products/Images/7077/286738/dong-ho-haylou-gs-den-thumbnew-600x600.jpeg",
+        "https://cdn.tgdd.vn/Products/Images/7077/286740/dong-ho-haylou-gst-den-thumbnew-600x600.jpeg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Haylou&sc=new"
+    },
+    "49:brand:honor": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Honor",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/285232/dong-ho-honor-watch-gs-3-day-da-bac-thumbnew-600x600.jpeg",
+        "https://cdn.tgdd.vn/Products/Images/7077/285233/dong-ho-honor-watch-gs-3-day-da-vang-thumbnew-600x600.jpeg",
+        "https://cdn.tgdd.vn/Products/Images/7077/285234/dong-ho-honor-watch-gs-3-day-cao-su-thumbnew-600x600.jpeg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Honor&sc=new"
+    },
+    "49:brand:huawei": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Huawei",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/7077/366954/huawei-watch-fit-5-42-9mm-day-nylon-thumb-3-639144521826494787-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/362941/vong-deo-tay-thong-minh-huawei-band-11-vien-nhom-day-cao-su-xanh-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/334436/huawei-watch-fit-4-den-tb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-huawei"
+    },
+    "49:brand:imoo": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Imoo",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/316992/dong-ho-dinh-vi-tre-em-imoo-z1-41-mm-xanh-duong-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/358457/dong-ho-dinh-vi-tre-em-imoo-z3-xanh-thumb-1-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/329598/dong-ho-dinh-vi-tre-em-imoo-z7-xanh-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-imoo"
+    },
+    "49:brand:itel": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Itel",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/279641/dong-ho-itel-isw-41-thumbnew-600x600.jpeg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Itel&sc=new"
+    },
+    "49:brand:kidcare": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Kidcare",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/333790/kidcare-sight-s1-xanhla-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/358003/dong-ho-dinh-vi-tre-em-kidcare-sight-s25-den-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/362629/kidcare-sight-s26-4g-44-5mm-day-cao-su-hong-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-kidcare"
+    },
+    "49:brand:kieslect": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Kieslect",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/7077/362053/kieslect-calling-watch-ks-3-elite-468-mm-day-silicone-trang-thumb-639046880505204682-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/7077/362052/kieslect-calling-watch-ks-3-468-mm-day-silicone-den-thumb-639046876906406704-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-kieslect"
+    },
+    "49:brand:masstel": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Masstel",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/339434/masstel-smart-hero-star-hong-thumb-1-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/326906/masstel-smart-hero-6-xanh-tb-1-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/337061/masstel-smart-hero-30-den-tb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-masstel"
+    },
+    "49:brand:mykid": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Mykid",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/327123.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/324886/mykid-4g-lite-xanh-tn-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-mykid"
+    },
+    "49:brand:oaxis-myfirst-fone": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Oaxis Myfirst Fone",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/224338/oaxis-myfirst-fone-d2-vang-160722-094444-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/220262/oaxis-myfirst-fone-d2-160722-093847-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/224337/oaxis-myfirst-fone-d2-do-160722-094315-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Oaxis+Myfirst+Fone&sc=new"
+    },
+    "49:brand:oppo": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "OPPO",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/361330/oppo-watch-s-46mm-day-cao-su-trang-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/361467/oppo-watch-s-46mm-day-nylon-thumb-2-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/7077/366928/oppo-watch-x3-47-4mm-day-cao-su-thumb-639143692533934845-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-oppo"
+    },
+    "49:brand:realme": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Realme",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/344999/realme-watch-5-50mm-day-silicone-bac-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-realme"
+    },
+    "49:brand:samsung": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Samsung",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/321616/samsung-galaxy-fit3-hong-thumb-1-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/338265/samsung-galaxy-watch8-40mm-trang-tb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/340065/samsung-galaxy-watch8-classic-lte-46mm-den-tn-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-samsung"
+    },
+    "49:brand:sinophy": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Sinophy",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/200562/sinophy-sport-b14--thum-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/212913/sinophy-sport-b18-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/197016/vong-tay-thong-minh-sinophy-sport-b12-xanh-600x600-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Sinophy&sc=new"
+    },
+    "49:brand:suunto": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Suunto",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/364063/suunto-run-46mm-day-nylon-den-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/364064/suunto-race-s-45mm-day-silicone-cam-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/364065/suunto-race-s-titanium-45mm-day-silicone-trang-thumb-1-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-suunto"
+    },
+    "49:brand:xiaomi": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Xiaomi",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/365217/xiaomi-redmi-watch-6-den-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/339531/mi-band-10-vien-gom-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/329832/redmi-watch-5-lite-den-tb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-xiaomi"
+    },
+    "49:brand:zeblaze": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Zeblaze",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/197014/zeblaze-plug-c-den-thum-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=dong+ho+thong+minh+Zeblaze&sc=new"
+    },
+    "49:brand:zobo": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Zobo",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/359399/zobo-g1-42.3mm-day-silicone-thumb-1-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/359400-600x600-2.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/359401/zobo-sporty-1-42mm-day-silicone-thumb-600x600.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-zobo"
+    },
+    "49:brand:zwatch": {
+      "category_code": "49",
+      "brand_id": null,
+      "brand": "Zwatch",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/7077/309536/zwatch-z6-44mm-day-silicone-den-thumb-10-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/7077/318631/zwatch-z6-44mm-day-silicone-xanh-duong-thumb-10-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/dong-ho-thong-minh-zwatch"
+    },
+    "72:brand:acer": {
+      "category_code": "72",
+      "brand_id": null,
+      "brand": "Acer",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5698/184815/may-tinh-nguyen-bo-acer-aspire-xc-885-dtbaqsv007-9-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5698/185051/may-tinh-nguyen-bo-acer-aspire-xc-885-dtbaqsv012-9-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5698/133157/may-tinh-nguyen-bo-mtb-acer-atc-780-pdc-g4560-dtb89sv009-2-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+tinh+nguyen+bo+Acer&sc=new"
+    },
+    "72:brand:apple": {
+      "category_code": "72",
+      "brand_id": null,
+      "brand": "Apple",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5698/331480/imac-24-inch-m4-vang-thumb-1-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5698/331482/imac-24-inch-m4-16gb-512gb-blue-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5698/335185/imac-24-inch-m4-24gb-256gb-thumb-vang-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-nguyen-bo-apple"
+    },
+    "72:brand:asus": {
+      "category_code": "72",
+      "brand_id": null,
+      "brand": "Asus",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/363817/asus-v501sv-core-5-210h-v501sv-05210h040w-thumb-639093118678835998-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/363816.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/364500/asus-aio-v440va-core-7-240h-23-8-inch-v440vak-wpc408w-thumb-639105469444774841-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-nguyen-bo-asus"
+    },
+    "72:brand:dell": {
+      "category_code": "72",
+      "brand_id": null,
+      "brand": "Dell",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5698/185757/may-tinh-nguyen-bo-dell-inspiron-3470-sti51315w-8g-1tb-128g-6-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5698/185744/may-tinh-nguyen-bo-dell-inspiron-3470-sti51315w-8g-1tb-7-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5698/156606/may-tinh-nguyen-bo-may-tinh-bo-dell-inspiron-3668-mti31233-5-300x300.JPG"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+tinh+nguyen+bo+Dell&sc=new"
+    },
+    "72:brand:hp": {
+      "category_code": "72",
+      "brand_id": null,
+      "brand": "Hp",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/365956/hp-aio-cr2013d-ultra-5-225u-23-8-inch-c20cwpa-thumb-639123650388732985-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/365957/hp-aio-cr2012d-ultra-5-225u-23-8-inch-c20cbpa-thumb-639123662749490512-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/365958/hp-aio-cr2011d-ultra-7-255u-23-8-inch-c20c9pa-thumb2-639135045454202000-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-nguyen-bo-hp"
+    },
+    "72:brand:msi": {
+      "category_code": "72",
+      "brand_id": null,
+      "brand": "Msi",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/361943/msi-pro-dp180-i5-14400-9s6-b0a761-1220-thumb-639046714306698581-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/361945/msi-pro-dp180-i3-14100-9s6-b0a761-1221-thumb-639046726158048291-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-nguyen-bo-msi"
+    },
+    "72:brand:rosa": {
+      "category_code": "72",
+      "brand_id": null,
+      "brand": "Rosa",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/358732.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/329465/rosa-crystal-a10-ryzen-3-3200g-8gb-256gb-win11-thumb-1-638622765391038718-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/335909/rosa-rezo-i110-core-i3-12100f-8gb-ssd-256gb-rtx3050-6gb-win11-241125-094542-008-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-nguyen-bo-rosa"
+    },
+    "72:brand:singpc": {
+      "category_code": "72",
+      "brand_id": null,
+      "brand": "Singpc",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/330875/singpc-i713h695sf-w-i7-13620h-thumb-43-638681495786050591-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/330873/singpc-i512h682sf-w-i5-12450h-thumb-32-638681407136680091-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5698/341119/singpc-r33b482sf-w-r3-3200g-thumb2-638956065132975193-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-tinh-nguyen-bo-singpc"
+    },
+    "73:brand:acer": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Acer",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/334381/acer-nitro-kg240y-x1-23-8-inch-fhd-ips-200hz-4ms-den-thumb-638748823719835934-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/361532/acer-gaming-nitro-27-inch-full-hd-vg270-s-thumb-639029518648985689-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/334382-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-acer"
+    },
+    "73:brand:aiwa": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Aiwa",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5697/319029/aiwa-mf240bv-238-inch-fhd-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5697/319027/aiwa-mf2204f-2145-inch-fhd-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5697/319031/aiwa-mf270bv-27-inch-fhd-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=man+hinh+may+tinh+Aiwa&sc=new"
+    },
+    "73:brand:aoc": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Aoc",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/341851/man-hinh-aoc-24b36x-71-23-8-inch-fhd-ips-144hz-0-5ms-thumb-638900087122414318-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/341850/man-hinh-aoc-ag276qsd-79-26-5-inch-2k-qd-oled-360hz-0-01ms-thumb-638899867969404267-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=man+hinh+may+tinh+Aoc&sc=new"
+    },
+    "73:brand:apple": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Apple",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/363495/studio-display-27-inch-5k-chan-de-co-dinh-mfey4sa-a-thumb-639082566277108947-600x600.png",
+        "https://cdn.tgdd.vn/Products/Images/5697/363496/s16/studio-display-27-inch-5k-chan-de-dieu-chinh-mfew4sa-a-thumb-600x600.png",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/363500/studio-display-27-inch-5k-xdr-chan-de-dieu-chinh-mfen4sa-a-thumb-639082574550915007-600x600.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-apple"
+    },
+    "73:brand:asus": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Asus",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/331920/asus-vy249hgr-23-8-inch-fhd-ips-120hz-1ms-thumb-1-638668502881794934-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/338142-600x600-2.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/363460/asus-gaming-tuf-27-inch-qhd-vg27aqe5a-thumb-639088425969108165-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-asus"
+    },
+    "73:brand:dell": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Dell",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/331654/dell-p2425h-23-8-inch-fhd-ips-100hz-5ms-011124-035656-332-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/331656/dell-p2725h-27-inch-fhd-ips-100hz-5ms-thumb-638660734527331419-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/342555/man-hinh-dell-ultrasharp-u2725qe-27-inch-4k-ips-120hz-5ms-thumb-638912189503971429-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-dell"
+    },
+    "73:brand:gigabyte": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Gigabyte",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/363462-600x600-2.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/335630/gigabyte-gs27fa-27fhd-ips-180hz-1ms-den-thumb-638773924167517712-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/335629/gigabyte-gs25f2-24-5-inch-fhd-ips-200hz-1ms-den-thumb-638773919735712780-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-gigabyte"
+    },
+    "73:brand:lenovo": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Lenovo",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/368644.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-lenovo"
+    },
+    "73:brand:msi": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Msi",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/334003/msi-pro-mp252l-24-5-inch-fhd-ips-100hz-1ms-thumb-2-638902449595866557-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/364380/msi-pro-21-45-inch-full-hd-mp225-e12vl-thumb-639095338521415112-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/329690/msi-pro-mp223-e2-21-45-inch-fhd-va-100hz-1ms-thumb-2-638902446318247391-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-msi"
+    },
+    "73:brand:philips": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Philips",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/361204/philips-gaming-evnia-27-inch-qhd-27m2n2500nf-thumb-639032327381115221-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/361203-600x600-3.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-philips"
+    },
+    "73:brand:samsung": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Samsung",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/335749/samsung-ls24d300gaexxv-23-8-inch-fhd-ips-100hz-1ms-den-1-638777494150276826-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/342212/samsung-odyssey-ls27dg302eexxv-27-inch-full-hd-thumb-638905108716151466-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/339897/samsung-s3-s30gd-ls27d300gaexxv-27-inch-fhd-ips-100hz-5ms-den-thumb-638867187940665986-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-samsung"
+    },
+    "73:brand:singpc": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Singpc",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/364381/singpc-gaming-27-inch-full-hd-q27cf120-vag-thumb-2-639101155278382096-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/339092/singpc-p22f100-ips-21-5-inch-fhd-ips-100hz-5ms-den-thumb-638846449004345683-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/358205/singpc-24-5-inch-full-hd-q25f100-ips-thumb-638967432731046298-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-singpc"
+    },
+    "73:brand:viewsonic": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Viewsonic",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/365786/viewsonic-24-inch-full-hd-va2432-h-2-thumb-639119316881163709-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/337072/viewsonic-vx2758a-2k-pro-4-272k-ips-180hz-1ms-den-thumb-638804847057402411-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/365785/viewsonic-16-inch-full-hd-va1650-thumb-639123028607669092-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-viewsonic"
+    },
+    "73:brand:xiaomi": {
+      "category_code": "73",
+      "brand_id": null,
+      "brand": "Xiaomi",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/365874/man-hinh-xiaomi-a27i-2026-27-inch-full-hd-full-hd-144hz-6ms-thumb-639123708205126086-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/338144/xiaomi-a27ui-27-inch-4k-ips-60hz-6ms-den-thumb-638828331342200306-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5697/362654/xiaomi-23-8-inch-full-hd-a24i-2026-thumb-2-639076253799671006-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/man-hinh-may-tinh-xiaomi"
+    },
+    "75:brand:brother": {
+      "category_code": "75",
+      "brand_id": null,
+      "brand": "Brother",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5693/115902/may-in-laser-brother-hl-l2321d-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5693/115888/may-in-laser-brother-hl-l2366dw-210722-110538-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5693/319472/laser-brother-dcpb7640dw-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-in-brother"
+    },
+    "75:brand:canon": {
+      "category_code": "75",
+      "brand_id": null,
+      "brand": "Canon",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5693/335945/canon-e410-210325-042943-563-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5693/205982/may-in-laser-canon-lbp-6030w-wifi-210722-115028-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5693/225966/may-in-phun-mau-canon-pixma-g1010-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-in-canon"
+    },
+    "75:brand:epson": {
+      "category_code": "75",
+      "brand_id": null,
+      "brand": "Epson",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5693/305434/phun-mau-da-nang-epson-ecotank-l3210-c11cj68501-190823-112018-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5693/320485/phun-mau-epson-ecotank-l1210-c11cj70501-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5693/305435/phun-mau-da-nang-epson-ecotank-l3250-wifi-c11cj67503-190823-020852-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-in-epson"
+    },
+    "75:brand:hp": {
+      "category_code": "75",
+      "brand_id": null,
+      "brand": "Hp",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/5693/270160/laser-trang-den-hp-laserjet-m211d-9yf82a-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/5693/311351/hp-smart-tank-580-wifi-1f3y2a-thumb-mau-in-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5693/330627/hp-108a-4zb79a-trang-thumb-638633784768634837-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-in-hp"
+    },
+    "75:brand:hprt": {
+      "category_code": "75",
+      "brand_id": null,
+      "brand": "Hprt",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5693/335948/may-in-nhiet-di-dong-hprt-mt610-pro-thumb-2-638822081835167528-600x600.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/328648.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5693/328640/hprt-ft800-bluetooth-trang-thumb-new-638628790532210323-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-in-hprt"
+    },
+    "75:brand:singpc": {
+      "category_code": "75",
+      "brand_id": null,
+      "brand": "Singpc",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5693/343044/may-in-nhiet-singpc-print-311-thumb-638942447181987058-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5693/343043/may-in-nhiet-singpc-print-211-thumb-638942444826534326-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/5693/343045/may-in-nhiet-singpc-print-371-thumb-638942449090744558-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-in-singpc"
+    },
+    "115:187": {
+      "category_code": "115",
+      "brand_id": "187",
+      "brand": "Aqua",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/328731.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat"
+    },
+    "115:185": {
+      "category_code": "115",
+      "brand_id": "185",
+      "brand": "Beko",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1944/227431/wcv10612xb0st-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1944/212640/beko-wcv9749xmst-10-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1944/103050/may-giat-beko-wy104764mw-14-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+giat+Beko&sc=new"
+    },
+    "115:133": {
+      "category_code": "115",
+      "brand_id": "133",
+      "brand": "Bosch",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1944/368563/may-giat-bosch-inverter-10-kg-wgg25401sg-120726-064840-932-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1944/368567/may-giat-bosch-inverter-10-kg-wgg25400sg-150726-084217-200-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/1944/368569/may-giat-bosch-inverter-9-kg-wgg24401sg-120726-064625-006-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-bosch"
+    },
+    "115:10": {
+      "category_code": "115",
+      "brand_id": "10",
+      "brand": "Casper",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/316042.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/341986.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/357526.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-casper"
+    },
+    "115:315": {
+      "category_code": "115",
+      "brand_id": "315",
+      "brand": "Electrolux",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/329610-600x600-1.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/329605-600x600-1.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/316217-600x600-1.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-electrolux"
+    },
+    "115:346": {
+      "category_code": "115",
+      "brand_id": "346",
+      "brand": "Haier",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/354774.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/338166.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/341084.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-haier"
+    },
+    "115:18": {
+      "category_code": "115",
+      "brand_id": "18",
+      "brand": "Hisense",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/322886.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/338287.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/325637.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-hisense"
+    },
+    "115:313": {
+      "category_code": "115",
+      "brand_id": "313",
+      "brand": "Hitachi",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/357869.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/359974.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/357870.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-hitachi"
+    },
+    "115:8": {
+      "category_code": "115",
+      "brand_id": "8",
+      "brand": "LG",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/356809.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/344833.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/342433.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-lg"
+    },
+    "115:186": {
+      "category_code": "115",
+      "brand_id": "186",
+      "brand": "Midea",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1944/156807/may-giat-midea-mfc80-1401-dd-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1944/154936/may-giat-midea-mfd80-1208-dd-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1944/154938/may-giat-midea-mfd90-1208-dd-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+giat+Midea&sc=new"
+    },
+    "115:7": {
+      "category_code": "115",
+      "brand_id": "7",
+      "brand": "Panasonic",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/328685-600x600-3.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/367876.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/367881.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-panasonic"
+    },
+    "115:2": {
+      "category_code": "115",
+      "brand_id": "2",
+      "brand": "Samsung",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/06/timerseo/236125-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/06/timerseo/327048-600x600-3.jpg",
+        "https://cdn.tgdd.vn/2026/06/timerseo/322869-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-samsung"
+    },
+    "115:12": {
+      "category_code": "115",
+      "brand_id": "12",
+      "brand": "Sharp",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/368237-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/310181.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/333221.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-sharp"
+    },
+    "115:54": {
+      "category_code": "115",
+      "brand_id": "54",
+      "brand": "Tcl",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1944/213647/tcl-twa80-b302gm-12-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1944/213673/tcl-twa100-b302gm-12-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1944/214586/tcl-twf90-m14303da03-23-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+giat+Tcl&sc=new"
+    },
+    "115:11": {
+      "category_code": "115",
+      "brand_id": "11",
+      "brand": "Toshiba",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/316764-600x600-11.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/339509.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/293581-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-giat-toshiba"
+    },
+    "115:343": {
+      "category_code": "115",
+      "brand_id": "343",
+      "brand": "Whirlpool",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/1944/275569/whirlpool-vwvc10502fs-120124-032645-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1944/275570/whirlpool-vwvc9502fs-120124-032123-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/1944/275567/whirlpool-fweb9002fw-1.-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+giat+Whirlpool&sc=new"
+    },
+    "116:189": {
+      "category_code": "116",
+      "brand_id": "189",
+      "brand": "Alaska",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2202/260094/alaska-9-kg-s90-170223-031553-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+say+quan+ao+Alaska&sc=new"
+    },
+    "116:187": {
+      "category_code": "116",
+      "brand_id": "187",
+      "brand": "Aqua",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/232142-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/302561.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/326753.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-aqua"
+    },
+    "116:185": {
+      "category_code": "116",
+      "brand_id": "185",
+      "brand": "Beko",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2202/103100/may-say-quan-ao-beko-dv7110-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+say+quan+ao+Beko&sc=new"
+    },
+    "116:133": {
+      "category_code": "116",
+      "brand_id": "133",
+      "brand": "Bosch",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2202/344391/may-say-bom-nhiet-bosch-9-kg-wqb245b0sg-thumb-638922547476744830-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2202/299887/may-say-bosch-wqg24200sg-tgb-thumb-639177394643175101-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2202/368570/may-say-bom-nhiet-bosch-10-kg-wqg25303sg-120726-064959-803-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-bosch"
+    },
+    "116:345": {
+      "category_code": "116",
+      "brand_id": "345",
+      "brand": "Candy",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2202/201722/candy-cs-c8lf-s-6-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+say+quan+ao+Candy&sc=new"
+    },
+    "116:10": {
+      "category_code": "116",
+      "brand_id": "10",
+      "brand": "Casper",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/273320.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/362015.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/362081.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-casper"
+    },
+    "116:315": {
+      "category_code": "116",
+      "brand_id": "315",
+      "brand": "Electrolux",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/366666-600x600-1.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/329629-600x600-1.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/329627-600x600-1.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-electrolux"
+    },
+    "116:368": {
+      "category_code": "116",
+      "brand_id": "368",
+      "brand": "Galanz",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2202/302178/may-say-thong-hoi-galanz-dv-70q1c-260323-083916-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2202/241930/may-say-thong-hoi-galanz-7-kg-dv-70t5c-s-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2202/241929/may-say-thong-hoi-galanz-7-kg-dv-70t5c-w-270922-022611-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+say+quan+ao+Galanz&sc=new"
+    },
+    "116:346": {
+      "category_code": "116",
+      "brand_id": "346",
+      "brand": "Haier",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/341086.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-haier"
+    },
+    "116:18": {
+      "category_code": "116",
+      "brand_id": "18",
+      "brand": "Hisense",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/362155.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-hisense"
+    },
+    "116:313": {
+      "category_code": "116",
+      "brand_id": "313",
+      "brand": "Hitachi",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/328610.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-hitachi"
+    },
+    "116:8": {
+      "category_code": "116",
+      "brand_id": "8",
+      "brand": "LG",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/328307.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/307973.png",
+        "https://cdn.tgdd.vn/2026/07/timerseo/367324.png"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-lg"
+    },
+    "116:201": {
+      "category_code": "116",
+      "brand_id": "201",
+      "brand": "Lumias",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2202/341055/may-say-thong-hoi-lumias-4-kg-wcd-268w-thumb-638888842668663782-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-lumias"
+    },
+    "116:7": {
+      "category_code": "116",
+      "brand_id": "7",
+      "brand": "Panasonic",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2202/332836/may-say-bom-nhiet-panasonic-10-5-kg-nh-xv21x1avt-thum-638695227780752250-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2202/367915/may-say-bom-nhiet-panasonic-105-kg-nh-xj21d2bvt-thumb-639160207746065691-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-panasonic"
+    },
+    "116:2": {
+      "category_code": "116",
+      "brand_id": "2",
+      "brand": "Samsung",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/06/timerseo/335679-600x600-1.jpg",
+        "https://cdn.tgdd.vn/2026/06/timerseo/335687-600x600-1.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-samsung"
+    },
+    "116:11": {
+      "category_code": "116",
+      "brand_id": "11",
+      "brand": "Toshiba",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/2026/07/timerseo/341815.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/310253.jpg",
+        "https://cdn.tgdd.vn/2026/07/timerseo/337752.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/may-say-quan-ao-toshiba"
+    },
+    "116:343": {
+      "category_code": "116",
+      "brand_id": "343",
+      "brand": "Whirlpool",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/2202/275582/may-say-thong-hoi-whirlpool-7-kg-awd712s2-120124-025219-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2202/303301/may-say-whirlpool-3lwed4815fw0-120124-023714-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2202/275583/may-say-ngung-tu-whirlpool-8-kg-fftcm118xb-ee-120124-023517-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=may+say+quan+ao+Whirlpool&sc=new"
+    },
+    "137:233": {
+      "category_code": "137",
+      "brand_id": "233",
+      "brand": "Boya",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/12498/336325/micro-khong-day-boya-by-v10-v2-0-020425-114123-991-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/11998/362150/micro-khong-day-boya-mini-2-01-thumb-639045055753267599-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/12498/336338/micro-khong-day-boya-by-v20-v2-0-020425-020141-433-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/micro-thu-am-boya"
+    },
+    "137:237": {
+      "category_code": "137",
+      "brand_id": "237",
+      "brand": "Dji",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/11998/332522/thiet-bi-thu-am-khong-day-dji-mic-2-1tx-1rx-dmt02-dmr02-thumb-638694482323029938-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/11998/339100/thiet-bi-thu-am-khong-day-dji-mic-mini-2tx-1rx-1-hop-sac-mic-dmmt01-dmmr01-thumb-638848026058106717-600x600.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/11998/332524/thiet-bi-thu-am-khong-day-dji-mic-2-2tx-1rx-1-hop-sac-mic-dmt02-dmr02-dmc02-thumb-1-638694278895680810-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/micro-thu-am-dji"
+    },
+    "137:99": {
+      "category_code": "137",
+      "brand_id": "99",
+      "brand": "Hp Hyperx",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/11998/327808/micro-co-day-hp-hyperx-quadcast-110724-034554-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/11998/327807/micro-co-day-hp-hyperx-duocast-110724-034337-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/11998/327806/micro-co-day-hp-hyperx-solocast-4p5p8aa-110724-033843-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=micro+thu+am+Hp+Hyperx&sc=new"
+    },
+    "137:41": {
+      "category_code": "137",
+      "brand_id": "41",
+      "brand": "Razer",
+      "image_type": "representative",
+      "images": [
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/11998/361758/micro-thu-am-razer-seiren-v3-mini-trang-thumb-639035422126358255-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/11998/361751/micro-thu-am-razer-seiren-v3-mini-den-thumb-639035421905123259-300x300.jpg",
+        "https://cdnv2.tgdd.vn/mwg-static/dmx/Products/Images/11998/361608/micro-thu-am-razer-seiren-v3-chroma-den-thumb-639035649766124702-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/micro-thu-am-razer"
+    },
+    "137:452": {
+      "category_code": "137",
+      "brand_id": "452",
+      "brand": "Shure",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/11998/304965/micro-co-day-shure-mv7-s-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/11998/304964/micro-co-day-shure-mv7k-thumb-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/11998/304963/micro-co-day-shure-mv88-video-kit-thumb-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=micro+thu+am+Shure&sc=new"
+    },
+    "139:450": {
+      "category_code": "139",
+      "brand_id": "450",
+      "brand": "Birici",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2065/219127/micro-khong-day-birici-kp-79-2-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=micro+Birici&sc=new"
+    },
+    "139:454": {
+      "category_code": "139",
+      "brand_id": "454",
+      "brand": "Boston",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2065/256277/cap-khong-day-va-bo-thu-phat-boston-acoustis-bam2-1.-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2065/256212/boston-wms210-271221-030126-600x600.png",
+        "https://cdn.tgdd.vn/Products/Images/2065/230810/boston-acoustic-bam1-1-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=micro+Boston&sc=new"
+    },
+    "139:453": {
+      "category_code": "139",
+      "brand_id": "453",
+      "brand": "Ce-Ance",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2065/198924/ce-ance-kp-7600-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=micro+Ce-Ance&sc=new"
+    },
+    "139:121": {
+      "category_code": "139",
+      "brand_id": "121",
+      "brand": "Jbl",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2065/283444/micro-khong-day-jbl-vm200-600x600.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2065/283445/micro-khong-day-jbl-vm300-00-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=micro+Jbl&sc=new"
+    },
+    "139:451": {
+      "category_code": "139",
+      "brand_id": "451",
+      "brand": "Paramax",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2065/255530/khong-day-paramax-wm-1800-131221-055849-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=micro+Paramax&sc=new"
+    },
+    "139:448": {
+      "category_code": "139",
+      "brand_id": "448",
+      "brand": "Pasion",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2065/313217/micro-khong-day-pasion-echo-240124-035004-600x600.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=micro+Pasion&sc=new"
+    },
+    "139:447": {
+      "category_code": "139",
+      "brand_id": "447",
+      "brand": "Zenbos",
+      "image_type": "representative",
+      "images": [
+        "https://cdn.tgdd.vn/Products/Images/2065/202999/zenbos-mz-212-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2065/202988/zenbos-mz-216-300x300.jpg",
+        "https://cdn.tgdd.vn/Products/Images/2065/202998/zenbos-mz-202-300x300.jpg"
+      ],
+      "source_url": "https://www.dienmayxanh.com/search?key=micro+Zenbos&sc=new"
+    }
+  }
+}

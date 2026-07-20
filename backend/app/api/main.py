@@ -13,9 +13,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
+from backend.app.agent.api import create_agent_router
+from backend.app.agent.graph import AgentDependencies
 from backend.app.api.errors import register_error_handlers
 from backend.app.api.routes import brands, categories, health, products
 from backend.app.config.db_settings import load_data_platform_settings
+from backend.app.logging_config import configure_logging
 
 API_DESCRIPTION = """
 Read-only Product Catalog API over the provided Điện Máy XANH dataset
@@ -29,6 +32,7 @@ Intended tool surface for agents:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_logging()
     settings = load_data_platform_settings()
     pool = ConnectionPool(
         settings.conninfo(),
@@ -39,6 +43,10 @@ async def lifespan(app: FastAPI):
     )
     pool.open(wait=True, timeout=10)
     app.state.pool = pool
+    # The sales agent loads the full catalog once at startup. Failing here is
+    # deliberate: a boot that silently serves the catalog with a dead chatbot
+    # would pass the deploy health gate.
+    app.state.agent_deps = AgentDependencies.from_default_paths()
     try:
         yield
     finally:
@@ -66,3 +74,4 @@ app.include_router(health.router)
 app.include_router(categories.router)
 app.include_router(brands.router)
 app.include_router(products.router)
+app.include_router(create_agent_router(lambda: app.state.agent_deps))

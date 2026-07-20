@@ -1,0 +1,140 @@
+# Production topology: one project, one network, one lifecycle.
+#
+#   docker compose -f docker-compose.production.yml up -d --build
+#
+# Only nginx is published to the host. The frontend, backend, and database are
+# reachable solely inside this compose network, so the browser talks to a
+# single origin and never to an application port.
+#
+# Never combine this file with infra/docker-compose.dev.yml: that override
+# publishes PostgreSQL on the host and is for local development only.
+#
+# Reads .env.production, never the developer .env: production credentials must
+# not be the ones sitting in a working tree. Copy .env.production.example and
+# fill it in on the host. Run scripts/deploy-preflight.sh first — the pgdata
+# volume is external and must exist before the first `up`.
+name: advisor-production
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      # Loopback by default: the host nginx owns port 80/443 and the domain
+      # certificate, and proxies here. Set HTTP_BIND=0.0.0.0 only when this
+      # container is the outermost edge.
+      - "${HTTP_BIND:-127.0.0.1}:${HTTP_PORT:-8080}:80"
+    volumes:
+      - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    healthcheck:
+      # 127.0.0.1, not localhost: nginx listens on IPv4 only, and busybox
+      # resolves localhost to ::1 first, which is refused.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: runner
+    image: advisor-frontend:production
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      # node:*-slim ships no wget; probe with the runtime that is present.
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  backend:
+    build:
+      context: .
+      dockerfile: infra/backend.Dockerfile
+    image: advisor-backend:local
+    restart: unless-stopped
+    expose:
+      - "8000"
+    env_file: .env.production
+    environment:
+      # Force the in-network database target regardless of host-oriented .env
+      # values such as POSTGRES_HOST=localhost.
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      # Forced, not merely defaulted: production must never silently serve the
+      # read-only workbook because the database was misconfigured.
+      REQUIRE_POSTGRES: "true"
+    volumes:
+      - ./data:/app/data:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 25s
+
+  # One-shot catalog load. Not started by `up`; run it once after the first
+  # deploy, otherwise the database is migrated but empty:
+  #   docker compose -f docker-compose.production.yml run --rm ingestion
+  # Idempotent: a second run reports every row as skipped.
+  ingestion:
+    build:
+      context: .
+      dockerfile: infra/backend.Dockerfile
+    image: advisor-backend:local
+    env_file: .env.production
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    volumes:
+      - ./data:/app/data:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: ["tools"]
+    command: ["python", "-m", "backend.app.ingestion.run", "--source", "/app/data/dataset"]
+
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    expose:
+      - "5432"
+    env_file: .env.production
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-advisor} -d ${POSTGRES_DB:-advisor}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  # Declared external and pinned to the name the data platform already uses, so
+  # this stack attaches to the existing catalog instead of creating an empty
+  # one. External volumes are also left alone by `docker compose down -v`,
+  # which makes an accidental data wipe during deploy impossible.
+  pgdata:
+    external: true
+    name: advisor-data-platform_pgdata

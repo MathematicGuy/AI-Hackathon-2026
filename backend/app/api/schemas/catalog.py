@@ -67,7 +67,11 @@ class BrandList(APIModel):
 
 class SearchRequest(APIModel):
     query: str | None = Field(
-        default=None, description="ILIKE over sku, productidweb, model_code, brand"
+        default=None,
+        description=(
+            "Substring match (ILIKE) over sku, productidweb, model_code, "
+            "brand, and category sheet_name"
+        ),
     )
     category_code: str | None = None
     brands: list[str] | None = None

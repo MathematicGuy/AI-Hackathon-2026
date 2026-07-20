@@ -4,6 +4,7 @@ import { CheckCircle2, MapPin, PackageCheck, Truck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useCart } from "@/components/CartProvider";
+import { DemoNotice } from "@/components/DemoNotice";
 import { SafeImage } from "@/components/SafeImage";
 import { useToast } from "@/components/ToastProvider";
 import { getProductBySlug } from "@/lib/catalog";
@@ -142,6 +143,10 @@ export function CheckoutScreen() {
   return (
     <form onSubmit={submitOrder} className="mx-auto grid max-w-[1000px] gap-4 lg:grid-cols-[1fr_380px]" noValidate>
       <section className="rounded-xl bg-white p-4 shadow-sm md:p-6">
+        <DemoNotice>
+          đơn hàng chỉ được tạo trên trình duyệt để minh hoạ luồng đặt hàng,
+          không có đơn nào được gửi tới hệ thống bán hàng.
+        </DemoNotice>
         <div className="flex items-center gap-2 border-b border-slate-200 pb-4">
           <MapPin className="size-6 text-brand-blue" />
           <h1 className="text-xl font-bold text-slate-900">Thông tin nhận hàng</h1>

@@ -1,0 +1,171 @@
+name: CD
+
+# Production deployment for US-124 / ADR-0017.
+#
+# Gate: a push to `deploy` ships only after BOTH the frontend checks and the
+# backend suite pass on that exact commit. The backend is gated here because
+# docker-compose.production.yml ships nginx + frontend + backend + db — the
+# original frontend-only scope would have deployed untested backend code.
+#
+# The bundle is the exact tree of the tested SHA. Nothing is rebuilt from a
+# moving ref, and .env* never leaves the server.
+
+# Manual-only until the host is proven. The automatic trigger is deliberately
+# commented out so this file can land on `deploy` without deploying anything.
+#
+# Enable it only after all of the following are true, in this order:
+#   1. secrets DO_HOST, DO_USERNAME, DO_SSH_KEY, DO_SSH_KNOWN_HOSTS exist
+#   2. a `production` environment exists with required reviewers attached
+#   3. `bash scripts/deploy-preflight.sh` has run once on the host, and
+#      ${DEPLOY_ROOT}/.env.production is provisioned there
+#   4. one successful manual `workflow_dispatch` run has activated a release
+# Then uncomment the two lines below in their own commit.
+on:
+  # push:
+  #   branches: [deploy]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Commit SHA on deploy to redeploy (defaults to branch head)"
+        required: false
+        type: string
+
+# One production deploy at a time. Not cancel-in-progress: interrupting a run
+# mid-activation can leave the host between releases.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  backend:
+    name: Backend suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha || github.sha }}
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - run: uv run --extra test pytest backend/tests -q
+
+  deploy:
+    name: Deploy to Ubuntu
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Attach required reviewers to this environment in repo settings to make
+    # the first production deploy a human decision (execplan hard gate).
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Resolve release SHA
+        id: rev
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Build release bundle
+        run: |
+          set -euo pipefail
+          # git archive ships tracked files at this exact commit only, so
+          # untracked junk and local .env files cannot ride along.
+          git archive --format=tar.gz -o /tmp/release.tar.gz "${{ steps.rev.outputs.sha }}"
+          ls -lh /tmp/release.tar.gz
+
+      - name: Verify the bundle carries no secrets
+        run: |
+          set -euo pipefail
+          # Fail closed rather than trust .gitignore: an env file that ever
+          # reached the index would otherwise be published to the host.
+          if tar -tzf /tmp/release.tar.gz | grep -E '(^|/)\.env($|\.)' ; then
+            echo "FAIL bundle contains an env file" >&2
+            exit 1
+          fi
+          echo "ok  no env files in bundle"
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.DO_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DO_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Pinned host key, never StrictHostKeyChecking=no: without this the
+          # first connection would trust whatever answers on that address.
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Upload bundle
+        env:
+          HOST: ${{ secrets.DO_HOST }}
+          USER_NAME: ${{ secrets.DO_USERNAME }}
+          SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          scp -i ~/.ssh/deploy_key -P "$SSH_PORT" -o IdentitiesOnly=yes \
+            /tmp/release.tar.gz "$USER_NAME@$HOST:/tmp/release.tar.gz"
+
+      - name: Activate release
+        env:
+          HOST: ${{ secrets.DO_HOST }}
+          USER_NAME: ${{ secrets.DO_USERNAME }}
+          SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
+          DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT || '/opt/advisor' }}
+          HTTP_PORT: ${{ vars.DEPLOY_HTTP_PORT || '8080' }}
+          SHA: ${{ steps.rev.outputs.sha }}
+        run: |
+          set -euo pipefail
+          # The activation script travels in the bundle, so it is always the
+          # version that matches the release being activated.
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o IdentitiesOnly=yes \
+            "$USER_NAME@$HOST" \
+            "set -euo pipefail; \
+             mkdir -p /tmp/deploy-${SHA:0:12}; \
+             tar -xzf /tmp/release.tar.gz -C /tmp/deploy-${SHA:0:12} scripts/deploy-release.sh; \
+             DEPLOY_ROOT='$DEPLOY_ROOT' HTTP_PORT='$HTTP_PORT' \
+               bash /tmp/deploy-${SHA:0:12}/scripts/deploy-release.sh /tmp/release.tar.gz '$SHA'; \
+             rm -rf /tmp/deploy-${SHA:0:12}"
+
+      - name: Summary
+        if: always()
+        env:
+          SHA: ${{ steps.rev.outputs.sha }}
+        run: |
+          {
+            echo "### Production deploy"
+            echo ""
+            echo "- commit: \`${SHA}\`"
+            echo "- result: ${{ job.status }}"
+            echo "- health gate: nginx \`/health\` (proxies backend \`:8000/health\`)"
+          } >> "$GITHUB_STEP_SUMMARY"

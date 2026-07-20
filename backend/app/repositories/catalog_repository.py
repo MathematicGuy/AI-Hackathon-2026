@@ -162,12 +162,18 @@ class CatalogRepository:
             where.append("p.brand = ANY(%s)")
             params.append(list(brands))
         if query:
+            # The dataset has no product-name column; a product's display name
+            # is composed from category + brand + model_code (see
+            # agent/catalog/dataset_adapter.GenericProduct.name), so sheet_name
+            # is part of the searchable text — without it a category term like
+            # "tủ lạnh" matches nothing.
             where.append(
                 "(p.sku ILIKE %s OR p.productidweb ILIKE %s "
-                "OR p.model_code ILIKE %s OR p.brand ILIKE %s)"
+                "OR p.model_code ILIKE %s OR p.brand ILIKE %s "
+                "OR p.sheet_name ILIKE %s)"
             )
             like = f"%{query}%"
-            params += [like, like, like, like]
+            params += [like, like, like, like, like]
         for key, op, value in attribute_filters:
             condition, condition_params = build_attribute_condition(key, op, value)
             where.append(condition)
